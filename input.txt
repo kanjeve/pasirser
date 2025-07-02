@@ -1,0 +1,16 @@
+def bisection(A,B,F) {
+Epsilon = 0.00001;
+A = deval(A); B=deval(B);
+if (subst(F,x,A) >= 0 || subst(F,x,B) <= 0)
+error(A);
+while (true) {
+C = (A+B)/2;
+if ((A-B > -Epsilon) && (A-B < Epsilon))
+return(C);
+FC = subst(F,x,C);
+if (FC > 0) B = C;
+else if (FC < 0) A = C;
+else if (FC > -Epsilon && FC < Epsilon)
+return(C);
+}
+}

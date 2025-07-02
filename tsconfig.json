@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2020",         /* JavaScript のターゲットバージョン */
+    "module": "commonjs",       /* 生成されるモジュール形式 (Node.js 向け) */
+    "outDir": "./dist",          /* 生成される JavaScript ファイルの出力ディレクトリ */
+    "rootDir": "./src",         /* TypeScript ソースファイルのルートディレクトリ */
+    "strict": true,             /* 厳格な型チェックを有効にする */
+    "esModuleInterop": true,    /* CommonJS と ES Modules の相互運用性を有効にする */
+    "skipLibCheck": true,       /* 宣言ファイルの型チェックをスキップ (ビルド高速化のため) */
+    "forceConsistentCasingInFileNames": true, /* ファイル名の大文字小文字の区別を強制 */
+    "resolveJsonModule": true,  /* JSON モジュールのインポートを許可 */
+    "declaration": true,       /* .d.ts ファイルの生成を無効化 (antlr4ng が生成する .ts に型情報があるので不要) */
+    "sourceMap": true,           /* ソースマップを生成 (デバッグ用) */
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/.antlr/**/*.ts" // ★ antlr4ng が生成する .ts ファイルもコンパイル対象に含める
+  ],
+  "exclude": [
+    "node_modules",
+    "src/testAST.ts",
+    "src/testAsirASTBuilder.ts"
+  ]
+}
