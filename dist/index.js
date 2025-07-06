@@ -1,8 +1,29 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CustomErrorListener = exports.validateSyntax = void 0;
-var validator_1 = require("./validator");
-Object.defineProperty(exports, "validateSyntax", { enumerable: true, get: function () { return validator_1.validateSyntax; } });
-var customErrorListener_1 = require("./customErrorListener");
-Object.defineProperty(exports, "CustomErrorListener", { enumerable: true, get: function () { return customErrorListener_1.CustomErrorListener; } });
+exports.CustomErrorListener = exports.AsirASTBuilder = exports.parseAsirCodeAndBuildAST = void 0;
+// 公開する主要な関数
+var run_js_1 = require("./run.js");
+Object.defineProperty(exports, "parseAsirCodeAndBuildAST", { enumerable: true, get: function () { return run_js_1.parseAsirCodeAndBuildAST; } });
+// ASTの型定義
+__exportStar(require("./testAst.js"), exports);
+// ASTビルダーのクラス（高度な利用向け）
+var testAsirASTBuilder_js_1 = require("./testAsirASTBuilder.js");
+Object.defineProperty(exports, "AsirASTBuilder", { enumerable: true, get: function () { return testAsirASTBuilder_js_1.AsirASTBuilder; } });
+// エラーリスナーとエラー情報の型（デバッグや詳細なエラーハンドリング向け）
+var customErrorListener_js_1 = require("./customErrorListener.js");
+Object.defineProperty(exports, "CustomErrorListener", { enumerable: true, get: function () { return customErrorListener_js_1.CustomErrorListener; } });
 //# sourceMappingURL=index.js.map

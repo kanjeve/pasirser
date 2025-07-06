@@ -1,42 +1,81 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomErrorListener = void 0;
+const antlr4ng_1 = require("antlr4ng");
 // ANTLRErrorListenerを実装したカスタムクラス
 class CustomErrorListener {
     constructor() {
-        this.errors = [];
+        this._errors = [];
+        this._ambiguities = [];
+        this._diagnostics = [];
     }
     // このメソッドが構文エラー発生時にパーサーから呼び出される
     syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e) {
+        let ruleStack = [];
+        if (recognizer instanceof antlr4ng_1.Parser) {
+            ruleStack = recognizer.getRuleInvocationStack();
+        }
         // エラー情報を配列に保存
-        this.errors.push({
+        this._errors.push({
             line: line,
             column: charPositionInLine,
             message: msg,
+            offendingSymbol: offendingSymbol?.text ?? null,
+            ruleStack: ruleStack.reverse(), // スタックを分かりやすい順序に
         });
     }
-    // 収集したエラーのリストを返すメソッド
-    getErrors() {
-        return this.errors;
-    }
-    // 以下、コンパイルエラー解消のためのもの
     /**
      * 文法が曖昧な箇所を報告するために呼び出される
      */
     reportAmbiguity(recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs) {
-        // 今回の目的では何もしなくてよいので、中身は空のままでOK
+        const token = recognizer.tokenStream.get(startIndex);
+        this._ambiguities.push({
+            line: token.line,
+            column: token.column,
+            message: `Ambiguity detected at: '${token.text}'`
+        });
     }
     /**
      * より強力だが低速な解析モードに切り替わろうとしていることを報告する
      */
     reportAttemptingFullContext(recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs) {
-        // この中身も空でOK
+        const token = recognizer.tokenStream.get(startIndex);
+        this._diagnostics.push({
+            type: 'FullContext',
+            line: token.line,
+            column: token.column,
+            message: `Attempting full context parsing at: '${token.text}'`
+        });
     }
     /**
      * コンテキストに依存する構文を検出したことを報告する
      */
     reportContextSensitivity(recognizer, dfa, startIndex, stopIndex, prediction, configs) {
-        // この中身も空でOK
+        const token = recognizer.tokenStream.get(startIndex);
+        this._diagnostics.push({
+            type: 'ContextSensitivity',
+            line: token.line,
+            column: token.column,
+            message: `Context sensitivity issue at: '${token.text}'`
+        });
+    }
+    // --- ヘルパーメソッド ---
+    getErrors() {
+        return this._errors;
+    }
+    getAmbiguities() {
+        return this._ambiguities;
+    }
+    getDiagnostics() {
+        return this._diagnostics;
+    }
+    hasErrors() {
+        return this._errors.length > 0;
+    }
+    clear() {
+        this._errors = [];
+        this._ambiguities = [];
+        this._diagnostics = [];
     }
 }
 exports.CustomErrorListener = CustomErrorListener;

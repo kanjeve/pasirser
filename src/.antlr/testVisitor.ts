@@ -1,4 +1,4 @@
-// Generated from c:/Users/kaAAA/pasirser/test.g4 by ANTLR 4.13.1
+// Generated from /home/kanji/risaproject/pasirser/test.g4 by ANTLR 4.13.1
 
 import { AbstractParseTreeVisitor } from "antlr4ng";
 

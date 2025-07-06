@@ -15,85 +15,7 @@ import { testVisitor } from './.antlr/testVisitor.js';
 import * as ast from './testAst.js'
 
 // コンテキストクラスの型をインポート
-import { ProgContext } from "./.antlr/testParser.js";
-import { ExprStatementContext } from "./.antlr/testParser.js";
-import { EmptyLineStatementContext } from "./.antlr/testParser.js";
-import { AssignStatementContext } from "./.antlr/testParser.js";
-import { DefinitionStatementContext } from "./.antlr/testParser.js";
-import { IfStatementContext } from "./.antlr/testParser.js";
-import { ForStatementContext } from "./.antlr/testParser.js";
-import { WhileStatementContext } from "./.antlr/testParser.js";
-import { DoStatementContext } from "./.antlr/testParser.js";
-import { ReturnStatementContext } from "./.antlr/testParser.js";
-import { BreakStatementContext } from "./.antlr/testParser.js";
-import { ContinueStatementContext } from "./.antlr/testParser.js";
-import { StructStatementContext } from "./.antlr/testParser.js";
-import { ModuleStatementContext } from "./.antlr/testParser.js";
-import { DefContext } from "./.antlr/testParser.js";
-import { IfContext } from "./.antlr/testParser.js";
-import { ForiniContext } from "./.antlr/testParser.js";
-import { ForconContext } from "./.antlr/testParser.js";
-import { Forup1Context } from "./.antlr/testParser.js";
-import { Forup2Context } from "./.antlr/testParser.js";
-import { Forup3Context } from "./.antlr/testParser.js";
-import { Forup4Context } from "./.antlr/testParser.js";
-import { Forup5Context } from "./.antlr/testParser.js";
-import { ForContext } from "./.antlr/testParser.js";
-import { WhileContext } from "./.antlr/testParser.js";
-import { DoContext } from "./.antlr/testParser.js";
-import { ReturnContext } from "./.antlr/testParser.js";
-import { ContinueContext } from "./.antlr/testParser.js";
-import { BreakContext } from "./.antlr/testParser.js";
-import { StrctContext } from "./.antlr/testParser.js";
-import { FcallContext } from "./.antlr/testParser.js";
-import { ModuleAssignContext } from "./.antlr/testParser.js";
-import { ModuleFunctionContext } from "./.antlr/testParser.js";
-import { ModuleStartContext } from "./.antlr/testParser.js";
-import { ModuleEndContext } from "./.antlr/testParser.js";
-import { MainContext } from "./.antlr/testParser.js";
-import { TernaryContext } from "./.antlr/testParser.js";
-import { QEorContext } from "./.antlr/testParser.js";
-import { QEandContext } from "./.antlr/testParser.js";
-import { QECompareContext } from "./.antlr/testParser.js";
-import { OrContext } from "./.antlr/testParser.js";
-import { AndContext } from "./.antlr/testParser.js";
-import { CompareContext } from "./.antlr/testParser.js";
-import { AddSubContext } from "./.antlr/testParser.js";
-import { MulDivSurContext } from "./.antlr/testParser.js";
-import { UnaryMinusContext } from "./.antlr/testParser.js";
-import { NotExprContext } from "./.antlr/testParser.js";
-import { PowerExprRuleContext } from "./.antlr/testParser.js";
-import { PowerContext } from "./.antlr/testParser.js";
-import { IndexAccessContext } from "./.antlr/testParser.js";
-import { RealContext } from "./.antlr/testParser.js";
-import { IdExprContext } from "./.antlr/testParser.js";
-import { FCallExprContext } from "./.antlr/testParser.js";
-import { ParenContext } from "./.antlr/testParser.js";
-import { SpecNumContext } from "./.antlr/testParser.js";
-import { StringLiteralContext } from "./.antlr/testParser.js";
-import { CharLiteralContext } from "./.antlr/testParser.js";
-import { ListLiteralContext } from "./.antlr/testParser.js";
-import { RatContext } from "./.antlr/testParser.js";
-import { PeriodContext } from "./.antlr/testParser.js";
-import { FloatContext } from "./.antlr/testParser.js";
-import { RatNumContext } from "./.antlr/testParser.js";
-import { DecNumContext } from "./.antlr/testParser.js";
-import { ZeroNumContext } from "./.antlr/testParser.js";
-import { NatNumContext } from "./.antlr/testParser.js";
-import { VIdContext } from "./.antlr/testParser.js";
-import { FIdContext } from "./.antlr/testParser.js";
-import { V2IdContext } from "./.antlr/testParser.js";
-import { ImaContext } from "./.antlr/testParser.js";
-import { PiContext } from "./.antlr/testParser.js";
-import { NapContext } from "./.antlr/testParser.js";
-import { BefContext } from "./.antlr/testParser.js";
-import { BefNContext } from "./.antlr/testParser.js";
-import { ListExprContext } from "./.antlr/testParser.js";
-import { SentenceContext } from "./.antlr/testParser.js";
-import { Sentence1Context } from "./.antlr/testParser.js";
-import { AssignContext } from "./.antlr/testParser.js";
-import { StructAssignContext } from "./.antlr/testParser.js";
-import { ListAssignContext } from "./.antlr/testParser.js";
+import { ProgContext, ExprStatementContext, EmptyLineStatementContext, AssignStatementContext, DefinitionStatementContext, IfStatementContext, ForStatementContext, WhileStatementContext, DoStatementContext, ReturnStatementContext, BreakStatementContext, ContinueStatementContext, StructStatementContext, ModuleStatementContext, DefContext, IfContext, ForiniContext, ForconContext, Forup1Context, Forup2Context, Forup3Context, Forup4Context, Forup5Context, ForContext, WhileContext, DoContext, ReturnContext, ContinueContext, BreakContext, StrctContext, FcallContext, ModuleAssignContext, ModuleFunctionContext, ModuleStartContext, ModuleEndContext, MainContext, TernaryContext, QEorContext, QEandContext, QECompareContext, OrContext, AndContext, CompareContext, AddSubContext, MulDivSurContext, UnaryMinusContext, NotExprContext, PowerExprRuleContext, PowerContext, IndexAccessContext, RealContext, IdExprContext, FCallExprContext, ParenContext, SpecNumContext, StringLiteralContext, CharLiteralContext, ListLiteralContext, RatContext, FloatContext, RatNumContext, DecNumContext, VIdContext, FIdContext, V2IdContext, ImaContext, PiContext, NapContext, BefContext, BefNContext, ListExprContext, SentenceContext, Sentence1Context, AssignContext, StructAssignContext, ListAssignContext } from "./.antlr/testParser.js";
 
 
 // ヘルパー関数: ParserRuleContext から loc 情報を取得
@@ -160,7 +82,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
     // expr (SEMI | DOLLAR) #ExprStatement
     visitExprStatement(ctx: ExprStatementContext): ast.ExpressionStatementNode {
-        const expression = this.visit(ctx.expr()) as ast.ExpressionNode;
+        const expression = this.visit(ctx.expr()!) as ast.ExpressionNode;
         return {
             kind: 'ExpressionStatement',
             expression: expression,
@@ -178,14 +100,14 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
     // assignment (SEMI | DOLLAR) #AssignStatement
     visitAssignStatement(ctx: AssignStatementContext): ast.AssignmentStatementNode | ast.StructMemberAssignmentNode | ast.ListDestructuringAssignmentNode {
-        const assignmentNode = this.visit(ctx.assignment());
+        const assignmentNode = this.visit(ctx.assignment()!);
         if (!assignmentNode) throw new Error('Assignment node not found');
         return assignmentNode as any; 
     }
 
     // assignmentの #Assign (VAR_ID ... ASSIGN expr)
     visitAssign(ctx: AssignContext): ast.AssignmentStatementNode {
-        const varIdNode = this.visit(ctx.VAR_ID()) as ast.IdentifierNode;
+        const varIdNode = this.visit(ctx.VAR_ID()!) as ast.IdentifierNode;
         let left: ast.ExpressionNode = varIdNode;
 
         // 添字アクセスがある場合
@@ -203,13 +125,13 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         }
 
         const operatorText: string | undefined = 
-            ctx.PLUSEQ()?.symbol.text || 
-            ctx.MINUSEQ()?.symbol.text || 
-            ctx.MULTEQ()?.symbol.text || 
-            ctx.DIVEQ()?.symbol.text || 
-            ctx.SUREQ()?.symbol.text || 
-            ctx.POWEREQ()?.symbol.text || 
-            ctx.ASSIGN()?.symbol.text;
+            ctx.PLUSEQ()?.getText() || 
+            ctx.MINUSEQ()?.getText() || 
+            ctx.MULTEQ()?.getText() || 
+            ctx.DIVEQ()?.getText() || 
+            ctx.SUREQ()?.getText() || 
+            ctx.POWEREQ()?.getText() || 
+            ctx.ASSIGN()?.getText();
 
         if (operatorText === undefined) {
             throw new Error("Assignment operator text not found. This should not happen with a valid parse tree.");
@@ -239,8 +161,8 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         }
         const operatorToken = ctx.ASSIGN(); // StructAssign は ASSIGN のみ？
         if (!operatorToken) throw new Error("Assignment operator not found for struct");
-        const right = this.visit(ctx.expr()) as ast.ExpressionNode;
-        const operatorText: string | undefined = operatorToken.symbol?.text;
+        const right = this.visit(ctx.expr()!) as ast.ExpressionNode;
+        const operatorText: string | undefined = operatorToken.getText();
         if (operatorText === undefined) {
             throw new Error("Operator text is undefined for struct assignment.");
         }
@@ -263,8 +185,8 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         }
         const operatorToken = ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN();
         if (!operatorToken) throw new Error("Assignment operator not found for list assign");
-        const right = this.visit(ctx.expr()) as ast.ExpressionNode;
-        const operatorText: string | undefined = operatorToken.symbol?.text; // symbol?.text を使用
+        const right = this.visit(ctx.expr()!) as ast.ExpressionNode;
+        const operatorText: string | undefined = operatorToken.getText();
         if (operatorText === undefined) {
             throw new Error("Operator text is undefined for struct assignment.");
         }
@@ -278,13 +200,18 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
-    // forstatement
-    visitIfStatement(ctx: IfStatementContext): ast.IfStatementNode {
-        return this.visitIf(ctx as IfContext);
+    visitDefinitionStatement(ctx: DefinitionStatementContext): ast.DefinitionStatementNode {
+        return this.visit(ctx.functionDefinition()!) as ast.DefinitionStatementNode;
     }
+
+    // ifstatement
+    visitIfStatement(ctx: IfStatementContext): ast.IfStatementNode {
+        return this.visit(ctx.functionIf()!) as ast.IfStatementNode;
+    }
+
     // functionIf #If
     visitIf(ctx: IfContext): ast.IfStatementNode {
-        const condition = this.visit(ctx.expr()) as ast.ExpressionNode;
+        const condition = this.visit(ctx.expr()!) as ast.ExpressionNode;
         const consequence = this.visit(ctx.block(0)!) as ast.StatementNode; // 最初のblock
 
         let alternative: ast.StatementNode | undefined;
@@ -307,7 +234,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
     // forstatement
     visitForStatement(ctx: ForStatementContext): ast.ForStatementNode {
-        return this.visitFor(ctx as unknown as ForContext);
+        return this.visit(ctx.functionFor()!) as ast.ForStatementNode;
     }
     // functionFor #For
     visitFor(ctx: ForContext): ast.ForStatementNode {
@@ -335,7 +262,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
             }
         }
 
-        const body = this.visit(ctx.block()) as ast.StatementNode;
+        const body = this.visit(ctx.block()!) as ast.StatementNode;
         if (!body) {
             throw new Error("For loop body cannot be empty");
         }
@@ -351,12 +278,12 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
     // forInitializer 
     visitForini(ctx: ForiniContext): ast.AssignmentStatementNode {
-        const left = this.visit(ctx.VAR_ID()) as ast.IdentifierNode;
-        const operatorText: string | undefined = ctx.ASSIGN()!.symbol?.text;
+        const left = this.visit(ctx.VAR_ID()!) as ast.IdentifierNode;
+        const operatorText: string | undefined = ctx.ASSIGN()!.getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
-        const right = this.visit(ctx.expr()) as ast.ExpressionNode;
+        const right = this.visit(ctx.expr()!) as ast.ExpressionNode;
         return {
             kind: 'AssignmentStatement',
             left: left,
@@ -367,17 +294,17 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
     // forCondition 
     visitForcon(ctx: ForconContext): ast.ExpressionNode {
-        return this.visit(ctx.expr()) as ast.ExpressionNode;
+        return this.visit(ctx.expr()!) as ast.ExpressionNode;
     }
     // forUpdate の各代替規則 
     // Forup1 は AssignmentStatementNode
     visitForup1(ctx: Forup1Context): ast.AssignmentStatementNode {
         const left = this.visit(ctx.VAR_ID()!) as ast.IdentifierNode;
-        const operatorText: string | undefined = ctx.ASSIGN()!.symbol?.text;
+        const operatorText: string | undefined = ctx.ASSIGN()!.getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
-        const right = this.visit(ctx.expr()) as ast.ExpressionNode;
+        const right = this.visit(ctx.expr()!) as ast.ExpressionNode;
         return {
             kind: 'AssignmentStatement',
             left: left,
@@ -389,7 +316,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     // Forup2, Forup3 は UnaryOperationNode (後置インクリメント/デクリメント)
     visitForup2(ctx: Forup2Context): ast.UnaryOperationNode {
         const operand = this.visit(ctx.VAR_ID()!) as ast.IdentifierNode; 
-        const operatorText: string | undefined = ctx.INC()!.symbol?.text;
+        const operatorText: string | undefined = ctx.INC()!.getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
@@ -402,7 +329,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
     visitForup3(ctx: Forup3Context): ast.UnaryOperationNode {
         const operand = this.visit(ctx.VAR_ID()!) as ast.IdentifierNode;
-        const operatorText: string | undefined = ctx.DEC()!.symbol?.text;
+        const operatorText: string | undefined = ctx.DEC()!.getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
@@ -416,7 +343,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     // Forup4, Forup5 は UnaryOperationNode (前置インクリメント/デクリメント)
     visitForup4(ctx: Forup4Context): ast.UnaryOperationNode {
         const operand = this.visit(ctx.VAR_ID()!) as ast.IdentifierNode;
-        const operatorText: string | undefined = ctx.INC()!.symbol?.text;
+        const operatorText: string | undefined = ctx.INC()!.getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
@@ -428,8 +355,8 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
     visitForup5(ctx: Forup5Context): ast.UnaryOperationNode {
-        const operand = this.visit(ctx.VAR_ID()) as ast.IdentifierNode;
-        const operatorText: string | undefined = ctx.DEC()!.symbol?.text;
+        const operand = this.visit(ctx.VAR_ID()!) as ast.IdentifierNode;
+        const operatorText: string | undefined = ctx.DEC()!.getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
@@ -439,6 +366,34 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
             operand: operand,
             loc: getLoc(ctx)
         };
+    }
+
+    visitWhileStatement(ctx: WhileStatementContext): ast.WhileStatementNode {
+        return this.visit(ctx.functionWhile()!) as ast.WhileStatementNode;
+    }
+
+    visitDoStatement(ctx: DoStatementContext): ast.DoWhileStatementNode {
+        return this.visit(ctx.functionDo()!) as ast.DoWhileStatementNode;
+    }
+
+    visitReturnStatement(ctx: ReturnStatementContext): ast.ReturnStatementNode {
+        return this.visit(ctx.functionReturn()!) as ast.ReturnStatementNode;
+    }
+
+    visitBreakStatement(ctx: BreakStatementContext): ast.BreakStatementNode {
+        return this.visit(ctx.functionBreak()!) as ast.BreakStatementNode;
+    }
+
+    visitContinueStatement(ctx: ContinueStatementContext): ast.ContinueStatementNode {
+        return this.visit(ctx.functionContinue()!) as ast.ContinueStatementNode;
+    }
+
+    visitStructStatement(ctx: StructStatementContext): ast.StructStatementNode {
+        return this.visit(ctx.functionStruct()!) as ast.StructStatementNode;
+    }
+
+    visitModuleStatement(ctx: ModuleStatementContext): ast.ModuleStatementNode {
+        return this.visit(ctx.functionModule()!) as ast.ModuleStatementNode;
     }
 
 
@@ -455,7 +410,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
 
     visitSentence1(ctx: Sentence1Context): ast.BlockNode {
-        const stmtNode = this.visit(ctx.statement());
+        const stmtNode = this.visit(ctx.statement()!);
         if (stmtNode) {
             return { kind: 'Block', statements: [stmtNode as ast.StatementNode], loc: getLoc(ctx) };
         }
@@ -464,10 +419,13 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
 
     // --- 式 (Expression) の訪問 ---
+    visitMain(ctx: MainContext): ast.ExpressionNode {
+        return this.visit(ctx.ternaryExpr()!) as ast.ExpressionNode;
+    }
 
     // Ternary #Ternary
     visitTernary(ctx: TernaryContext): ast.TernaryOperationNode | ast.ExpressionNode {
-        const condition = this.visit(ctx.qeOrExpr()) as ast.ExpressionNode;
+        const condition = this.visit(ctx.qeOrExpr()!) as ast.ExpressionNode;
         if (ctx.QUESTION()) { // 三項演算子の部分が存在する場合
             // expr が2つあるので、1つ目が consequence, 2つ目が alternative
             const consequence = this.visit(ctx.expr(0)!) as ast.ExpressionNode;
@@ -484,91 +442,41 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
 
     // Binary Operation (AddSub, MulDivSur, Compare, And, Or, QECompare, QEand, QEor)
-    visitAddSub(ctx: AddSubContext): ast.BinaryOperationNode {
-        let leftExpr = this.visit(ctx.mulDivSurExpr(0)!) as ast.ExpressionNode;
-        let operatorToken : TerminalNode | null = null;
-        let plusIndex = 0; 
-        let minusIndex = 0; 
-
+    visitAddSub(ctx: AddSubContext): ast.ExpressionNode {
+        let left = this.visit(ctx.mulDivSurExpr(0)!) as ast.ExpressionNode;
         for (let i = 1; i < ctx.mulDivSurExpr().length; i++) {
-            const rightExpr = this.visit(ctx.mulDivSurExpr(i)!) as ast.ExpressionNode; 
-            const nextPlusToken = ctx.PLUS(plusIndex);
-            const nextMinusToken = ctx.MINUS(minusIndex);
-            if (nextPlusToken !== null) {
-                operatorToken = ctx.PLUS(plusIndex);
-                plusIndex++;
-            } else if (nextMinusToken !== null) {
-                operatorToken = ctx.MINUS(minusIndex);
-                minusIndex++;
-            } else {
-                throw new Error(`Logical error: Operator not found for mulDivSurExpr at index ${i}`);
-            }
-            
-            if (operatorToken === null) { 
-                throw new Error(`Operator token is undefined at index ${i}`);
-            }
-
-            const opText = operatorToken.symbol?.text; // string | undefined
-
-            if (opText === undefined) {
-                throw new Error(`Operator symbol text is undefined for mulDivSurExpr at index ${i}.`);
-            }
-
-            leftExpr = {
+            const right = this.visit(ctx.mulDivSurExpr(i)!) as ast.ExpressionNode;
+            const operator = ctx.getChild(2 * i - 1) as TerminalNode;
+            left = {
                 kind: 'BinaryOperation',
-                operator: opText, 
-                left: leftExpr,
-                right: rightExpr,
-                loc: getLoc(operatorToken) 
+                operator: operator.getText()!,
+                left: left,
+                right: right,
+                loc: getLoc(ctx)
             };
         }
-        return leftExpr as ast.BinaryOperationNode;
+        return left;
     }
-    // MulDivSur も同様に
-    visitMulDivSur(ctx: MulDivSurContext): ast.BinaryOperationNode {
-        let leftExpr = this.visit(ctx.unaryExpr(0)!) as ast.ExpressionNode;
-        let operatorToken : TerminalNode | null = null;
-        let mulIndex = 0;
-        let divIndex = 0;
-        let surIndex = 0;
+
+    visitMulDivSur(ctx: MulDivSurContext): ast.ExpressionNode {
+        let left = this.visit(ctx.unaryExpr(0)!) as ast.ExpressionNode;
         for (let i = 1; i < ctx.unaryExpr().length; i++) {
-            const rightExpr = this.visit(ctx.unaryExpr(i)!) as ast.ExpressionNode;
-            const nextMulToken = ctx.MULT(mulIndex);
-            const nextDivToken = ctx.DIV(divIndex);
-            const nextSurToken = ctx.SUR(surIndex);
-            if (nextMulToken !== null) {
-                operatorToken = ctx.MULT(mulIndex);
-                mulIndex++;
-            } else if (nextDivToken !== null) {
-                operatorToken = ctx.DIV(divIndex);
-                divIndex++;
-            } else if (nextSurToken !== null) {
-                operatorToken = ctx.SUR(surIndex);
-                surIndex++;
-            } else {
-                throw new Error(`Logical error: Operator not found for unaryExpr at index ${i}`);
-            }
-            if (operatorToken === null) {
-                throw new Error(`Operator token is undefined at index ${i}`);
-            }
-            const opText = operatorToken.symbol?.text; 
-            if (opText === undefined) {
-                throw new Error(`Operator symbol text is undefined for mulDivSurExpr at index ${i}.`);
-            }
-            leftExpr = {
+            const right = this.visit(ctx.unaryExpr(i)!) as ast.ExpressionNode;
+            const operator = ctx.getChild(2 * i - 1) as TerminalNode;
+            left = {
                 kind: 'BinaryOperation',
-                operator: opText, 
-                left: leftExpr,
-                right: rightExpr,
-                loc: getLoc(operatorToken) 
+                operator: operator.getText()!,
+                left: left,
+                right: right,
+                loc: getLoc(ctx)
             };
         }
-        return leftExpr as ast.BinaryOperationNode;
+        return left;
     }
 
     // Unary Operations (Minus, Not)
     visitUnaryMinus(ctx: UnaryMinusContext): ast.UnaryOperationNode {
-        const operand = this.visit(ctx.unaryExpr()) as ast.ExpressionNode;
+        const operand = this.visit(ctx.unaryExpr()!) as ast.ExpressionNode;
         return {
             kind: 'UnaryOperation',
             operator: '-',
@@ -577,7 +485,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
     visitNotExpr(ctx: NotExprContext): ast.UnaryOperationNode {
-        const operand = this.visit(ctx.unaryExpr()) as ast.ExpressionNode;
+        const operand = this.visit(ctx.unaryExpr()!) as ast.ExpressionNode;
         return {
             kind: 'UnaryOperation',
             operator: '!',
@@ -588,7 +496,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
     // Power 
     visitPower(ctx: PowerContext): ast.PowerOperationNode | ast.ExpressionNode {
-        const base = this.visit(ctx.indexAccessExpr()) as ast.ExpressionNode;
+        const base = this.visit(ctx.indexAccessExpr()!) as ast.ExpressionNode;
         if (ctx.POWER()) { 
             const exponent = this.visit(ctx.powerExpr()!) as ast.ExpressionNode; 
             return {
@@ -602,13 +510,16 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
     // #PowerExprRule は powerExpr を呼び出すだけのパススルーなので、ASTノードは生成せず、visit()の結果をそのまま返す
     visitPowerExprRule(ctx: PowerExprRuleContext): ast.ExpressionNode {
-        return this.visit(ctx.powerExpr()) as ast.ExpressionNode;
+        return this.visit(ctx.powerExpr()!) as ast.ExpressionNode;
     }
 
 
     // IndexAccess (添字アクセス)
-    visitIndexAccess(ctx: IndexAccessContext): ast.IndexAccessNode {
-        const base = this.visit(ctx.primaryExpr()) as ast.ExpressionNode;
+    visitIndexAccess(ctx: IndexAccessContext): ast.ExpressionNode {
+        const base = this.visit(ctx.primaryExpr()!) as ast.ExpressionNode;
+        if (ctx.LBRACKET().length === 0) {
+            return base;
+        }
         const indices: ast.ExpressionNode[] = [];
         for (const exprCtx of ctx.expr()) {
             indices.push(this.visit(exprCtx) as ast.ExpressionNode);
@@ -621,77 +532,39 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
-    // Number Literals (ZeroNum, RatNum, DecNum, NatNum, Real)
-    // #Real は num をラップしているので、num の子ノードを訪問
+    // Number Literals (RatNum, DecNum, Real)
     visitReal(ctx: RealContext): ast.NumberLiteralNode {
-        const numNode = this.visit(ctx.num());
+        const numNode = this.visit(ctx.num()!);
         if (numNode && numNode.kind === 'NumberLiteral') {
             return numNode as ast.NumberLiteralNode;
         }
         throw new Error('Expected NumberLiteralNode from num');
     }
-    visitZeroNum(ctx: ZeroNumContext): ast.NumberLiteralNode {
-        return { kind: 'NumberLiteral', value: 0, rawText: ctx.ZERO()?.symbol.text, loc: getLoc(ctx) };
-    }
-    visitNatNum(ctx: NatNumContext): ast.NumberLiteralNode {
-        const sign = ctx.MINUS() ? -1 : 1;
-        const value = parseInt(ctx.NATURAL.text, 10);
-        return { kind: 'NumberLiteral', value: sign * value, rawText: ctx.text, loc: getLoc(ctx) };
-    }
-    // visitRatNum (Rational number)
+
     visitRatNum(ctx: RatNumContext): ast.NumberLiteralNode {
-        const sign = ctx.MINUS() ? -1 : 1; // 最初のMINUSが全体の符号
-        const rationalNode = this.visit(ctx.rational()!) as ast.NumberLiteralNode;
-        // rationalNode.value は既に数値形式になっていると仮定
-        return {
-            kind: 'NumberLiteral',
-            value: (rationalNode.value as number) * sign,
-            rawText: ctx.text, // 元のテキスト
-            loc: getLoc(ctx)
-        };
+        return this.visit(ctx.rational()!) as ast.NumberLiteralNode;
     }
-    visitRat(ctx: RatNumContext): ast.NumberLiteralNode {
-        const num1 = parseInt(ctx.INT(0)!.text, 10);
-        const num2 = parseInt(ctx.NATURAL()!.text, 10); // 分母はNATURAL
-        const sign1 = ctx.MINUS() ? -1 : 1; // 分子側の符号
-        const sign2 = ctx.MINUS() ? -1 : 1; // 分母側の符号
-        // 有理数の処理ロジック (例: new Fraction(num1*sign1, num2*sign2))
-        // ここでは簡単に浮動小数点数に変換
-        return {
-            kind: 'NumberLiteral',
-            value: (num1 * sign1) / (num2 * sign2),
-            rawText: ctx.text,
-            loc: getLoc(ctx)
-        };
-    }
-    // visitDecNum (Decimal number)
+
     visitDecNum(ctx: DecNumContext): ast.NumberLiteralNode {
-        const sign = ctx.MINUS() ? -1 : 1;
-        const decimalNode = this.visit(ctx.decimal()!) as ast.NumberLiteralNode;
+        return this.visit(ctx.decimal()!) as ast.NumberLiteralNode;
+    }
+
+    visitRat(ctx: RatContext): ast.NumberLiteralNode {
+        const value = ctx.getText();
         return {
             kind: 'NumberLiteral',
-            value: (decimalNode.value as number) * sign,
-            rawText: ctx.text,
+            value: value,
+            rawText: value,
             loc: getLoc(ctx)
         };
     }
-    // visitPeriod (decimal with POINT)
-    visitPeriod(ctx: PeriodContext): ast.NumberLiteralNode {
-        const text = ctx.text; // "0.001" or "123.456"
-        return {
-            kind: 'NumberLiteral',
-            value: parseFloat(text),
-            rawText: text,
-            loc: getLoc(ctx)
-        };
-    }
-    // visitFloat (decimal with EXP)
+
     visitFloat(ctx: FloatContext): ast.NumberLiteralNode {
-        const text = ctx.text; // "1e-5" or "2E"
+        const value = ctx.getText();
         return {
             kind: 'NumberLiteral',
-            value: parseFloat(text),
-            rawText: text,
+            value: parseFloat(value),
+            rawText: value,
             loc: getLoc(ctx)
         };
     }
@@ -699,55 +572,49 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
     // Identifier (VId, FId, V2Id)
     visitIdExpr(ctx: IdExprContext): ast.IdentifierNode {
-        const idNode = this.visit(ctx.id());
+        const idNode = this.visit(ctx.id()!);
         if (idNode && idNode.kind === 'Identifier') {
             return idNode as ast.IdentifierNode;
         }
         throw new Error('Expected IdentifierNode from idExpr');
     }
     visitVId(ctx: VIdContext): ast.IdentifierNode {
-        return { kind: 'Identifier', name: ctx.VAR_ID().text, isVar: true, isSpecialVar: false, loc: getLoc(ctx) };
+        return { kind: 'Identifier', name: ctx.VAR_ID()!.getText(), isVar: true, isSpecialVar: false, loc: getLoc(ctx) };
     }
     visitFId(ctx: FIdContext): ast.IdentifierNode {
-        const nameNode = { kind: 'Identifier', name: ctx.FUNC_ID().text, isVar: false, isSpecialVar: false, loc: getLoc(ctx) } as ast.IdentifierNode;
-        if (ctx.POINT()) { // `module.func` の形式
-            const qualifierNode = this.visit(ctx.FUNC_ID(0)!) as ast.IdentifierNode; // 最初のFUNC_IDがモジュール名
+        const name = ctx.FUNC_ID(ctx.FUNC_ID().length - 1)!.getText();
+        const nameNode = { kind: 'Identifier', name: name, isVar: false, isSpecialVar: false, loc: getLoc(ctx) } as ast.IdentifierNode;
+        if (ctx.POINT()) {
+            const qualifierNode = this.visit(ctx.FUNC_ID(0)!) as ast.IdentifierNode;
             nameNode.qualifier = qualifierNode;
         }
         return nameNode;
     }
     visitV2Id(ctx: V2IdContext): ast.IdentifierNode {
-        return { kind: 'Identifier', name: ctx.VAR_2().text, isVar: false, isSpecialVar: true, loc: getLoc(ctx) };
+        return { kind: 'Identifier', name: ctx.VAR_2()!.getText(), isVar: false, isSpecialVar: true, loc: getLoc(ctx) };
     }
 
     // FunctionCall #Fcall
-    visitFcall(ctx: FcallContext): ast.FunctionCallNode { // functionCall のコンテキストは FcallContext
-        const calleeNameCtx = ctx.FUNC_ID();
+    visitFcall(ctx: FcallContext): ast.FunctionCallNode {
+        const calleeNameCtx = ctx.FUNC_ID(ctx.FUNC_ID().length - 1)!;
         const callee: ast.IdentifierNode = {
             kind: 'Identifier',
-            name: calleeNameCtx.text,
-            isVar: false, // 関数名はFUNC_IDなのでisVarはfalse
+            name: calleeNameCtx.getText(),
+            isVar: false,
             isSpecialVar: false,
             loc: getLoc(calleeNameCtx)
         };
 
-        if (ctx.COLON2()) { // '::' プレフィックスがある場合
-            // callee.qualifier = { kind: 'Identifier', name: ctx.COLON2().text, isVar: false, isSpecialVar: false, loc: getLoc(ctx.COLON2()) };
-            // A::B() のような形式をどう解釈するか
-            // 例えば、callee.name が 'B' で callee.qualifier.name が 'A'
-            // または、callee.name が 'A::B' と結合されるか
-            // ここでは簡易的に、callee.name に直接結合する
-            callee.name = ctx.COLON2()!.text + callee.name;
+        if (ctx.COLON2()) {
+            callee.name = ctx.COLON2()!.getText() + callee.name;
         }
-        if (ctx.POINT()) { // '.' アクセスがある場合
-            // Module.func() の Module は FUNC_ID(0)
-            const moduleNameNode = this.visit(ctx.FUNC_ID(0)!) as ast.IdentifierNode; // 最初のFUNC_IDがモジュール名
+        if (ctx.POINT()) {
+            const moduleNameNode = this.visit(ctx.FUNC_ID(0)!) as ast.IdentifierNode;
             callee.qualifier = moduleNameNode;
-            callee.name = ctx.FUNC_ID(1)!.text; // 2番目のFUNC_IDが関数名
         }
 
         const args: ast.ExpressionNode[] = [];
-        if (ctx.expr()) { // 引数がある場合
+        if (ctx.expr()) {
             for (const argCtx of ctx.expr()) {
                 args.push(this.visit(argCtx) as ast.ExpressionNode);
             }
@@ -762,7 +629,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
     // Paren #Paren
     visitParen(ctx: ParenContext): ast.ParenExpressionNode {
-        const expression = this.visit(ctx.expr()) as ast.ExpressionNode;
+        const expression = this.visit(ctx.expr()!) as ast.ExpressionNode;
         return {
             kind: 'ParenExpression',
             expression: expression,
@@ -770,67 +637,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
-    // Special Numbers #SpecNum
-    visitIma(ctx: ImaContext): ast.SpecialNumberNode {
-        const nameText: string | undefined = ctx.IMAGINARY()!.symbol?.text; 
-        if (nameText === undefined) {
-            throw new Error("Special number name text for IMAGINARY is undefined. This indicates a parsing error.");
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: nameText, 
-            loc: getLoc(ctx.IMAGINARY()!)
-        };
-    }
-
-    visitPi(ctx: PiContext): ast.SpecialNumberNode {
-        const nameText: string | undefined = ctx.PI()!.symbol?.text; 
-        if (nameText === undefined) {
-            throw new Error("Special number name text for IMAGINARY is undefined. This indicates a parsing error.");
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: nameText,
-            loc: getLoc(ctx.PI()!)
-        };
-    }
-
-    visitNap(ctx: NapContext): ast.SpecialNumberNode {
-        const nameText: string | undefined = ctx.NAPIER()!.symbol?.text; 
-        if (nameText === undefined) {
-            throw new Error("Special number name text for IMAGINARY is undefined. This indicates a parsing error.");
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: nameText,
-            loc: getLoc(ctx.NAPIER()!)
-        };
-    }
-
-    visitBef(ctx: BefContext): ast.SpecialNumberNode {
-        const nameText: string | undefined = ctx.BEFORE()!.symbol?.text; 
-        if (nameText === undefined) {
-            throw new Error("Special number name text for IMAGINARY is undefined. This indicates a parsing error.");
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: nameText,
-            loc: getLoc(ctx.BEFORE()!)
-        };
-    }
-
-    visitBefN(ctx: BefNContext): ast.SpecialNumberNode {
-        const nameText: string | undefined = ctx.BEFORE_N()!.symbol?.text; 
-        if (nameText === undefined) {
-            throw new Error("Special number name text for IMAGINARY is undefined. This indicates a parsing error.");
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: nameText,
-            loc: getLoc(ctx.BEFORE_N()!)
-        };
-    }
-
+    // Special Numbers
     visitSpecNum(ctx: SpecNumContext): ast.SpecialNumberNode {
         if (ctx instanceof ImaContext) {
             return this.visitIma(ctx);
@@ -843,23 +650,44 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         } else if (ctx instanceof BefNContext) {
             return this.visitBefN(ctx);
         }
-        throw new Error(`Unknown SpecialnumContext type: ${ctx.getText()}`);
+        throw new Error(`Unknown SpecNumContext type: ${ctx.getText()}`);
     }
+
+    visitIma(ctx: ImaContext): ast.SpecialNumberNode {
+        return { kind: 'SpecialNumber', name: ctx.IMAGINARY()!.getText(), loc: getLoc(ctx) };
+    }
+
+    visitPi(ctx: PiContext): ast.SpecialNumberNode {
+        return { kind: 'SpecialNumber', name: ctx.PI()!.getText(), loc: getLoc(ctx) };
+    }
+
+    visitNap(ctx: NapContext): ast.SpecialNumberNode {
+        return { kind: 'SpecialNumber', name: ctx.NAPIER()!.getText(), loc: getLoc(ctx) };
+    }
+
+    visitBef(ctx: BefContext): ast.SpecialNumberNode {
+        return { kind: 'SpecialNumber', name: ctx.BEFORE()!.getText(), loc: getLoc(ctx) };
+    }
+
+    visitBefN(ctx: BefNContext): ast.SpecialNumberNode {
+        return { kind: 'SpecialNumber', name: ctx.BEFORE_N()!.getText(), loc: getLoc(ctx) };
+    }
+
 
     // String Literals #StringLiteral, #CharLiteral
     visitStringLiteral(ctx: StringLiteralContext): ast.StringLiteralNode {
-        const rawText = ctx.STRING2().text;
+        const rawText = ctx.STRING2()!.getText();
         const value = rawText.substring(1, rawText.length - 1); // クォートを除去
         return { kind: 'StringLiteral', value: value, rawText: rawText, loc: getLoc(ctx) };
     }
     visitCharLiteral(ctx: CharLiteralContext): ast.CharLiteralNode {
-        const rawText = ctx.STRING1().text;
+        const rawText = ctx.STRING1()!.getText();
         const value = rawText.substring(1, rawText.length - 1); // クォートを除去
         return { kind: 'CharLiteral', value: value, rawText: rawText, loc: getLoc(ctx) };
     }
 
     // List Literals #List (ListContext)
-    visitList(ctx: ListExprContext): ast.ListLiteralNode {
+    visitListExpr(ctx: ListExprContext): ast.ListLiteralNode {
         const elements: ast.ExpressionNode[] = [];
         for (const exprCtx of ctx.expr()) {
             elements.push(this.visit(exprCtx) as ast.ExpressionNode);
@@ -871,14 +699,176 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
-    // --- 他の visit メソッドも同様に実装 ---
+    // --- ここからが未実装だった部分 ---
+
     // functionDefinition #Def
+    visitDef(ctx: DefContext): ast.DefinitionStatementNode {
+        const name = this.visit(ctx.FUNC_ID()!) as ast.IdentifierNode;
+        const parameters: ast.IdentifierNode[] = [];
+        if (ctx.VAR_ID()) {
+            for (const varIdCtx of ctx.VAR_ID()) {
+                parameters.push(this.visit(varIdCtx) as ast.IdentifierNode);
+            }
+        }
+        const body = this.visit(ctx.block()!) as ast.StatementNode;
+        return {
+            kind: 'FunctionDefinition',
+            name: name,
+            parameters: parameters,
+            body: body,
+            loc: getLoc(ctx)
+        };
+    }
+
     // functionWhile #While
+    visitWhile(ctx: WhileContext): ast.WhileStatementNode {
+        const condition = this.visit(ctx.expr(0)!) as ast.ExpressionNode;
+        const body = this.visit(ctx.block()!) as ast.StatementNode;
+        return {
+            kind: 'WhileStatement',
+            condition: condition,
+            body: body,
+            loc: getLoc(ctx)
+        };
+    }
+
     // functionDo #Do
+    visitDo(ctx: DoContext): ast.DoWhileStatementNode {
+        const body = this.visit(ctx.block()!) as ast.StatementNode;
+        const condition = this.visit(ctx.expr(0)!) as ast.ExpressionNode;
+        return {
+            kind: 'DoWhileStatement',
+            body: body,
+            condition: condition,
+            loc: getLoc(ctx)
+        };
+    }
+
     // functionReturn #Return
+    visitReturn(ctx: ReturnContext): ast.ReturnStatementNode {
+        const value = ctx.expr() ? this.visit(ctx.expr()!) as ast.ExpressionNode : undefined;
+        return {
+            kind: 'ReturnStatement',
+            value: value,
+            loc: getLoc(ctx)
+        };
+    }
+
     // functionBreak #Break
+    visitBreak(ctx: BreakContext): ast.BreakStatementNode {
+        return {
+            kind: 'BreakStatement',
+            loc: getLoc(ctx)
+        };
+    }
+
     // functionContinue #Continue
+    visitContinue(ctx: ContinueContext): ast.ContinueStatementNode {
+        return {
+            kind: 'ContinueStatement',
+            loc: getLoc(ctx)
+        };
+    }
+
     // functionStruct #Strct
+    visitStrct(ctx: StrctContext): ast.StructStatementNode {
+        const name = this.visit(ctx.getChild(1)!) as ast.IdentifierNode;
+        const members: ast.IdentifierNode[] = [];
+        // メンバーは3番目の子から始まる
+        for (let i = 3; i < ctx.getChildCount() - 2; i += 2) {
+            members.push(this.visit(ctx.getChild(i)!) as ast.IdentifierNode);
+        }
+        return {
+            kind: 'StructStatement',
+            name: name,
+            members: members,
+            loc: getLoc(ctx)
+        };
+    }
+
     // ModuleStatement 関連
-    // 二項演算子 (Compare, And, Or, QECompare, QEand, QEor) の残りの実装
+    visitModuleAssign(ctx: ModuleAssignContext): ast.ModuleVariableDeclarationNode {
+        const scopeToken = ctx.EXTERN() || ctx.STATIC() || ctx.GLOBAL() || ctx.LOCAL();
+        const variables: ast.IdentifierNode[] = [];
+        for (const varIdCtx of ctx.VAR_ID()) {
+            variables.push(this.visit(varIdCtx) as ast.IdentifierNode);
+        }
+        return {
+            kind: 'ModuleVariableDeclaration',
+            scope: scopeToken!.getText() as any,
+            variables: variables,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitModuleFunction(ctx: ModuleFunctionContext): ast.LocalFunctionDeclarationNode {
+        const functions: ast.IdentifierNode[] = [];
+        for (const funcIdCtx of ctx.FUNC_ID()) {
+            functions.push(this.visit(funcIdCtx) as ast.IdentifierNode);
+        }
+        return {
+            kind: 'LocalFunctionDeclaration',
+            functions: functions,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitModuleStart(ctx: ModuleStartContext): ast.ModuleDeclarationNode {
+        return {
+            kind: 'ModuleDeclaration',
+            name: this.visit(ctx.FUNC_ID()!) as ast.IdentifierNode,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitModuleEnd(ctx: ModuleEndContext): ast.EndModuleNode {
+        return {
+            kind: 'EndModule',
+            loc: getLoc(ctx)
+        };
+    }
+
+    // 二項演算子 (Compare, And, Or, QECompare, QEand, QEor)
+    private visitBinaryOp(ctx: ParserRuleContext, operandGetter: (i: number) => ParserRuleContext | null): ast.ExpressionNode {
+        let left = this.visit(operandGetter(0)!) as ast.ExpressionNode;
+        for (let i = 1; ; i++) {
+            const operand = operandGetter(i);
+            if (!operand) break;
+            const operator = ctx.getChild(2 * i - 1) as TerminalNode;
+            const right = this.visit(operand)! as ast.ExpressionNode;
+            left = {
+                kind: 'BinaryOperation',
+                operator: operator.getText()!,
+                left: left,
+                right: right,
+                loc: getLoc(operator)
+            };
+        }
+        return left;
+    }
+
+    visitQEor(ctx: QEorContext): ast.ExpressionNode {
+        return this.visitBinaryOp(ctx, (i) => ctx.qeAndExpr(i));
+    }
+
+    visitQEand(ctx: QEandContext): ast.ExpressionNode {
+        return this.visitBinaryOp(ctx, (i) => ctx.qeCompareExpr(i));
+    }
+
+    visitQECompare(ctx: QECompareContext): ast.ExpressionNode {
+        return this.visitBinaryOp(ctx, (i) => ctx.orExpr(i));
+    }
+
+    visitOr(ctx: OrContext): ast.ExpressionNode {
+        return this.visitBinaryOp(ctx, (i) => ctx.andExpr(i));
+    }
+
+    visitAnd(ctx: AndContext): ast.ExpressionNode {
+        return this.visitBinaryOp(ctx, (i) => ctx.compareExpr(i));
+    }
+
+    visitCompare(ctx: CompareContext): ast.ExpressionNode {
+        return this.visitBinaryOp(ctx, (i) => ctx.addSubExpr(i));
+    }
 }
+''

@@ -3,11 +3,25 @@ export interface SyntaxErrorInfo {
     line: number;
     column: number;
     message: string;
+    offendingSymbol: string | null;
+    ruleStack: string[];
+}
+export interface AmbiguityInfo {
+    line: number;
+    column: number;
+    message: string;
+}
+export interface DiagnosticInfo {
+    type: 'FullContext' | 'ContextSensitivity';
+    line: number;
+    column: number;
+    message: string;
 }
 export declare class CustomErrorListener implements ANTLRErrorListener {
-    private errors;
+    private _errors;
+    private _ambiguities;
+    private _diagnostics;
     syntaxError<S extends Token, T extends ATNSimulator>(recognizer: Recognizer<T>, offendingSymbol: S | null, line: number, charPositionInLine: number, msg: string, e: RecognitionException | null): void;
-    getErrors(): SyntaxErrorInfo[];
     /**
      * 文法が曖昧な箇所を報告するために呼び出される
      */
@@ -20,4 +34,9 @@ export declare class CustomErrorListener implements ANTLRErrorListener {
      * コンテキストに依存する構文を検出したことを報告する
      */
     reportContextSensitivity(recognizer: Parser, dfa: DFA, startIndex: number, stopIndex: number, prediction: number, configs: any): void;
+    getErrors(): SyntaxErrorInfo[];
+    getAmbiguities(): AmbiguityInfo[];
+    getDiagnostics(): DiagnosticInfo[];
+    hasErrors(): boolean;
+    clear(): void;
 }

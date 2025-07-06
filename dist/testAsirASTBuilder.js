@@ -2,11 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AsirASTBuilder = void 0;
 const antlr4ng_1 = require("antlr4ng");
+// コンテキストクラスの型をインポート
 const testParser_js_1 = require("./.antlr/testParser.js");
-const testParser_js_2 = require("./.antlr/testParser.js");
-const testParser_js_3 = require("./.antlr/testParser.js");
-const testParser_js_4 = require("./.antlr/testParser.js");
-const testParser_js_5 = require("./.antlr/testParser.js");
 function getLoc(arg) {
     if (arg instanceof antlr4ng_1.ParserRuleContext) {
         const ctx = arg;
@@ -96,13 +93,13 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
                 loc: getLoc(ctx)
             };
         }
-        const operatorText = ctx.PLUSEQ()?.symbol.text ||
-            ctx.MINUSEQ()?.symbol.text ||
-            ctx.MULTEQ()?.symbol.text ||
-            ctx.DIVEQ()?.symbol.text ||
-            ctx.SUREQ()?.symbol.text ||
-            ctx.POWEREQ()?.symbol.text ||
-            ctx.ASSIGN()?.symbol.text;
+        const operatorText = ctx.PLUSEQ()?.getText() ||
+            ctx.MINUSEQ()?.getText() ||
+            ctx.MULTEQ()?.getText() ||
+            ctx.DIVEQ()?.getText() ||
+            ctx.SUREQ()?.getText() ||
+            ctx.POWEREQ()?.getText() ||
+            ctx.ASSIGN()?.getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text not found. This should not happen with a valid parse tree.");
         }
@@ -132,7 +129,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         if (!operatorToken)
             throw new Error("Assignment operator not found for struct");
         const right = this.visit(ctx.expr());
-        const operatorText = operatorToken.symbol?.text;
+        const operatorText = operatorToken.getText();
         if (operatorText === undefined) {
             throw new Error("Operator text is undefined for struct assignment.");
         }
@@ -155,7 +152,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         if (!operatorToken)
             throw new Error("Assignment operator not found for list assign");
         const right = this.visit(ctx.expr());
-        const operatorText = operatorToken.symbol?.text; // symbol?.text を使用
+        const operatorText = operatorToken.getText();
         if (operatorText === undefined) {
             throw new Error("Operator text is undefined for struct assignment.");
         }
@@ -167,9 +164,12 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: getLoc(ctx)
         };
     }
-    // forstatement
+    visitDefinitionStatement(ctx) {
+        return this.visit(ctx.functionDefinition());
+    }
+    // ifstatement
     visitIfStatement(ctx) {
-        return this.visitIf(ctx);
+        return this.visit(ctx.functionIf());
     }
     // functionIf #If
     visitIf(ctx) {
@@ -194,7 +194,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
     // forstatement
     visitForStatement(ctx) {
-        return this.visitFor(ctx);
+        return this.visit(ctx.functionFor());
     }
     // functionFor #For
     visitFor(ctx) {
@@ -235,7 +235,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     // forInitializer 
     visitForini(ctx) {
         const left = this.visit(ctx.VAR_ID());
-        const operatorText = ctx.ASSIGN().symbol?.text;
+        const operatorText = ctx.ASSIGN().getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
@@ -256,7 +256,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     // Forup1 は AssignmentStatementNode
     visitForup1(ctx) {
         const left = this.visit(ctx.VAR_ID());
-        const operatorText = ctx.ASSIGN().symbol?.text;
+        const operatorText = ctx.ASSIGN().getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
@@ -272,7 +272,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     // Forup2, Forup3 は UnaryOperationNode (後置インクリメント/デクリメント)
     visitForup2(ctx) {
         const operand = this.visit(ctx.VAR_ID());
-        const operatorText = ctx.INC().symbol?.text;
+        const operatorText = ctx.INC().getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
@@ -285,7 +285,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
     visitForup3(ctx) {
         const operand = this.visit(ctx.VAR_ID());
-        const operatorText = ctx.DEC().symbol?.text;
+        const operatorText = ctx.DEC().getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
@@ -299,7 +299,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     // Forup4, Forup5 は UnaryOperationNode (前置インクリメント/デクリメント)
     visitForup4(ctx) {
         const operand = this.visit(ctx.VAR_ID());
-        const operatorText = ctx.INC().symbol?.text;
+        const operatorText = ctx.INC().getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
@@ -312,7 +312,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
     visitForup5(ctx) {
         const operand = this.visit(ctx.VAR_ID());
-        const operatorText = ctx.DEC().symbol?.text;
+        const operatorText = ctx.DEC().getText();
         if (operatorText === undefined) {
             throw new Error("Assignment operator text is undefined for Forup1. This indicates a parsing error.");
         }
@@ -322,6 +322,27 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             operand: operand,
             loc: getLoc(ctx)
         };
+    }
+    visitWhileStatement(ctx) {
+        return this.visit(ctx.functionWhile());
+    }
+    visitDoStatement(ctx) {
+        return this.visit(ctx.functionDo());
+    }
+    visitReturnStatement(ctx) {
+        return this.visit(ctx.functionReturn());
+    }
+    visitBreakStatement(ctx) {
+        return this.visit(ctx.functionBreak());
+    }
+    visitContinueStatement(ctx) {
+        return this.visit(ctx.functionContinue());
+    }
+    visitStructStatement(ctx) {
+        return this.visit(ctx.functionStruct());
+    }
+    visitModuleStatement(ctx) {
+        return this.visit(ctx.functionModule());
     }
     // block #Sentence と #Sentence1
     visitSentence(ctx) {
@@ -342,6 +363,9 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         return { kind: 'Block', statements: [], loc: getLoc(ctx) };
     }
     // --- 式 (Expression) の訪問 ---
+    visitMain(ctx) {
+        return this.visit(ctx.ternaryExpr());
+    }
     // Ternary #Ternary
     visitTernary(ctx) {
         const condition = this.visit(ctx.qeOrExpr());
@@ -361,85 +385,34 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
     // Binary Operation (AddSub, MulDivSur, Compare, And, Or, QECompare, QEand, QEor)
     visitAddSub(ctx) {
-        let leftExpr = this.visit(ctx.mulDivSurExpr(0));
-        let operatorToken = null;
-        let plusIndex = 0;
-        let minusIndex = 0;
+        let left = this.visit(ctx.mulDivSurExpr(0));
         for (let i = 1; i < ctx.mulDivSurExpr().length; i++) {
-            const rightExpr = this.visit(ctx.mulDivSurExpr(i));
-            const nextPlusToken = ctx.PLUS(plusIndex);
-            const nextMinusToken = ctx.MINUS(minusIndex);
-            if (nextPlusToken !== null) {
-                operatorToken = ctx.PLUS(plusIndex);
-                plusIndex++;
-            }
-            else if (nextMinusToken !== null) {
-                operatorToken = ctx.MINUS(minusIndex);
-                minusIndex++;
-            }
-            else {
-                throw new Error(`Logical error: Operator not found for mulDivSurExpr at index ${i}`);
-            }
-            if (operatorToken === null) {
-                throw new Error(`Operator token is undefined at index ${i}`);
-            }
-            const opText = operatorToken.symbol?.text; // string | undefined
-            if (opText === undefined) {
-                throw new Error(`Operator symbol text is undefined for mulDivSurExpr at index ${i}.`);
-            }
-            leftExpr = {
+            const right = this.visit(ctx.mulDivSurExpr(i));
+            const operator = ctx.getChild(2 * i - 1);
+            left = {
                 kind: 'BinaryOperation',
-                operator: opText,
-                left: leftExpr,
-                right: rightExpr,
-                loc: getLoc(operatorToken)
+                operator: operator.getText(),
+                left: left,
+                right: right,
+                loc: getLoc(ctx)
             };
         }
-        return leftExpr;
+        return left;
     }
-    // MulDivSur も同様に
     visitMulDivSur(ctx) {
-        let leftExpr = this.visit(ctx.unaryExpr(0));
-        let operatorToken = null;
-        let mulIndex = 0;
-        let divIndex = 0;
-        let surIndex = 0;
+        let left = this.visit(ctx.unaryExpr(0));
         for (let i = 1; i < ctx.unaryExpr().length; i++) {
-            const rightExpr = this.visit(ctx.unaryExpr(i));
-            const nextMulToken = ctx.MULT(mulIndex);
-            const nextDivToken = ctx.DIV(divIndex);
-            const nextSurToken = ctx.SUR(surIndex);
-            if (nextMulToken !== null) {
-                operatorToken = ctx.MULT(mulIndex);
-                mulIndex++;
-            }
-            else if (nextDivToken !== null) {
-                operatorToken = ctx.DIV(divIndex);
-                divIndex++;
-            }
-            else if (nextSurToken !== null) {
-                operatorToken = ctx.SUR(surIndex);
-                surIndex++;
-            }
-            else {
-                throw new Error(`Logical error: Operator not found for unaryExpr at index ${i}`);
-            }
-            if (operatorToken === null) {
-                throw new Error(`Operator token is undefined at index ${i}`);
-            }
-            const opText = operatorToken.symbol?.text;
-            if (opText === undefined) {
-                throw new Error(`Operator symbol text is undefined for mulDivSurExpr at index ${i}.`);
-            }
-            leftExpr = {
+            const right = this.visit(ctx.unaryExpr(i));
+            const operator = ctx.getChild(2 * i - 1);
+            left = {
                 kind: 'BinaryOperation',
-                operator: opText,
-                left: leftExpr,
-                right: rightExpr,
-                loc: getLoc(operatorToken)
+                operator: operator.getText(),
+                left: left,
+                right: right,
+                loc: getLoc(ctx)
             };
         }
-        return leftExpr;
+        return left;
     }
     // Unary Operations (Minus, Not)
     visitUnaryMinus(ctx) {
@@ -481,6 +454,9 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     // IndexAccess (添字アクセス)
     visitIndexAccess(ctx) {
         const base = this.visit(ctx.primaryExpr());
+        if (ctx.LBRACKET().length === 0) {
+            return base;
+        }
         const indices = [];
         for (const exprCtx of ctx.expr()) {
             indices.push(this.visit(exprCtx));
@@ -492,8 +468,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: getLoc(ctx)
         };
     }
-    // Number Literals (ZeroNum, RatNum, DecNum, NatNum, Real)
-    // #Real は num をラップしているので、num の子ノードを訪問
+    // Number Literals (RatNum, DecNum, Real)
     visitReal(ctx) {
         const numNode = this.visit(ctx.num());
         if (numNode && numNode.kind === 'NumberLiteral') {
@@ -501,68 +476,27 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         }
         throw new Error('Expected NumberLiteralNode from num');
     }
-    visitZeroNum(ctx) {
-        return { kind: 'NumberLiteral', value: 0, rawText: ctx.ZERO()?.symbol.text, loc: getLoc(ctx) };
-    }
-    visitNatNum(ctx) {
-        const sign = ctx.MINUS() ? -1 : 1;
-        const value = parseInt(ctx.NATURAL.text, 10);
-        return { kind: 'NumberLiteral', value: sign * value, rawText: ctx.text, loc: getLoc(ctx) };
-    }
-    // visitRatNum (Rational number)
     visitRatNum(ctx) {
-        const sign = ctx.MINUS() ? -1 : 1; // 最初のMINUSが全体の符号
-        const rationalNode = this.visit(ctx.rational());
-        // rationalNode.value は既に数値形式になっていると仮定
-        return {
-            kind: 'NumberLiteral',
-            value: rationalNode.value * sign,
-            rawText: ctx.text, // 元のテキスト
-            loc: getLoc(ctx)
-        };
+        return this.visit(ctx.rational());
+    }
+    visitDecNum(ctx) {
+        return this.visit(ctx.decimal());
     }
     visitRat(ctx) {
-        const num1 = parseInt(ctx.INT(0).text, 10);
-        const num2 = parseInt(ctx.NATURAL().text, 10); // 分母はNATURAL
-        const sign1 = ctx.MINUS() ? -1 : 1; // 分子側の符号
-        const sign2 = ctx.MINUS() ? -1 : 1; // 分母側の符号
-        // 有理数の処理ロジック (例: new Fraction(num1*sign1, num2*sign2))
-        // ここでは簡単に浮動小数点数に変換
+        const value = ctx.getText();
         return {
             kind: 'NumberLiteral',
-            value: (num1 * sign1) / (num2 * sign2),
-            rawText: ctx.text,
+            value: value,
+            rawText: value,
             loc: getLoc(ctx)
         };
     }
-    // visitDecNum (Decimal number)
-    visitDecNum(ctx) {
-        const sign = ctx.MINUS() ? -1 : 1;
-        const decimalNode = this.visit(ctx.decimal());
-        return {
-            kind: 'NumberLiteral',
-            value: decimalNode.value * sign,
-            rawText: ctx.text,
-            loc: getLoc(ctx)
-        };
-    }
-    // visitPeriod (decimal with POINT)
-    visitPeriod(ctx) {
-        const text = ctx.text; // "0.001" or "123.456"
-        return {
-            kind: 'NumberLiteral',
-            value: parseFloat(text),
-            rawText: text,
-            loc: getLoc(ctx)
-        };
-    }
-    // visitFloat (decimal with EXP)
     visitFloat(ctx) {
-        const text = ctx.text; // "1e-5" or "2E"
+        const value = ctx.getText();
         return {
             kind: 'NumberLiteral',
-            value: parseFloat(text),
-            rawText: text,
+            value: parseFloat(value),
+            rawText: value,
             loc: getLoc(ctx)
         };
     }
@@ -575,45 +509,39 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         throw new Error('Expected IdentifierNode from idExpr');
     }
     visitVId(ctx) {
-        return { kind: 'Identifier', name: ctx.VAR_ID().text, isVar: true, isSpecialVar: false, loc: getLoc(ctx) };
+        return { kind: 'Identifier', name: ctx.VAR_ID().getText(), isVar: true, isSpecialVar: false, loc: getLoc(ctx) };
     }
     visitFId(ctx) {
-        const nameNode = { kind: 'Identifier', name: ctx.FUNC_ID().text, isVar: false, isSpecialVar: false, loc: getLoc(ctx) };
-        if (ctx.POINT()) { // `module.func` の形式
-            const qualifierNode = this.visit(ctx.FUNC_ID(0)); // 最初のFUNC_IDがモジュール名
+        const name = ctx.FUNC_ID(ctx.FUNC_ID().length - 1).getText();
+        const nameNode = { kind: 'Identifier', name: name, isVar: false, isSpecialVar: false, loc: getLoc(ctx) };
+        if (ctx.POINT()) {
+            const qualifierNode = this.visit(ctx.FUNC_ID(0));
             nameNode.qualifier = qualifierNode;
         }
         return nameNode;
     }
     visitV2Id(ctx) {
-        return { kind: 'Identifier', name: ctx.VAR_2().text, isVar: false, isSpecialVar: true, loc: getLoc(ctx) };
+        return { kind: 'Identifier', name: ctx.VAR_2().getText(), isVar: false, isSpecialVar: true, loc: getLoc(ctx) };
     }
     // FunctionCall #Fcall
     visitFcall(ctx) {
-        const calleeNameCtx = ctx.FUNC_ID();
+        const calleeNameCtx = ctx.FUNC_ID(ctx.FUNC_ID().length - 1);
         const callee = {
             kind: 'Identifier',
-            name: calleeNameCtx.text,
-            isVar: false, // 関数名はFUNC_IDなのでisVarはfalse
+            name: calleeNameCtx.getText(),
+            isVar: false,
             isSpecialVar: false,
             loc: getLoc(calleeNameCtx)
         };
-        if (ctx.COLON2()) { // '::' プレフィックスがある場合
-            // callee.qualifier = { kind: 'Identifier', name: ctx.COLON2().text, isVar: false, isSpecialVar: false, loc: getLoc(ctx.COLON2()) };
-            // A::B() のような形式をどう解釈するか
-            // 例えば、callee.name が 'B' で callee.qualifier.name が 'A'
-            // または、callee.name が 'A::B' と結合されるか
-            // ここでは簡易的に、callee.name に直接結合する
-            callee.name = ctx.COLON2().text + callee.name;
+        if (ctx.COLON2()) {
+            callee.name = ctx.COLON2().getText() + callee.name;
         }
-        if (ctx.POINT()) { // '.' アクセスがある場合
-            // Module.func() の Module は FUNC_ID(0)
-            const moduleNameNode = this.visit(ctx.FUNC_ID(0)); // 最初のFUNC_IDがモジュール名
+        if (ctx.POINT()) {
+            const moduleNameNode = this.visit(ctx.FUNC_ID(0));
             callee.qualifier = moduleNameNode;
-            callee.name = ctx.FUNC_ID(1).text; // 2番目のFUNC_IDが関数名
         }
         const args = [];
-        if (ctx.expr()) { // 引数がある場合
+        if (ctx.expr()) {
             for (const argCtx of ctx.expr()) {
                 args.push(this.visit(argCtx));
             }
@@ -634,93 +562,53 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: getLoc(ctx)
         };
     }
-    // Special Numbers #SpecNum
-    visitIma(ctx) {
-        const nameText = ctx.IMAGINARY().symbol?.text;
-        if (nameText === undefined) {
-            throw new Error("Special number name text for IMAGINARY is undefined. This indicates a parsing error.");
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: nameText,
-            loc: getLoc(ctx.IMAGINARY())
-        };
-    }
-    visitPi(ctx) {
-        const nameText = ctx.PI().symbol?.text;
-        if (nameText === undefined) {
-            throw new Error("Special number name text for IMAGINARY is undefined. This indicates a parsing error.");
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: nameText,
-            loc: getLoc(ctx.PI())
-        };
-    }
-    visitNap(ctx) {
-        const nameText = ctx.NAPIER().symbol?.text;
-        if (nameText === undefined) {
-            throw new Error("Special number name text for IMAGINARY is undefined. This indicates a parsing error.");
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: nameText,
-            loc: getLoc(ctx.NAPIER())
-        };
-    }
-    visitBef(ctx) {
-        const nameText = ctx.BEFORE().symbol?.text;
-        if (nameText === undefined) {
-            throw new Error("Special number name text for IMAGINARY is undefined. This indicates a parsing error.");
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: nameText,
-            loc: getLoc(ctx.BEFORE())
-        };
-    }
-    visitBefN(ctx) {
-        const nameText = ctx.BEFORE_N().symbol?.text;
-        if (nameText === undefined) {
-            throw new Error("Special number name text for IMAGINARY is undefined. This indicates a parsing error.");
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: nameText,
-            loc: getLoc(ctx.BEFORE_N())
-        };
-    }
+    // Special Numbers
     visitSpecNum(ctx) {
         if (ctx instanceof testParser_js_1.ImaContext) {
             return this.visitIma(ctx);
         }
-        else if (ctx instanceof testParser_js_2.PiContext) {
+        else if (ctx instanceof testParser_js_1.PiContext) {
             return this.visitPi(ctx);
         }
-        else if (ctx instanceof testParser_js_3.NapContext) {
+        else if (ctx instanceof testParser_js_1.NapContext) {
             return this.visitNap(ctx);
         }
-        else if (ctx instanceof testParser_js_4.BefContext) {
+        else if (ctx instanceof testParser_js_1.BefContext) {
             return this.visitBef(ctx);
         }
-        else if (ctx instanceof testParser_js_5.BefNContext) {
+        else if (ctx instanceof testParser_js_1.BefNContext) {
             return this.visitBefN(ctx);
         }
-        throw new Error(`Unknown SpecialnumContext type: ${ctx.getText()}`);
+        throw new Error(`Unknown SpecNumContext type: ${ctx.getText()}`);
+    }
+    visitIma(ctx) {
+        return { kind: 'SpecialNumber', name: ctx.IMAGINARY().getText(), loc: getLoc(ctx) };
+    }
+    visitPi(ctx) {
+        return { kind: 'SpecialNumber', name: ctx.PI().getText(), loc: getLoc(ctx) };
+    }
+    visitNap(ctx) {
+        return { kind: 'SpecialNumber', name: ctx.NAPIER().getText(), loc: getLoc(ctx) };
+    }
+    visitBef(ctx) {
+        return { kind: 'SpecialNumber', name: ctx.BEFORE().getText(), loc: getLoc(ctx) };
+    }
+    visitBefN(ctx) {
+        return { kind: 'SpecialNumber', name: ctx.BEFORE_N().getText(), loc: getLoc(ctx) };
     }
     // String Literals #StringLiteral, #CharLiteral
     visitStringLiteral(ctx) {
-        const rawText = ctx.STRING2().text;
+        const rawText = ctx.STRING2().getText();
         const value = rawText.substring(1, rawText.length - 1); // クォートを除去
         return { kind: 'StringLiteral', value: value, rawText: rawText, loc: getLoc(ctx) };
     }
     visitCharLiteral(ctx) {
-        const rawText = ctx.STRING1().text;
+        const rawText = ctx.STRING1().getText();
         const value = rawText.substring(1, rawText.length - 1); // クォートを除去
         return { kind: 'CharLiteral', value: value, rawText: rawText, loc: getLoc(ctx) };
     }
     // List Literals #List (ListContext)
-    visitList(ctx) {
+    visitListExpr(ctx) {
         const elements = [];
         for (const exprCtx of ctx.expr()) {
             elements.push(this.visit(exprCtx));
@@ -731,6 +619,161 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: getLoc(ctx)
         };
     }
+    // --- ここからが未実装だった部分 ---
+    // functionDefinition #Def
+    visitDef(ctx) {
+        const name = this.visit(ctx.FUNC_ID());
+        const parameters = [];
+        if (ctx.VAR_ID()) {
+            for (const varIdCtx of ctx.VAR_ID()) {
+                parameters.push(this.visit(varIdCtx));
+            }
+        }
+        const body = this.visit(ctx.block());
+        return {
+            kind: 'FunctionDefinition',
+            name: name,
+            parameters: parameters,
+            body: body,
+            loc: getLoc(ctx)
+        };
+    }
+    // functionWhile #While
+    visitWhile(ctx) {
+        const condition = this.visit(ctx.expr(0));
+        const body = this.visit(ctx.block());
+        return {
+            kind: 'WhileStatement',
+            condition: condition,
+            body: body,
+            loc: getLoc(ctx)
+        };
+    }
+    // functionDo #Do
+    visitDo(ctx) {
+        const body = this.visit(ctx.block());
+        const condition = this.visit(ctx.expr(0));
+        return {
+            kind: 'DoWhileStatement',
+            body: body,
+            condition: condition,
+            loc: getLoc(ctx)
+        };
+    }
+    // functionReturn #Return
+    visitReturn(ctx) {
+        const value = ctx.expr() ? this.visit(ctx.expr()) : undefined;
+        return {
+            kind: 'ReturnStatement',
+            value: value,
+            loc: getLoc(ctx)
+        };
+    }
+    // functionBreak #Break
+    visitBreak(ctx) {
+        return {
+            kind: 'BreakStatement',
+            loc: getLoc(ctx)
+        };
+    }
+    // functionContinue #Continue
+    visitContinue(ctx) {
+        return {
+            kind: 'ContinueStatement',
+            loc: getLoc(ctx)
+        };
+    }
+    // functionStruct #Strct
+    visitStrct(ctx) {
+        const name = this.visit(ctx.getChild(1));
+        const members = [];
+        // メンバーは3番目の子から始まる
+        for (let i = 3; i < ctx.getChildCount() - 2; i += 2) {
+            members.push(this.visit(ctx.getChild(i)));
+        }
+        return {
+            kind: 'StructStatement',
+            name: name,
+            members: members,
+            loc: getLoc(ctx)
+        };
+    }
+    // ModuleStatement 関連
+    visitModuleAssign(ctx) {
+        const scopeToken = ctx.EXTERN() || ctx.STATIC() || ctx.GLOBAL() || ctx.LOCAL();
+        const variables = [];
+        for (const varIdCtx of ctx.VAR_ID()) {
+            variables.push(this.visit(varIdCtx));
+        }
+        return {
+            kind: 'ModuleVariableDeclaration',
+            scope: scopeToken.getText(),
+            variables: variables,
+            loc: getLoc(ctx)
+        };
+    }
+    visitModuleFunction(ctx) {
+        const functions = [];
+        for (const funcIdCtx of ctx.FUNC_ID()) {
+            functions.push(this.visit(funcIdCtx));
+        }
+        return {
+            kind: 'LocalFunctionDeclaration',
+            functions: functions,
+            loc: getLoc(ctx)
+        };
+    }
+    visitModuleStart(ctx) {
+        return {
+            kind: 'ModuleDeclaration',
+            name: this.visit(ctx.FUNC_ID()),
+            loc: getLoc(ctx)
+        };
+    }
+    visitModuleEnd(ctx) {
+        return {
+            kind: 'EndModule',
+            loc: getLoc(ctx)
+        };
+    }
+    // 二項演算子 (Compare, And, Or, QECompare, QEand, QEor)
+    visitBinaryOp(ctx, operandGetter) {
+        let left = this.visit(operandGetter(0));
+        for (let i = 1;; i++) {
+            const operand = operandGetter(i);
+            if (!operand)
+                break;
+            const operator = ctx.getChild(2 * i - 1);
+            const right = this.visit(operand);
+            left = {
+                kind: 'BinaryOperation',
+                operator: operator.getText(),
+                left: left,
+                right: right,
+                loc: getLoc(operator)
+            };
+        }
+        return left;
+    }
+    visitQEor(ctx) {
+        return this.visitBinaryOp(ctx, (i) => ctx.qeAndExpr(i));
+    }
+    visitQEand(ctx) {
+        return this.visitBinaryOp(ctx, (i) => ctx.qeCompareExpr(i));
+    }
+    visitQECompare(ctx) {
+        return this.visitBinaryOp(ctx, (i) => ctx.orExpr(i));
+    }
+    visitOr(ctx) {
+        return this.visitBinaryOp(ctx, (i) => ctx.andExpr(i));
+    }
+    visitAnd(ctx) {
+        return this.visitBinaryOp(ctx, (i) => ctx.compareExpr(i));
+    }
+    visitCompare(ctx) {
+        return this.visitBinaryOp(ctx, (i) => ctx.addSubExpr(i));
+    }
 }
 exports.AsirASTBuilder = AsirASTBuilder;
+'';
 //# sourceMappingURL=testAsirASTBuilder.js.map
