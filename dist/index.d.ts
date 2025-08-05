@@ -3,3 +3,4 @@ export * from './testAst.js';
 export { AsirASTBuilder } from './testAsirASTBuilder.js';
 export { CustomErrorListener } from './customErrorListener.js';
 export type { SyntaxErrorInfo, AmbiguityInfo, DiagnosticInfo } from './customErrorListener.js';
+export { ASTBuilderError } from './errors.js';

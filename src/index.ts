@@ -11,3 +11,4 @@ export { AsirASTBuilder } from './testAsirASTBuilder.js';
 // エラーリスナーとエラー情報の型（デバッグや詳細なエラーハンドリング向け）
 export { CustomErrorListener } from './customErrorListener.js';
 export type { SyntaxErrorInfo, AmbiguityInfo, DiagnosticInfo } from './customErrorListener.js';
+export { ASTBuilderError } from './errors.js';

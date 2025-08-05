@@ -4,8 +4,9 @@ import { testParser } from './.antlr/testParser.js';
 import { AsirASTBuilder } from './testAsirASTBuilder.js';
 import { CustomErrorListener } from './customErrorListener.js';
 import * as fs from 'fs';
+import { ASTBuilderError } from './errors.js';
 
-export function parseAsirCodeAndBuildAST(code: string) {
+export function parseAsirCodeAndBuildAST(code: string): { ast: any | null; errors: any[]; } {
     console.log("Parser function started for code:", code);
     const chars = CharStream.fromString(code);
     const lexer = new testLexer(chars);
@@ -47,7 +48,7 @@ export function parseAsirCodeAndBuildAST(code: string) {
 
     if (errors.length > 0) {
         console.log("\nAST construction skipped due to syntax errors.");
-        return null;
+        return { ast: null, errors: errors };
     }
 
     console.log("--- Raw Parse Tree ---");
@@ -56,12 +57,23 @@ export function parseAsirCodeAndBuildAST(code: string) {
 
     console.log("--- AST Building ---");
     const astBuilder = new AsirASTBuilder();
-    const ast = astBuilder.visit(tree);
+    let ast = null;
+    try {
+        ast = astBuilder.visit(tree);
+    } catch (e) {
+        if (e instanceof ASTBuilderError) {
+            console.error(`\nAST Build Error: ${e.message}`);
+            // e.loc は ASTBuilderError のコンストラクタでメッセージに含まれるため、ここでは不要
+        } else {
+            console.error(`\nAn unexpected error occurred during AST building: ${e}`);
+        }
+        return { ast: null, errors: errors }; // AST構築失敗時もエラー情報を返す
+    }
 
     console.log("--- Constructed AST ---");
     console.log(JSON.stringify(ast, null, 2));
 
-    return ast;
+    return { ast: ast, errors: errors };
 }
 
 // --- Main execution ---

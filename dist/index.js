@@ -14,7 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CustomErrorListener = exports.AsirASTBuilder = exports.parseAsirCodeAndBuildAST = void 0;
+exports.ASTBuilderError = exports.CustomErrorListener = exports.AsirASTBuilder = exports.parseAsirCodeAndBuildAST = void 0;
 // 公開する主要な関数
 var run_js_1 = require("./run.js");
 Object.defineProperty(exports, "parseAsirCodeAndBuildAST", { enumerable: true, get: function () { return run_js_1.parseAsirCodeAndBuildAST; } });
@@ -26,4 +26,6 @@ Object.defineProperty(exports, "AsirASTBuilder", { enumerable: true, get: functi
 // エラーリスナーとエラー情報の型（デバッグや詳細なエラーハンドリング向け）
 var customErrorListener_js_1 = require("./customErrorListener.js");
 Object.defineProperty(exports, "CustomErrorListener", { enumerable: true, get: function () { return customErrorListener_js_1.CustomErrorListener; } });
+var errors_js_1 = require("./errors.js");
+Object.defineProperty(exports, "ASTBuilderError", { enumerable: true, get: function () { return errors_js_1.ASTBuilderError; } });
 //# sourceMappingURL=index.js.map
