@@ -2,7 +2,6 @@ import { ErrorNode, ParseTreeListener, ParserRuleContext, TerminalNode } from "a
 import { ProgContext } from "./testParser.js";
 import { ExprStatementContext } from "./testParser.js";
 import { EmptyLineStatementContext } from "./testParser.js";
-import { AssignStatementContext } from "./testParser.js";
 import { DefinitionStatementContext } from "./testParser.js";
 import { IfStatementContext } from "./testParser.js";
 import { ForStatementContext } from "./testParser.js";
@@ -28,6 +27,10 @@ import { ModuleFunctionContext } from "./testParser.js";
 import { ModuleStartContext } from "./testParser.js";
 import { ModuleEndContext } from "./testParser.js";
 import { MainContext } from "./testParser.js";
+import { NoAssignmentContext } from "./testParser.js";
+import { AssignContext } from "./testParser.js";
+import { StructAssignContext } from "./testParser.js";
+import { ListAssignContext } from "./testParser.js";
 import { TernaryContext } from "./testParser.js";
 import { QEorContext } from "./testParser.js";
 import { QEandContext } from "./testParser.js";
@@ -39,7 +42,11 @@ import { AddSubContext } from "./testParser.js";
 import { MulDivSurContext } from "./testParser.js";
 import { UnaryMinusContext } from "./testParser.js";
 import { NotExprContext } from "./testParser.js";
-import { PowerExprRuleContext } from "./testParser.js";
+import { PreIncrementContext } from "./testParser.js";
+import { PreDecrementContext } from "./testParser.js";
+import { PostFixExprContext } from "./testParser.js";
+import { PowExprContext } from "./testParser.js";
+import { PostFixContext } from "./testParser.js";
 import { PowerContext } from "./testParser.js";
 import { IndexAccessContext } from "./testParser.js";
 import { RealContext } from "./testParser.js";
@@ -67,9 +74,6 @@ import { BefNContext } from "./testParser.js";
 import { ListExprContext } from "./testParser.js";
 import { SentenceContext } from "./testParser.js";
 import { Sentence1Context } from "./testParser.js";
-import { AssignContext } from "./testParser.js";
-import { StructAssignContext } from "./testParser.js";
-import { ListAssignContext } from "./testParser.js";
 /**
  * This interface defines a complete listener for a parse tree produced by
  * `testParser`.
@@ -109,18 +113,6 @@ export declare class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitEmptyLineStatement?: (ctx: EmptyLineStatementContext) => void;
-    /**
-     * Enter a parse tree produced by the `AssignStatement`
-     * labeled alternative in `testParser.statement`.
-     * @param ctx the parse tree
-     */
-    enterAssignStatement?: (ctx: AssignStatementContext) => void;
-    /**
-     * Exit a parse tree produced by the `AssignStatement`
-     * labeled alternative in `testParser.statement`.
-     * @param ctx the parse tree
-     */
-    exitAssignStatement?: (ctx: AssignStatementContext) => void;
     /**
      * Enter a parse tree produced by the `DefinitionStatement`
      * labeled alternative in `testParser.statement`.
@@ -422,6 +414,54 @@ export declare class testListener implements ParseTreeListener {
      */
     exitMain?: (ctx: MainContext) => void;
     /**
+     * Enter a parse tree produced by the `NoAssignment`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     */
+    enterNoAssignment?: (ctx: NoAssignmentContext) => void;
+    /**
+     * Exit a parse tree produced by the `NoAssignment`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     */
+    exitNoAssignment?: (ctx: NoAssignmentContext) => void;
+    /**
+     * Enter a parse tree produced by the `Assign`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     */
+    enterAssign?: (ctx: AssignContext) => void;
+    /**
+     * Exit a parse tree produced by the `Assign`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     */
+    exitAssign?: (ctx: AssignContext) => void;
+    /**
+     * Enter a parse tree produced by the `StructAssign`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     */
+    enterStructAssign?: (ctx: StructAssignContext) => void;
+    /**
+     * Exit a parse tree produced by the `StructAssign`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     */
+    exitStructAssign?: (ctx: StructAssignContext) => void;
+    /**
+     * Enter a parse tree produced by the `ListAssign`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     */
+    enterListAssign?: (ctx: ListAssignContext) => void;
+    /**
+     * Exit a parse tree produced by the `ListAssign`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     */
+    exitListAssign?: (ctx: ListAssignContext) => void;
+    /**
      * Enter a parse tree produced by the `Ternary`
      * labeled alternative in `testParser.ternaryExpr`.
      * @param ctx the parse tree
@@ -554,17 +594,65 @@ export declare class testListener implements ParseTreeListener {
      */
     exitNotExpr?: (ctx: NotExprContext) => void;
     /**
-     * Enter a parse tree produced by the `PowerExprRule`
+     * Enter a parse tree produced by the `PreIncrement`
      * labeled alternative in `testParser.unaryExpr`.
      * @param ctx the parse tree
      */
-    enterPowerExprRule?: (ctx: PowerExprRuleContext) => void;
+    enterPreIncrement?: (ctx: PreIncrementContext) => void;
     /**
-     * Exit a parse tree produced by the `PowerExprRule`
+     * Exit a parse tree produced by the `PreIncrement`
      * labeled alternative in `testParser.unaryExpr`.
      * @param ctx the parse tree
      */
-    exitPowerExprRule?: (ctx: PowerExprRuleContext) => void;
+    exitPreIncrement?: (ctx: PreIncrementContext) => void;
+    /**
+     * Enter a parse tree produced by the `PreDecrement`
+     * labeled alternative in `testParser.unaryExpr`.
+     * @param ctx the parse tree
+     */
+    enterPreDecrement?: (ctx: PreDecrementContext) => void;
+    /**
+     * Exit a parse tree produced by the `PreDecrement`
+     * labeled alternative in `testParser.unaryExpr`.
+     * @param ctx the parse tree
+     */
+    exitPreDecrement?: (ctx: PreDecrementContext) => void;
+    /**
+     * Enter a parse tree produced by the `PostFixExpr`
+     * labeled alternative in `testParser.unaryExpr`.
+     * @param ctx the parse tree
+     */
+    enterPostFixExpr?: (ctx: PostFixExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `PostFixExpr`
+     * labeled alternative in `testParser.unaryExpr`.
+     * @param ctx the parse tree
+     */
+    exitPostFixExpr?: (ctx: PostFixExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `PowExpr`
+     * labeled alternative in `testParser.unaryExpr`.
+     * @param ctx the parse tree
+     */
+    enterPowExpr?: (ctx: PowExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `PowExpr`
+     * labeled alternative in `testParser.unaryExpr`.
+     * @param ctx the parse tree
+     */
+    exitPowExpr?: (ctx: PowExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `PostFix`
+     * labeled alternative in `testParser.postfixExpr`.
+     * @param ctx the parse tree
+     */
+    enterPostFix?: (ctx: PostFixContext) => void;
+    /**
+     * Exit a parse tree produced by the `PostFix`
+     * labeled alternative in `testParser.postfixExpr`.
+     * @param ctx the parse tree
+     */
+    exitPostFix?: (ctx: PostFixContext) => void;
     /**
      * Enter a parse tree produced by the `Power`
      * labeled alternative in `testParser.powerExpr`.
@@ -889,42 +977,6 @@ export declare class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitSentence1?: (ctx: Sentence1Context) => void;
-    /**
-     * Enter a parse tree produced by the `Assign`
-     * labeled alternative in `testParser.assignment`.
-     * @param ctx the parse tree
-     */
-    enterAssign?: (ctx: AssignContext) => void;
-    /**
-     * Exit a parse tree produced by the `Assign`
-     * labeled alternative in `testParser.assignment`.
-     * @param ctx the parse tree
-     */
-    exitAssign?: (ctx: AssignContext) => void;
-    /**
-     * Enter a parse tree produced by the `StructAssign`
-     * labeled alternative in `testParser.assignment`.
-     * @param ctx the parse tree
-     */
-    enterStructAssign?: (ctx: StructAssignContext) => void;
-    /**
-     * Exit a parse tree produced by the `StructAssign`
-     * labeled alternative in `testParser.assignment`.
-     * @param ctx the parse tree
-     */
-    exitStructAssign?: (ctx: StructAssignContext) => void;
-    /**
-     * Enter a parse tree produced by the `ListAssign`
-     * labeled alternative in `testParser.assignment`.
-     * @param ctx the parse tree
-     */
-    enterListAssign?: (ctx: ListAssignContext) => void;
-    /**
-     * Exit a parse tree produced by the `ListAssign`
-     * labeled alternative in `testParser.assignment`.
-     * @param ctx the parse tree
-     */
-    exitListAssign?: (ctx: ListAssignContext) => void;
     visitTerminal(node: TerminalNode): void;
     visitErrorNode(node: ErrorNode): void;
     enterEveryRule(node: ParserRuleContext): void;

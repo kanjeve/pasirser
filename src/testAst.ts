@@ -25,16 +25,16 @@ export type ExpressionNode =
     | ParenExpressionNode
     | SpecialNumberNode
     | ListLiteralNode
-    | DistributedPolynomialLiteralNode // Added for dpoly
+    | DistributedPolynomialLiteralNode
+    | AssignmentExpressionNode 
+    | StructMemberAssignmentNode
+    | ListDestructuringAssignmentNode
     ;
 
 // 3. 文を表すノードのユニオン型
 export type StatementNode =
     | ExpressionStatementNode
     | EmptyStatementNode
-    | AssignmentStatementNode
-    | StructMemberAssignmentNode      // Added for for-loop initializers
-    | ListDestructuringAssignmentNode // Added for for-loop initializers
     | DefinitionStatementNode
     | IfStatementNode
     | ForStatementNode
@@ -123,11 +123,12 @@ export interface BinaryOperationNode extends ASTNode {
     right: ExpressionNode;
 }
 
-// 単項演算 (例: -, !)
+// 単項演算 (例: -, !, ++, --)
 export interface UnaryOperationNode extends ASTNode {
     kind: 'UnaryOperation';
     operator: string;
     operand: ExpressionNode;
+    isPostfix?: boolean; // For ++ and --
 }
 
 // べき乗演算
@@ -173,23 +174,11 @@ export interface ListLiteralNode extends ASTNode {
     elements: ExpressionNode[];
 }
 
+// --- 式ノード (代入など) ---
 
-// --- 文ノード ---
-
-// 式文
-export interface ExpressionStatementNode extends ASTNode {
-    kind: 'ExpressionStatement';
-    expression: ExpressionNode;
-}
-
-// 空の文
-export interface EmptyStatementNode extends ASTNode {
-    kind: 'EmptyStatement';
-}
-
-// 代入文
-export interface AssignmentStatementNode extends ASTNode {
-    kind: 'AssignmentStatement';
+// 代入式
+export interface AssignmentExpressionNode extends ASTNode {
+    kind: 'AssignmentExpression';
     left: ExpressionNode; // 代入される左辺
     operator: string;
     right: ExpressionNode; // 代入する右辺
@@ -212,6 +201,20 @@ export interface ListDestructuringAssignmentNode extends ASTNode {
     right: ExpressionNode; // 代入する右辺
 }
 
+
+// --- 文ノード ---
+
+// 式文
+export interface ExpressionStatementNode extends ASTNode {
+    kind: 'ExpressionStatement';
+    expression: ExpressionNode;
+}
+
+// 空の文
+export interface EmptyStatementNode extends ASTNode {
+    kind: 'EmptyStatement';
+}
+
 // def文
 export interface DefinitionStatementNode extends ASTNode {
     kind: 'FunctionDefinition';
@@ -231,7 +234,7 @@ export interface IfStatementNode extends ASTNode {
 // For文
 export interface ForStatementNode extends ASTNode {
     kind: 'ForStatement';
-    initializers: (AssignmentStatementNode | StructMemberAssignmentNode | ListDestructuringAssignmentNode)[]; // 初期化ステートメントのリスト
+    initializers: ExpressionNode[]; // 初期化ステートメントのリスト
     conditions: ExpressionNode[]; // 条件式のリスト
     updaters: ExpressionNode[]; // 更新式のリスト
     body: StatementNode; // ループ本体のブロック
@@ -302,4 +305,3 @@ export interface BlockNode extends ASTNode {
     kind: 'Block';
     statements: StatementNode[];
 }
-

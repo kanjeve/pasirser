@@ -2,7 +2,6 @@ import { AbstractParseTreeVisitor } from "antlr4ng";
 import { ProgContext } from "./testParser.js";
 import { ExprStatementContext } from "./testParser.js";
 import { EmptyLineStatementContext } from "./testParser.js";
-import { AssignStatementContext } from "./testParser.js";
 import { DefinitionStatementContext } from "./testParser.js";
 import { IfStatementContext } from "./testParser.js";
 import { ForStatementContext } from "./testParser.js";
@@ -28,6 +27,10 @@ import { ModuleFunctionContext } from "./testParser.js";
 import { ModuleStartContext } from "./testParser.js";
 import { ModuleEndContext } from "./testParser.js";
 import { MainContext } from "./testParser.js";
+import { NoAssignmentContext } from "./testParser.js";
+import { AssignContext } from "./testParser.js";
+import { StructAssignContext } from "./testParser.js";
+import { ListAssignContext } from "./testParser.js";
 import { TernaryContext } from "./testParser.js";
 import { QEorContext } from "./testParser.js";
 import { QEandContext } from "./testParser.js";
@@ -39,7 +42,11 @@ import { AddSubContext } from "./testParser.js";
 import { MulDivSurContext } from "./testParser.js";
 import { UnaryMinusContext } from "./testParser.js";
 import { NotExprContext } from "./testParser.js";
-import { PowerExprRuleContext } from "./testParser.js";
+import { PreIncrementContext } from "./testParser.js";
+import { PreDecrementContext } from "./testParser.js";
+import { PostFixExprContext } from "./testParser.js";
+import { PowExprContext } from "./testParser.js";
+import { PostFixContext } from "./testParser.js";
 import { PowerContext } from "./testParser.js";
 import { IndexAccessContext } from "./testParser.js";
 import { RealContext } from "./testParser.js";
@@ -67,9 +74,6 @@ import { BefNContext } from "./testParser.js";
 import { ListExprContext } from "./testParser.js";
 import { SentenceContext } from "./testParser.js";
 import { Sentence1Context } from "./testParser.js";
-import { AssignContext } from "./testParser.js";
-import { StructAssignContext } from "./testParser.js";
-import { ListAssignContext } from "./testParser.js";
 /**
  * This interface defines a complete generic visitor for a parse tree produced
  * by `testParser`.
@@ -98,13 +102,6 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      * @return the visitor result
      */
     visitEmptyLineStatement?: (ctx: EmptyLineStatementContext) => Result;
-    /**
-     * Visit a parse tree produced by the `AssignStatement`
-     * labeled alternative in `testParser.statement`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitAssignStatement?: (ctx: AssignStatementContext) => Result;
     /**
      * Visit a parse tree produced by the `DefinitionStatement`
      * labeled alternative in `testParser.statement`.
@@ -281,6 +278,34 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      */
     visitMain?: (ctx: MainContext) => Result;
     /**
+     * Visit a parse tree produced by the `NoAssignment`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitNoAssignment?: (ctx: NoAssignmentContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Assign`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitAssign?: (ctx: AssignContext) => Result;
+    /**
+     * Visit a parse tree produced by the `StructAssign`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitStructAssign?: (ctx: StructAssignContext) => Result;
+    /**
+     * Visit a parse tree produced by the `ListAssign`
+     * labeled alternative in `testParser.assignmentExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitListAssign?: (ctx: ListAssignContext) => Result;
+    /**
      * Visit a parse tree produced by the `Ternary`
      * labeled alternative in `testParser.ternaryExpr`.
      * @param ctx the parse tree
@@ -358,12 +383,40 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      */
     visitNotExpr?: (ctx: NotExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `PowerExprRule`
+     * Visit a parse tree produced by the `PreIncrement`
      * labeled alternative in `testParser.unaryExpr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitPowerExprRule?: (ctx: PowerExprRuleContext) => Result;
+    visitPreIncrement?: (ctx: PreIncrementContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PreDecrement`
+     * labeled alternative in `testParser.unaryExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPreDecrement?: (ctx: PreDecrementContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PostFixExpr`
+     * labeled alternative in `testParser.unaryExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPostFixExpr?: (ctx: PostFixExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PowExpr`
+     * labeled alternative in `testParser.unaryExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPowExpr?: (ctx: PowExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PostFix`
+     * labeled alternative in `testParser.postfixExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPostFix?: (ctx: PostFixContext) => Result;
     /**
      * Visit a parse tree produced by the `Power`
      * labeled alternative in `testParser.powerExpr`.
@@ -553,25 +606,4 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      * @return the visitor result
      */
     visitSentence1?: (ctx: Sentence1Context) => Result;
-    /**
-     * Visit a parse tree produced by the `Assign`
-     * labeled alternative in `testParser.assignment`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitAssign?: (ctx: AssignContext) => Result;
-    /**
-     * Visit a parse tree produced by the `StructAssign`
-     * labeled alternative in `testParser.assignment`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitStructAssign?: (ctx: StructAssignContext) => Result;
-    /**
-     * Visit a parse tree produced by the `ListAssign`
-     * labeled alternative in `testParser.assignment`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitListAssign?: (ctx: ListAssignContext) => Result;
 }

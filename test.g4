@@ -5,7 +5,6 @@ prog : statement* EOF;
 
 statement : expr (SEMI | DOLLAR)       #ExprStatement
           | (SEMI | DOLLAR)            #EmptyLineStatement
-          | assignment (SEMI | DOLLAR) #AssignStatement
           | functionDefinition         #DefinitionStatement
           | functionIf                 #IfStatement
           | functionFor                #ForStatement
@@ -19,9 +18,9 @@ statement : expr (SEMI | DOLLAR)       #ExprStatement
           ;
 
 // キーワード
-functionDefinition : DEF FUNC_ID LPAREN (VAR_ID (COMMA VAR_ID)*)? RPAREN block #Def; 
+functionDefinition : DEF FUNC_ID LPAREN (VAR_ID (COMMA VAR_ID)*)? RPAREN block #Def;
 functionIf : IF LPAREN expr RPAREN block (ELSE (block | functionIf))? #If;
-functionFor : FOR LPAREN (assignment (COMMA assignment)*)? SEMI (expr (COMMA expr)*)? SEMI (expr (COMMA expr)*)? RPAREN block #For;
+functionFor : FOR LPAREN (expr (COMMA expr)*)? SEMI (expr (COMMA expr)*)? SEMI (expr (COMMA expr)*)? RPAREN block #For;
 functionWhile : WHILE LPAREN (expr (COMMA expr)*)? RPAREN block #While;
 functionDo : DO block WHILE LPAREN (expr (COMMA expr)*)? RPAREN #Do;
 functionReturn : RETURN expr? (SEMI | DOLLAR) #Return;
@@ -37,7 +36,13 @@ functionModule : (EXTERN | STATIC | GLOBAL |LOCAL) VAR_ID (COMMA VAR_ID)* (SEMI 
                ;
 
 // 演算子の優先順位を考慮したexprルール
-expr : ternaryExpr #Main;
+expr : assignmentExpr #Main;
+
+assignmentExpr : ternaryExpr                                                                                                            #NoAssignment
+               | VAR_ID (LBRACKET expr RBRACKET)* (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) assignmentExpr         #Assign
+               | VAR_ID (ARROW (VAR_ID | FUNC_ID))+ (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) assignmentExpr       #StructAssign
+               | LBRACKET VAR_ID (COMMA VAR_ID)* RBRACKET (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) assignmentExpr #ListAssign
+               ;
 
 ternaryExpr : qeOrExpr (QUESTION expr COLON expr)? #Ternary;
 
@@ -59,10 +64,15 @@ mulDivSurExpr : unaryExpr ((MULT | DIV | SUR) unaryExpr)* #MulDivSur;
 
 unaryExpr : MINUS unaryExpr         #UnaryMinus
           | NOT unaryExpr           #NotExpr
-          | powerExpr               #PowerExprRule
+          | INC VAR_ID              #PreIncrement
+          | DEC VAR_ID              #PreDecrement
+          | postfixExpr             #PostFixExpr
+          | powerExpr               #PowExpr
           ;
 
-powerExpr : indexAccessExpr (POWER powerExpr)? #Power; 
+postfixExpr : powerExpr (INC | DEC) #PostFix; 
+
+powerExpr : indexAccessExpr (POWER powerExpr)? #Power;
 
 indexAccessExpr : primaryExpr (LBRACKET expr RBRACKET)* #IndexAccess;
 
@@ -92,7 +102,6 @@ id   : VAR_ID                   #VId
      | FUNC_ID (POINT FUNC_ID)? #FId
      | VAR_2                    #V2Id
      ;
-// complex : num PLUS num MULT IMAGINARY; 
 
 specialnum : IMAGINARY     #Ima
            | PI            #Pi
@@ -106,11 +115,6 @@ list : LBRACKET (expr (COMMA expr)*)? RBRACKET #ListExpr;
 block : LBRANCE statement* RBRANCE #Sentence
       | statement                  #Sentence1
       ;
-
-assignment : VAR_ID (LBRACKET expr RBRACKET)* (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) expr #Assign
-           | VAR_ID (ARROW (VAR_ID | FUNC_ID))+ (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) expr #StructAssign
-           | LBRACKET VAR_ID (COMMA VAR_ID)* RBRACKET (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) expr #ListAssign
-           ;
 
 // --- Lexer Rules ---
 LTLT     : '<<';
@@ -153,7 +157,7 @@ SEMI     : ';';
 DOLLAR   : '$';
 COMMA    : ',';
 FLOAT    : [0-9]+ '.' [0-9]+;
-EXP      : [Ee][+\-]?[0-9]*; 
+EXP      : [Ee][+\-]?[0-9]*;
 INT      : [0-9]+;
 POINT    : '.';
 IMAGINARY: '@i';
@@ -186,8 +190,8 @@ GLOBAL   : 'global';
 LOCAL    : 'local';
 LOCALF   : 'localf';
 VAR_2    : '@';
-FUNC_ID  : [a-z]([a-zA-Z0-9_])*;
-VAR_ID   : [A-Z]([a-zA-Z0-9_])*;
+FUNC_ID  : [a-z]([a-zA-Z0-9_])*; 
+VAR_ID   : [A-Z]([a-zA-Z0-9_])*; 
 NEWLINE  : '\n' -> skip;
 WS       : [ \t]+ -> skip;
 COMMENT  : '/*' .*? '*/' -> skip;

@@ -96,28 +96,29 @@ export declare class testParser extends antlr.Parser {
     static readonly RULE_functionCall = 11;
     static readonly RULE_functionModule = 12;
     static readonly RULE_expr = 13;
-    static readonly RULE_ternaryExpr = 14;
-    static readonly RULE_qeOrExpr = 15;
-    static readonly RULE_qeAndExpr = 16;
-    static readonly RULE_qeCompareExpr = 17;
-    static readonly RULE_orExpr = 18;
-    static readonly RULE_andExpr = 19;
-    static readonly RULE_compareExpr = 20;
-    static readonly RULE_addSubExpr = 21;
-    static readonly RULE_mulDivSurExpr = 22;
-    static readonly RULE_unaryExpr = 23;
-    static readonly RULE_powerExpr = 24;
-    static readonly RULE_indexAccessExpr = 25;
-    static readonly RULE_primaryExpr = 26;
-    static readonly RULE_dpoly = 27;
-    static readonly RULE_rational = 28;
-    static readonly RULE_decimal = 29;
-    static readonly RULE_num = 30;
-    static readonly RULE_id = 31;
-    static readonly RULE_specialnum = 32;
-    static readonly RULE_list = 33;
-    static readonly RULE_block = 34;
-    static readonly RULE_assignment = 35;
+    static readonly RULE_assignmentExpr = 14;
+    static readonly RULE_ternaryExpr = 15;
+    static readonly RULE_qeOrExpr = 16;
+    static readonly RULE_qeAndExpr = 17;
+    static readonly RULE_qeCompareExpr = 18;
+    static readonly RULE_orExpr = 19;
+    static readonly RULE_andExpr = 20;
+    static readonly RULE_compareExpr = 21;
+    static readonly RULE_addSubExpr = 22;
+    static readonly RULE_mulDivSurExpr = 23;
+    static readonly RULE_unaryExpr = 24;
+    static readonly RULE_postfixExpr = 25;
+    static readonly RULE_powerExpr = 26;
+    static readonly RULE_indexAccessExpr = 27;
+    static readonly RULE_primaryExpr = 28;
+    static readonly RULE_dpoly = 29;
+    static readonly RULE_rational = 30;
+    static readonly RULE_decimal = 31;
+    static readonly RULE_num = 32;
+    static readonly RULE_id = 33;
+    static readonly RULE_specialnum = 34;
+    static readonly RULE_list = 35;
+    static readonly RULE_block = 36;
     static readonly literalNames: (string | null)[];
     static readonly symbolicNames: (string | null)[];
     static readonly ruleNames: string[];
@@ -142,6 +143,7 @@ export declare class testParser extends antlr.Parser {
     functionCall(): FunctionCallContext;
     functionModule(): FunctionModuleContext;
     expr(): ExprContext;
+    assignmentExpr(): AssignmentExprContext;
     ternaryExpr(): TernaryExprContext;
     qeOrExpr(): QeOrExprContext;
     qeAndExpr(): QeAndExprContext;
@@ -152,6 +154,7 @@ export declare class testParser extends antlr.Parser {
     addSubExpr(): AddSubExprContext;
     mulDivSurExpr(): MulDivSurExprContext;
     unaryExpr(): UnaryExprContext;
+    postfixExpr(): PostfixExprContext;
     powerExpr(): PowerExprContext;
     indexAccessExpr(): IndexAccessExprContext;
     primaryExpr(): PrimaryExprContext;
@@ -163,7 +166,6 @@ export declare class testParser extends antlr.Parser {
     specialnum(): SpecialnumContext;
     list(): ListContext;
     block(): BlockContext;
-    assignment(): AssignmentContext;
     static readonly _serializedATN: number[];
     private static __ATN;
     static get _ATN(): antlr.ATN;
@@ -186,44 +188,6 @@ export declare class StatementContext extends antlr.ParserRuleContext {
     get ruleIndex(): number;
     copyFrom(ctx: StatementContext): void;
 }
-export declare class DoStatementContext extends StatementContext {
-    constructor(ctx: StatementContext);
-    functionDo(): FunctionDoContext;
-    enterRule(listener: testListener): void;
-    exitRule(listener: testListener): void;
-    accept<Result>(visitor: testVisitor<Result>): Result | null;
-}
-export declare class ModuleStatementContext extends StatementContext {
-    constructor(ctx: StatementContext);
-    functionModule(): FunctionModuleContext;
-    enterRule(listener: testListener): void;
-    exitRule(listener: testListener): void;
-    accept<Result>(visitor: testVisitor<Result>): Result | null;
-}
-export declare class WhileStatementContext extends StatementContext {
-    constructor(ctx: StatementContext);
-    functionWhile(): FunctionWhileContext;
-    enterRule(listener: testListener): void;
-    exitRule(listener: testListener): void;
-    accept<Result>(visitor: testVisitor<Result>): Result | null;
-}
-export declare class AssignStatementContext extends StatementContext {
-    constructor(ctx: StatementContext);
-    assignment(): AssignmentContext;
-    SEMI(): antlr.TerminalNode | null;
-    DOLLAR(): antlr.TerminalNode | null;
-    enterRule(listener: testListener): void;
-    exitRule(listener: testListener): void;
-    accept<Result>(visitor: testVisitor<Result>): Result | null;
-}
-export declare class EmptyLineStatementContext extends StatementContext {
-    constructor(ctx: StatementContext);
-    SEMI(): antlr.TerminalNode | null;
-    DOLLAR(): antlr.TerminalNode | null;
-    enterRule(listener: testListener): void;
-    exitRule(listener: testListener): void;
-    accept<Result>(visitor: testVisitor<Result>): Result | null;
-}
 export declare class BreakStatementContext extends StatementContext {
     constructor(ctx: StatementContext);
     functionBreak(): FunctionBreakContext;
@@ -241,6 +205,20 @@ export declare class IfStatementContext extends StatementContext {
 export declare class DefinitionStatementContext extends StatementContext {
     constructor(ctx: StatementContext);
     functionDefinition(): FunctionDefinitionContext;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class DoStatementContext extends StatementContext {
+    constructor(ctx: StatementContext);
+    functionDo(): FunctionDoContext;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class ModuleStatementContext extends StatementContext {
+    constructor(ctx: StatementContext);
+    functionModule(): FunctionModuleContext;
     enterRule(listener: testListener): void;
     exitRule(listener: testListener): void;
     accept<Result>(visitor: testVisitor<Result>): Result | null;
@@ -268,6 +246,13 @@ export declare class ReturnStatementContext extends StatementContext {
     exitRule(listener: testListener): void;
     accept<Result>(visitor: testVisitor<Result>): Result | null;
 }
+export declare class WhileStatementContext extends StatementContext {
+    constructor(ctx: StatementContext);
+    functionWhile(): FunctionWhileContext;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
 export declare class ForStatementContext extends StatementContext {
     constructor(ctx: StatementContext);
     functionFor(): FunctionForContext;
@@ -278,6 +263,14 @@ export declare class ForStatementContext extends StatementContext {
 export declare class ContinueStatementContext extends StatementContext {
     constructor(ctx: StatementContext);
     functionContinue(): FunctionContinueContext;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class EmptyLineStatementContext extends StatementContext {
+    constructor(ctx: StatementContext);
+    SEMI(): antlr.TerminalNode | null;
+    DOLLAR(): antlr.TerminalNode | null;
     enterRule(listener: testListener): void;
     exitRule(listener: testListener): void;
     accept<Result>(visitor: testVisitor<Result>): Result | null;
@@ -334,8 +327,6 @@ export declare class ForContext extends FunctionForContext {
     SEMI(i: number): antlr.TerminalNode | null;
     RPAREN(): antlr.TerminalNode;
     block(): BlockContext;
-    assignment(): AssignmentContext[];
-    assignment(i: number): AssignmentContext | null;
     expr(): ExprContext[];
     expr(i: number): ExprContext | null;
     COMMA(): antlr.TerminalNode[];
@@ -529,7 +520,80 @@ export declare class ExprContext extends antlr.ParserRuleContext {
 }
 export declare class MainContext extends ExprContext {
     constructor(ctx: ExprContext);
+    assignmentExpr(): AssignmentExprContext;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class AssignmentExprContext extends antlr.ParserRuleContext {
+    constructor(parent: antlr.ParserRuleContext | null, invokingState: number);
+    get ruleIndex(): number;
+    copyFrom(ctx: AssignmentExprContext): void;
+}
+export declare class ListAssignContext extends AssignmentExprContext {
+    constructor(ctx: AssignmentExprContext);
+    LBRACKET(): antlr.TerminalNode;
+    VAR_ID(): antlr.TerminalNode[];
+    VAR_ID(i: number): antlr.TerminalNode | null;
+    RBRACKET(): antlr.TerminalNode;
+    assignmentExpr(): AssignmentExprContext;
+    PLUSEQ(): antlr.TerminalNode | null;
+    MINUSEQ(): antlr.TerminalNode | null;
+    MULTEQ(): antlr.TerminalNode | null;
+    DIVEQ(): antlr.TerminalNode | null;
+    SUREQ(): antlr.TerminalNode | null;
+    POWEREQ(): antlr.TerminalNode | null;
+    ASSIGN(): antlr.TerminalNode | null;
+    COMMA(): antlr.TerminalNode[];
+    COMMA(i: number): antlr.TerminalNode | null;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class StructAssignContext extends AssignmentExprContext {
+    constructor(ctx: AssignmentExprContext);
+    VAR_ID(): antlr.TerminalNode[];
+    VAR_ID(i: number): antlr.TerminalNode | null;
+    assignmentExpr(): AssignmentExprContext;
+    PLUSEQ(): antlr.TerminalNode | null;
+    MINUSEQ(): antlr.TerminalNode | null;
+    MULTEQ(): antlr.TerminalNode | null;
+    DIVEQ(): antlr.TerminalNode | null;
+    SUREQ(): antlr.TerminalNode | null;
+    POWEREQ(): antlr.TerminalNode | null;
+    ASSIGN(): antlr.TerminalNode | null;
+    ARROW(): antlr.TerminalNode[];
+    ARROW(i: number): antlr.TerminalNode | null;
+    FUNC_ID(): antlr.TerminalNode[];
+    FUNC_ID(i: number): antlr.TerminalNode | null;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class NoAssignmentContext extends AssignmentExprContext {
+    constructor(ctx: AssignmentExprContext);
     ternaryExpr(): TernaryExprContext;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class AssignContext extends AssignmentExprContext {
+    constructor(ctx: AssignmentExprContext);
+    VAR_ID(): antlr.TerminalNode;
+    assignmentExpr(): AssignmentExprContext;
+    PLUSEQ(): antlr.TerminalNode | null;
+    MINUSEQ(): antlr.TerminalNode | null;
+    MULTEQ(): antlr.TerminalNode | null;
+    DIVEQ(): antlr.TerminalNode | null;
+    SUREQ(): antlr.TerminalNode | null;
+    POWEREQ(): antlr.TerminalNode | null;
+    ASSIGN(): antlr.TerminalNode | null;
+    LBRACKET(): antlr.TerminalNode[];
+    LBRACKET(i: number): antlr.TerminalNode | null;
+    expr(): ExprContext[];
+    expr(i: number): ExprContext | null;
+    RBRACKET(): antlr.TerminalNode[];
+    RBRACKET(i: number): antlr.TerminalNode | null;
     enterRule(listener: testListener): void;
     exitRule(listener: testListener): void;
     accept<Result>(visitor: testVisitor<Result>): Result | null;
@@ -699,9 +763,24 @@ export declare class UnaryExprContext extends antlr.ParserRuleContext {
     get ruleIndex(): number;
     copyFrom(ctx: UnaryExprContext): void;
 }
-export declare class PowerExprRuleContext extends UnaryExprContext {
+export declare class PreIncrementContext extends UnaryExprContext {
+    constructor(ctx: UnaryExprContext);
+    INC(): antlr.TerminalNode;
+    VAR_ID(): antlr.TerminalNode;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class PowExprContext extends UnaryExprContext {
     constructor(ctx: UnaryExprContext);
     powerExpr(): PowerExprContext;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class PostFixExprContext extends UnaryExprContext {
+    constructor(ctx: UnaryExprContext);
+    postfixExpr(): PostfixExprContext;
     enterRule(listener: testListener): void;
     exitRule(listener: testListener): void;
     accept<Result>(visitor: testVisitor<Result>): Result | null;
@@ -718,6 +797,28 @@ export declare class NotExprContext extends UnaryExprContext {
     constructor(ctx: UnaryExprContext);
     NOT(): antlr.TerminalNode;
     unaryExpr(): UnaryExprContext;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class PreDecrementContext extends UnaryExprContext {
+    constructor(ctx: UnaryExprContext);
+    DEC(): antlr.TerminalNode;
+    VAR_ID(): antlr.TerminalNode;
+    enterRule(listener: testListener): void;
+    exitRule(listener: testListener): void;
+    accept<Result>(visitor: testVisitor<Result>): Result | null;
+}
+export declare class PostfixExprContext extends antlr.ParserRuleContext {
+    constructor(parent: antlr.ParserRuleContext | null, invokingState: number);
+    get ruleIndex(): number;
+    copyFrom(ctx: PostfixExprContext): void;
+}
+export declare class PostFixContext extends PostfixExprContext {
+    constructor(ctx: PostfixExprContext);
+    powerExpr(): PowerExprContext;
+    INC(): antlr.TerminalNode | null;
+    DEC(): antlr.TerminalNode | null;
     enterRule(listener: testListener): void;
     exitRule(listener: testListener): void;
     accept<Result>(visitor: testVisitor<Result>): Result | null;
@@ -995,71 +1096,6 @@ export declare class SentenceContext extends BlockContext {
     RBRANCE(): antlr.TerminalNode;
     statement(): StatementContext[];
     statement(i: number): StatementContext | null;
-    enterRule(listener: testListener): void;
-    exitRule(listener: testListener): void;
-    accept<Result>(visitor: testVisitor<Result>): Result | null;
-}
-export declare class AssignmentContext extends antlr.ParserRuleContext {
-    constructor(parent: antlr.ParserRuleContext | null, invokingState: number);
-    get ruleIndex(): number;
-    copyFrom(ctx: AssignmentContext): void;
-}
-export declare class ListAssignContext extends AssignmentContext {
-    constructor(ctx: AssignmentContext);
-    LBRACKET(): antlr.TerminalNode;
-    VAR_ID(): antlr.TerminalNode[];
-    VAR_ID(i: number): antlr.TerminalNode | null;
-    RBRACKET(): antlr.TerminalNode;
-    expr(): ExprContext;
-    PLUSEQ(): antlr.TerminalNode | null;
-    MINUSEQ(): antlr.TerminalNode | null;
-    MULTEQ(): antlr.TerminalNode | null;
-    DIVEQ(): antlr.TerminalNode | null;
-    SUREQ(): antlr.TerminalNode | null;
-    POWEREQ(): antlr.TerminalNode | null;
-    ASSIGN(): antlr.TerminalNode | null;
-    COMMA(): antlr.TerminalNode[];
-    COMMA(i: number): antlr.TerminalNode | null;
-    enterRule(listener: testListener): void;
-    exitRule(listener: testListener): void;
-    accept<Result>(visitor: testVisitor<Result>): Result | null;
-}
-export declare class StructAssignContext extends AssignmentContext {
-    constructor(ctx: AssignmentContext);
-    VAR_ID(): antlr.TerminalNode[];
-    VAR_ID(i: number): antlr.TerminalNode | null;
-    expr(): ExprContext;
-    PLUSEQ(): antlr.TerminalNode | null;
-    MINUSEQ(): antlr.TerminalNode | null;
-    MULTEQ(): antlr.TerminalNode | null;
-    DIVEQ(): antlr.TerminalNode | null;
-    SUREQ(): antlr.TerminalNode | null;
-    POWEREQ(): antlr.TerminalNode | null;
-    ASSIGN(): antlr.TerminalNode | null;
-    ARROW(): antlr.TerminalNode[];
-    ARROW(i: number): antlr.TerminalNode | null;
-    FUNC_ID(): antlr.TerminalNode[];
-    FUNC_ID(i: number): antlr.TerminalNode | null;
-    enterRule(listener: testListener): void;
-    exitRule(listener: testListener): void;
-    accept<Result>(visitor: testVisitor<Result>): Result | null;
-}
-export declare class AssignContext extends AssignmentContext {
-    constructor(ctx: AssignmentContext);
-    VAR_ID(): antlr.TerminalNode;
-    expr(): ExprContext[];
-    expr(i: number): ExprContext | null;
-    PLUSEQ(): antlr.TerminalNode | null;
-    MINUSEQ(): antlr.TerminalNode | null;
-    MULTEQ(): antlr.TerminalNode | null;
-    DIVEQ(): antlr.TerminalNode | null;
-    SUREQ(): antlr.TerminalNode | null;
-    POWEREQ(): antlr.TerminalNode | null;
-    ASSIGN(): antlr.TerminalNode | null;
-    LBRACKET(): antlr.TerminalNode[];
-    LBRACKET(i: number): antlr.TerminalNode | null;
-    RBRACKET(): antlr.TerminalNode[];
-    RBRACKET(i: number): antlr.TerminalNode | null;
     enterRule(listener: testListener): void;
     exitRule(listener: testListener): void;
     accept<Result>(visitor: testVisitor<Result>): Result | null;

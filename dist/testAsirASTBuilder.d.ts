@@ -1,7 +1,7 @@
 import { AbstractParseTreeVisitor } from 'antlr4ng';
 import { testVisitor } from './.antlr/testVisitor.js';
 import * as ast from './testAst.js';
-import { ProgContext, ExprStatementContext, EmptyLineStatementContext, AssignStatementContext, DefinitionStatementContext, IfStatementContext, ForStatementContext, WhileStatementContext, DoStatementContext, ReturnStatementContext, BreakStatementContext, ContinueStatementContext, StructStatementContext, ModuleStatementContext, DefContext, IfContext, ForContext, WhileContext, DoContext, ReturnContext, ContinueContext, BreakContext, StrctContext, FcallContext, ModuleAssignContext, ModuleFunctionContext, ModuleStartContext, ModuleEndContext, MainContext, TernaryContext, QEorContext, QEandContext, QECompareContext, OrContext, AndContext, CompareContext, AddSubContext, MulDivSurContext, UnaryMinusContext, NotExprContext, PowerExprRuleContext, PowerContext, IndexAccessContext, RealContext, IdExprContext, ParenContext, SpecNumContext, StringLiteralContext, CharLiteralContext, RatContext, FloatContext, RatNumContext, DecNumContext, VIdContext, FIdContext, V2IdContext, ImaContext, PiContext, NapContext, BefContext, BefNContext, ListExprContext, SentenceContext, Sentence1Context, AssignContext, StructAssignContext, ListAssignContext, DpLiteralContext, DpContext } from "./.antlr/testParser.js";
+import { ProgContext, ExprStatementContext, EmptyLineStatementContext, DefinitionStatementContext, IfStatementContext, ForStatementContext, WhileStatementContext, DoStatementContext, ReturnStatementContext, BreakStatementContext, ContinueStatementContext, StructStatementContext, ModuleStatementContext, DefContext, IfContext, ForContext, WhileContext, DoContext, ReturnContext, ContinueContext, BreakContext, StrctContext, FcallContext, ModuleAssignContext, ModuleFunctionContext, ModuleStartContext, ModuleEndContext, MainContext, TernaryContext, QEorContext, QEandContext, QECompareContext, OrContext, AndContext, CompareContext, AddSubContext, MulDivSurContext, UnaryMinusContext, NotExprContext, PowerContext, IndexAccessContext, RealContext, IdExprContext, ParenContext, SpecNumContext, StringLiteralContext, CharLiteralContext, RatContext, FloatContext, RatNumContext, DecNumContext, VIdContext, FIdContext, V2IdContext, ImaContext, PiContext, NapContext, BefContext, BefNContext, ListExprContext, SentenceContext, Sentence1Context, AssignContext, StructAssignContext, ListAssignContext, DpLiteralContext, DpContext, PreIncrementContext, PreDecrementContext, PostFixContext, PostFixExprContext, PowExprContext, NoAssignmentContext } from "./.antlr/testParser.js";
 export declare class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undefined> implements testVisitor<ast.ASTNode | undefined> {
     private createIdentifierNode;
     protected defaultResult(): ast.ASTNode | undefined;
@@ -9,15 +9,20 @@ export declare class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode
     visitProg(ctx: ProgContext): ast.ProgramNode;
     visitExprStatement(ctx: ExprStatementContext): ast.ExpressionStatementNode;
     visitEmptyStatement(ctx: EmptyLineStatementContext): ast.EmptyStatementNode;
-    visitAssignStatement(ctx: AssignStatementContext): ast.AssignmentStatementNode | ast.StructMemberAssignmentNode | ast.ListDestructuringAssignmentNode;
-    visitAssign(ctx: AssignContext): ast.AssignmentStatementNode;
+    visitAssign(ctx: AssignContext): ast.AssignmentExpressionNode;
     visitStructAssign(ctx: StructAssignContext): ast.StructMemberAssignmentNode;
     visitListAssign(ctx: ListAssignContext): ast.ListDestructuringAssignmentNode;
+    visitNoAssignment(ctx: NoAssignmentContext): ast.ExpressionNode;
     visitDefinitionStatement(ctx: DefinitionStatementContext): ast.DefinitionStatementNode;
     visitIfStatement(ctx: IfStatementContext): ast.IfStatementNode;
     visitIf(ctx: IfContext): ast.IfStatementNode;
     visitForStatement(ctx: ForStatementContext): ast.ForStatementNode;
     visitFor(ctx: ForContext): ast.ForStatementNode;
+    visitPreIncrement(ctx: PreIncrementContext): ast.UnaryOperationNode;
+    visitPreDecrement(ctx: PreDecrementContext): ast.UnaryOperationNode;
+    visitPostFix(ctx: PostFixContext): ast.UnaryOperationNode;
+    visitPostFixExpr(ctx: PostFixExprContext): ast.UnaryOperationNode;
+    visitPowExpr(ctx: PowExprContext): ast.PowerOperationNode | ast.ExpressionNode;
     visitWhileStatement(ctx: WhileStatementContext): ast.WhileStatementNode;
     visitDoStatement(ctx: DoStatementContext): ast.DoWhileStatementNode;
     visitReturnStatement(ctx: ReturnStatementContext): ast.ReturnStatementNode;
@@ -34,7 +39,6 @@ export declare class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode
     visitUnaryMinus(ctx: UnaryMinusContext): ast.UnaryOperationNode;
     visitNotExpr(ctx: NotExprContext): ast.UnaryOperationNode;
     visitPower(ctx: PowerContext): ast.PowerOperationNode | ast.ExpressionNode;
-    visitPowerExprRule(ctx: PowerExprRuleContext): ast.ExpressionNode;
     visitIndexAccess(ctx: IndexAccessContext): ast.ExpressionNode;
     visitReal(ctx: RealContext): ast.NumberLiteralNode;
     visitRatNum(ctx: RatNumContext): ast.NumberLiteralNode;

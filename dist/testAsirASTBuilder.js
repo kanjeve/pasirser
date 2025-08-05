@@ -57,21 +57,15 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // assignment (SEMI | DOLLAR) #AssignStatement
-    visitAssignStatement(ctx) {
-        const assignmentNode = this.visit(ctx.assignment());
-        if (!assignmentNode)
-            throw new errors_js_1.ASTBuilderError('Assignment node not found', ctx);
-        return assignmentNode;
-    }
-    // assignmentの #Assign (VAR_ID ... ASSIGN expr)
+    // assignmentExprの #Assign (VAR_ID ... ASSIGN assignmentExpr)
     visitAssign(ctx) {
         const varIdNode = this.createIdentifierNode(ctx.VAR_ID());
         let left = varIdNode;
         // 添字アクセスがある場合
         if (ctx.LBRACKET().length > 0) {
             const indices = [];
-            for (const exprCtx of ctx.expr().slice(0, ctx.LBRACKET().length)) {
+            // The right-most expression is the assignment's RHS, so we exclude it.
+            for (const exprCtx of ctx.expr()) {
                 indices.push(this.visit(exprCtx));
             }
             left = {
@@ -89,23 +83,24 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             ctx.POWEREQ()?.getText() ||
             ctx.ASSIGN()?.getText();
         if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Assignment operator text not found. This should not happen with a valid parse tree.", ctx);
+            throw new errors_js_1.ASTBuilderError("Assignment operator text not found.", ctx);
         }
-        const right = this.visit(ctx.expr()[ctx.expr().length - 1]);
+        // The right-hand side is now an assignmentExpr
+        const right = this.visit(ctx.assignmentExpr());
         return {
-            kind: 'AssignmentStatement',
+            kind: 'AssignmentExpression',
             left: left,
             operator: operatorText,
             right: right,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // assignmentの #StructAssign (VAR_ID -> ... ASSIGN expr)
+    // assignmentExprの #StructAssign (VAR_ID -> ... ASSIGN assignmentExpr)
     visitStructAssign(ctx) {
         const base = this.createIdentifierNode(ctx.VAR_ID(0));
         const members = [];
         for (let i = 0; i < ctx.ARROW().length; i++) {
-            const nextMemberCtx = ctx.VAR_ID(i) || ctx.FUNC_ID(i);
+            const nextMemberCtx = ctx.VAR_ID(i + 1) || ctx.FUNC_ID(i);
             if (nextMemberCtx) {
                 members.push(this.createIdentifierNode(nextMemberCtx));
             }
@@ -113,10 +108,11 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
                 throw new errors_js_1.ASTBuilderError(`Member identifier not found after ARROW at index ${i}`, ctx);
             }
         }
-        const operatorToken = ctx.ASSIGN(); // StructAssign は ASSIGN のみ？
+        const operatorToken = ctx.ASSIGN();
         if (!operatorToken)
             throw new errors_js_1.ASTBuilderError("Assignment operator not found for struct", ctx);
-        const right = this.visit(ctx.expr());
+        // The right-hand side is now an assignmentExpr
+        const right = this.visit(ctx.assignmentExpr());
         const operatorText = operatorToken.getText();
         if (operatorText === undefined) {
             throw new errors_js_1.ASTBuilderError("Operator text is undefined for struct assignment.", ctx);
@@ -130,7 +126,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // assignmentの #ListAssign ({VAR_ID, ...} = expr)
+    // assignmentExprの #ListAssign ([VAR_ID, ...] = assignmentExpr)
     visitListAssign(ctx) {
         const targets = [];
         for (const varIdCtx of ctx.VAR_ID()) {
@@ -139,10 +135,11 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         const operatorToken = ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN();
         if (!operatorToken)
             throw new errors_js_1.ASTBuilderError("Assignment operator not found for list assign", ctx);
-        const right = this.visit(ctx.expr());
+        // The right-hand side is now an assignmentExpr
+        const right = this.visit(ctx.assignmentExpr());
         const operatorText = operatorToken.getText();
         if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Operator text is undefined for struct assignment.", ctx);
+            throw new errors_js_1.ASTBuilderError("Operator text is undefined for list assignment.", ctx);
         }
         return {
             kind: 'ListDestructuringAssignment',
@@ -151,6 +148,10 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             right: right,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
+    }
+    // New: Handles the #NoAssignment case, which is just a ternary expression
+    visitNoAssignment(ctx) {
+        return this.visit(ctx.ternaryExpr());
     }
     visitDefinitionStatement(ctx) {
         return this.visit(ctx.functionDefinition());
@@ -189,37 +190,21 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         const initializers = [];
         const conditions = [];
         const updaters = [];
-        // The grammar is: FOR LPAREN (assignment ...)? SEMI (expr ...)? SEMI (expr ...)? RPAREN block
-        // We determine the part of the loop (initializer, condition, updater) by tracking the semicolons.
-        let part = 'init';
+        let semiCount = 0;
         if (ctx.children) {
             for (const child of ctx.children) {
                 if (child instanceof antlr4ng_1.TerminalNode && child.symbol.type === testParser_js_1.testParser.SEMI) {
-                    if (part === 'init') {
-                        part = 'cond';
-                    }
-                    else {
-                        // The second SEMI transitions us to the update part
-                        part = 'update';
-                    }
+                    semiCount++;
                 }
-                else if (child instanceof testParser_js_2.AssignContext ||
-                    child instanceof testParser_js_2.StructAssignContext ||
-                    child instanceof testParser_js_2.ListAssignContext) {
-                    if (part === 'init') {
-                        const initNode = this.visit(child);
-                        if (initNode) {
-                            // The visit methods for assignments return the correct corresponding AST node types.
-                            initializers.push(initNode);
-                        }
-                    }
-                }
-                else if (child instanceof testParser_js_2.MainContext) { // expr rule is #Main
+                else if (child instanceof testParser_js_2.MainContext || child instanceof testParser_js_2.NoAssignmentContext) {
                     const exprNode = this.visit(child);
-                    if (part === 'cond') {
+                    if (semiCount === 0) {
+                        initializers.push(exprNode);
+                    }
+                    else if (semiCount === 1) {
                         conditions.push(exprNode);
                     }
-                    else if (part === 'update') {
+                    else if (semiCount === 2) {
                         updaters.push(exprNode);
                     }
                 }
@@ -238,6 +223,59 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
+    // Pre-increment (e.g., ++I)
+    visitPreIncrement(ctx) {
+        const operand = this.createIdentifierNode(ctx.VAR_ID());
+        return {
+            kind: 'UnaryOperation',
+            operator: '++',
+            operand: operand,
+            loc: (0, errors_js_1.getLoc)(ctx),
+            isPostfix: false
+        };
+    }
+    // Pre-decrement (e.g., --I)
+    visitPreDecrement(ctx) {
+        const operand = this.createIdentifierNode(ctx.VAR_ID());
+        return {
+            kind: 'UnaryOperation',
+            operator: '--',
+            operand: operand,
+            loc: (0, errors_js_1.getLoc)(ctx),
+            isPostfix: false
+        };
+    }
+    // Postfix Increment/Decrement (e.g., I++, J[0]--)
+    visitPostFix(ctx) {
+        const operand = this.visit(ctx.powerExpr());
+        if (ctx.INC()) {
+            return {
+                kind: 'UnaryOperation',
+                operator: '++',
+                operand: operand,
+                loc: (0, errors_js_1.getLoc)(ctx),
+                isPostfix: true
+            };
+        }
+        else if (ctx.DEC()) {
+            return {
+                kind: 'UnaryOperation',
+                operator: '--',
+                operand: operand,
+                loc: (0, errors_js_1.getLoc)(ctx),
+                isPostfix: true
+            };
+        }
+        throw new errors_js_1.ASTBuilderError("Postfix operator not found. This should not happen with a valid parse tree.", ctx);
+    }
+    // New: Handles postfix expressions (#PostFixExpr)
+    visitPostFixExpr(ctx) {
+        return this.visit(ctx.postfixExpr());
+    }
+    // New: Handles power expressions (#PowExpr)
+    visitPowExpr(ctx) {
+        return this.visit(ctx.powerExpr());
+    }
     visitWhileStatement(ctx) {
         return this.visit(ctx.functionWhile());
     }
@@ -251,7 +289,10 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         return this.visit(ctx.functionBreak());
     }
     visitContinueStatement(ctx) {
-        return this.visit(ctx.functionContinue());
+        return {
+            kind: 'ContinueStatement',
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
     }
     visitStructStatement(ctx) {
         return this.visit(ctx.functionStruct());
@@ -279,7 +320,8 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
     // --- 式 (Expression) の訪問 ---
     visitMain(ctx) {
-        return this.visit(ctx.ternaryExpr());
+        // The entry point for an expression is now assignmentExpr
+        return this.visit(ctx.assignmentExpr());
     }
     // Ternary #Ternary
     visitTernary(ctx) {
@@ -361,10 +403,6 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             };
         }
         return base;
-    }
-    // #PowerExprRule は powerExpr を呼び出すだけのパススルーなので、ASTノードは生成せず、visit()の結果をそのまま返す
-    visitPowerExprRule(ctx) {
-        return this.visit(ctx.powerExpr());
     }
     // IndexAccess (添字アクセス)
     visitIndexAccess(ctx) {
@@ -487,13 +525,9 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         else if (ctx instanceof testParser_js_2.BefNContext) {
             return this.visitBefN(ctx);
         }
-        // If none of the specific contexts match, create a generic SpecialNumberNode.
-        // This handles cases where the parser might create a SpecNumContext for an unexpected token
-        // (e.g., a standalone '@' that the grammar might allow as a special number,
-        // but which is not one of the explicitly handled ones like @i, @pi, etc.)
         return {
             kind: 'SpecialNumber',
-            name: ctx.getText(), // Use the raw text of the context
+            name: ctx.getText(),
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
@@ -545,15 +579,12 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         const terms = [];
         let modulus = undefined;
         if (ctx.COLON()) {
-            // The last integer is the modulus
             modulus = parseInt(allInts[allInts.length - 1].getText(), 10);
-            // The rest are terms
             for (let i = 0; i < allInts.length - 1; i++) {
                 terms.push(parseInt(allInts[i].getText(), 10));
             }
         }
         else {
-            // All integers are terms
             for (const intToken of allInts) {
                 terms.push(parseInt(intToken.getText(), 10));
             }
@@ -565,7 +596,6 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // --- ここからが未実装だった部分 ---
     // functionDefinition #Def
     visitDef(ctx) {
         const name = this.createIdentifierNode(ctx.FUNC_ID());
@@ -595,7 +625,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         const body = this.visit(ctx.block());
         return {
             kind: 'WhileStatement',
-            conditions: conditions, // Assumes ast.WhileStatementNode is updated to take conditions[]
+            conditions: conditions,
             body: body,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
@@ -612,7 +642,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         return {
             kind: 'DoWhileStatement',
             body: body,
-            conditions: conditions, // Assumes ast.DoWhileStatementNode is updated to take conditions[]
+            conditions: conditions,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
@@ -641,15 +671,12 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
     // functionStruct #Strct
     visitStrct(ctx) {
-        // 構造体名 (最初に出現するID)
         const nameCtx = ctx.FUNC_ID(0) || ctx.VAR_ID(0);
         if (!nameCtx)
             throw new errors_js_1.ASTBuilderError("Struct name not found", ctx);
         const name = this.createIdentifierNode(nameCtx);
         const members = [];
-        // メンバー (2番目以降に出現するID)
         const memberIdCtxs = [...(ctx.FUNC_ID() || []), ...(ctx.VAR_ID() || [])];
-        // 最初のIDは名前なので除外
         for (let i = 1; i < memberIdCtxs.length; i++) {
             const memberNode = this.createIdentifierNode(memberIdCtxs[i]);
             if (memberNode) {
@@ -740,5 +767,4 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
 }
 exports.AsirASTBuilder = AsirASTBuilder;
-'';
 //# sourceMappingURL=testAsirASTBuilder.js.map
