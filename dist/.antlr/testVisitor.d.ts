@@ -15,13 +15,6 @@ import { StructStatementContext } from "./testParser.js";
 import { ModuleStatementContext } from "./testParser.js";
 import { DefContext } from "./testParser.js";
 import { IfContext } from "./testParser.js";
-import { ForiniContext } from "./testParser.js";
-import { ForconContext } from "./testParser.js";
-import { Forup1Context } from "./testParser.js";
-import { Forup2Context } from "./testParser.js";
-import { Forup3Context } from "./testParser.js";
-import { Forup4Context } from "./testParser.js";
-import { Forup5Context } from "./testParser.js";
 import { ForContext } from "./testParser.js";
 import { WhileContext } from "./testParser.js";
 import { DoContext } from "./testParser.js";
@@ -57,6 +50,8 @@ import { SpecNumContext } from "./testParser.js";
 import { StringLiteralContext } from "./testParser.js";
 import { CharLiteralContext } from "./testParser.js";
 import { ListLiteralContext } from "./testParser.js";
+import { DpLiteralContext } from "./testParser.js";
+import { DpContext } from "./testParser.js";
 import { RatContext } from "./testParser.js";
 import { FloatContext } from "./testParser.js";
 import { RatNumContext } from "./testParser.js";
@@ -194,55 +189,6 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      * @return the visitor result
      */
     visitIf?: (ctx: IfContext) => Result;
-    /**
-     * Visit a parse tree produced by the `Forini`
-     * labeled alternative in `testParser.forInitializer`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitForini?: (ctx: ForiniContext) => Result;
-    /**
-     * Visit a parse tree produced by the `Forcon`
-     * labeled alternative in `testParser.forCondition`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitForcon?: (ctx: ForconContext) => Result;
-    /**
-     * Visit a parse tree produced by the `Forup1`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitForup1?: (ctx: Forup1Context) => Result;
-    /**
-     * Visit a parse tree produced by the `Forup2`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitForup2?: (ctx: Forup2Context) => Result;
-    /**
-     * Visit a parse tree produced by the `Forup3`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitForup3?: (ctx: Forup3Context) => Result;
-    /**
-     * Visit a parse tree produced by the `Forup4`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitForup4?: (ctx: Forup4Context) => Result;
-    /**
-     * Visit a parse tree produced by the `Forup5`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitForup5?: (ctx: Forup5Context) => Result;
     /**
      * Visit a parse tree produced by the `For`
      * labeled alternative in `testParser.functionFor`.
@@ -488,6 +434,20 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      * @return the visitor result
      */
     visitListLiteral?: (ctx: ListLiteralContext) => Result;
+    /**
+     * Visit a parse tree produced by the `DpLiteral`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitDpLiteral?: (ctx: DpLiteralContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Dp`
+     * labeled alternative in `testParser.dpoly`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitDp?: (ctx: DpContext) => Result;
     /**
      * Visit a parse tree produced by the `Rat`
      * labeled alternative in `testParser.rational`.

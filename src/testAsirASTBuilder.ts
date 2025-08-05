@@ -6,7 +6,7 @@ import { ASTBuilderError, getLoc } from './errors.js';
 import { testParser } from './.antlr/testParser.js'; // Add this line
 
 // コンテキストクラスの型をインポート
-import { ProgContext, ExprStatementContext, EmptyLineStatementContext, AssignStatementContext, DefinitionStatementContext, IfStatementContext, ForStatementContext, WhileStatementContext, DoStatementContext, ReturnStatementContext, BreakStatementContext, ContinueStatementContext, StructStatementContext, ModuleStatementContext, DefContext, IfContext, ForiniContext, ForconContext, Forup1Context, Forup2Context, Forup3Context, Forup4Context, Forup5Context, ForContext, WhileContext, DoContext, ReturnContext, ContinueContext, BreakContext, StrctContext, FcallContext, ModuleAssignContext, ModuleFunctionContext, ModuleStartContext, ModuleEndContext, MainContext, TernaryContext, QEorContext, QEandContext, QECompareContext, OrContext, AndContext, CompareContext, AddSubContext, MulDivSurContext, UnaryMinusContext, NotExprContext, PowerExprRuleContext, PowerContext, IndexAccessContext, RealContext, IdExprContext, FCallExprContext, ParenContext, SpecNumContext, StringLiteralContext, CharLiteralContext, ListLiteralContext, RatContext, FloatContext, RatNumContext, DecNumContext, VIdContext, FIdContext, V2IdContext, ImaContext, PiContext, NapContext, BefContext, BefNContext, ListExprContext, SentenceContext, Sentence1Context, AssignContext, StructAssignContext, ListAssignContext } from "./.antlr/testParser.js";
+import { ProgContext, ExprStatementContext, EmptyLineStatementContext, AssignStatementContext, DefinitionStatementContext, IfStatementContext, ForStatementContext, WhileStatementContext, DoStatementContext, ReturnStatementContext, BreakStatementContext, ContinueStatementContext, StructStatementContext, ModuleStatementContext, DefContext, IfContext, ForContext, WhileContext, DoContext, ReturnContext, ContinueContext, BreakContext, StrctContext, FcallContext, ModuleAssignContext, ModuleFunctionContext, ModuleStartContext, ModuleEndContext, MainContext, TernaryContext, QEorContext, QEandContext, QECompareContext, OrContext, AndContext, CompareContext, AddSubContext, MulDivSurContext, UnaryMinusContext, NotExprContext, PowerExprRuleContext, PowerContext, IndexAccessContext, RealContext, IdExprContext, FCallExprContext, ParenContext, SpecNumContext, StringLiteralContext, CharLiteralContext, ListLiteralContext, RatContext, FloatContext, RatNumContext, DecNumContext, VIdContext, FIdContext, V2IdContext, ImaContext, PiContext, NapContext, BefContext, BefNContext, ListExprContext, SentenceContext, Sentence1Context, AssignContext, StructAssignContext, ListAssignContext, DpLiteralContext, DpContext } from "./.antlr/testParser.js";
 
 // カスタム Visitor クラス
 export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undefined> implements testVisitor<ast.ASTNode | undefined> {
@@ -71,7 +71,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     visitAssignStatement(ctx: AssignStatementContext): ast.AssignmentStatementNode | ast.StructMemberAssignmentNode | ast.ListDestructuringAssignmentNode {
         const assignmentNode = this.visit(ctx.assignment()!);
         if (!assignmentNode) throw new ASTBuilderError('Assignment node not found', ctx);
-        return assignmentNode as any; 
+        return assignmentNode as any;
     }
 
     // assignmentの #Assign (VAR_ID ... ASSIGN expr)
@@ -82,7 +82,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         // 添字アクセスがある場合
         if (ctx.LBRACKET().length > 0) {
             const indices: ast.ExpressionNode[] = [];
-            for (const exprCtx of ctx.expr().slice(0, ctx.LBRACKET().length)) { 
+            for (const exprCtx of ctx.expr().slice(0, ctx.LBRACKET().length)) {
                 indices.push(this.visit(exprCtx) as ast.ExpressionNode);
             }
             left = {
@@ -93,13 +93,13 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
             };
     }
 
-        const operatorText: string | undefined = 
-            ctx.PLUSEQ()?.getText() || 
-            ctx.MINUSEQ()?.getText() || 
-            ctx.MULTEQ()?.getText() || 
-            ctx.DIVEQ()?.getText() || 
-            ctx.SUREQ()?.getText() || 
-            ctx.POWEREQ()?.getText() || 
+        const operatorText: string | undefined =
+            ctx.PLUSEQ()?.getText() ||
+            ctx.MINUSEQ()?.getText() ||
+            ctx.MULTEQ()?.getText() ||
+            ctx.DIVEQ()?.getText() ||
+            ctx.SUREQ()?.getText() ||
+            ctx.POWEREQ()?.getText() ||
             ctx.ASSIGN()?.getText();
 
         if (operatorText === undefined) {
@@ -120,7 +120,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     visitStructAssign(ctx: StructAssignContext): ast.StructMemberAssignmentNode {
         const base = this.createIdentifierNode(ctx.VAR_ID(0)!);
         const members: ast.IdentifierNode[] = [];
-        for (let i=0; i< ctx.ARROW().length; i++) { 
+        for (let i=0; i< ctx.ARROW().length; i++) {
             const nextMemberCtx = ctx.VAR_ID(i) || ctx.FUNC_ID(i);
             if (nextMemberCtx) {
                 members.push(this.createIdentifierNode(nextMemberCtx as TerminalNode));
@@ -187,7 +187,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         if (ctx.ELSE()) {
             if (ctx.block(1)) { // else block
                 alternative = this.visit(ctx.block(1)!) as ast.StatementNode;
-            } else if (ctx.functionIf()) { 
+            } else if (ctx.functionIf()) {
                 alternative = this.visit(ctx.functionIf()!) as ast.StatementNode;
             }
         }
@@ -205,29 +205,46 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     visitForStatement(ctx: ForStatementContext): ast.ForStatementNode {
         return this.visit(ctx.functionFor()!) as ast.ForStatementNode;
     }
+
     // functionFor #For
     visitFor(ctx: ForContext): ast.ForStatementNode {
-        const initializers: ast.AssignmentStatementNode[] = [];
-        for (const initCtx of ctx.forInitializer()) {
-            const initNode = this.visit(initCtx);
-            if(initNode) {
-                initializers.push(initNode as ast.AssignmentStatementNode);
-            }
-        }
-
+        const initializers: (ast.AssignmentStatementNode | ast.StructMemberAssignmentNode | ast.ListDestructuringAssignmentNode)[] = [];
         const conditions: ast.ExpressionNode[] = [];
-        for (const condCtx of ctx.forCondition()) {
-            const condNode = this.visit(condCtx);
-            if(condNode) {
-                conditions.push(condNode as ast.ExpressionNode);
-            }
-        }
-
         const updaters: ast.ExpressionNode[] = [];
-        for (const updateCtx of ctx.forUpdate()) {
-            const updateNode = this.visit(updateCtx);
-            if(updateNode) {
-                updaters.push(updateNode as ast.ExpressionNode); 
+
+        // The grammar is: FOR LPAREN (assignment ...)? SEMI (expr ...)? SEMI (expr ...)? RPAREN block
+        // We determine the part of the loop (initializer, condition, updater) by tracking the semicolons.
+        let part: 'init' | 'cond' | 'update' = 'init';
+
+        if (ctx.children) {
+            for (const child of ctx.children) {
+                if (child instanceof TerminalNode && child.symbol.type === testParser.SEMI) {
+                    if (part === 'init') {
+                        part = 'cond';
+                    } else {
+                        // The second SEMI transitions us to the update part
+                        part = 'update';
+                    }
+                } else if (
+                    child instanceof AssignContext ||
+                    child instanceof StructAssignContext ||
+                    child instanceof ListAssignContext
+                ) {
+                    if (part === 'init') {
+                        const initNode = this.visit(child);
+                        if (initNode) {
+                            // The visit methods for assignments return the correct corresponding AST node types.
+                            initializers.push(initNode as any);
+                        }
+                    }
+                } else if (child instanceof MainContext) { // expr rule is #Main
+                    const exprNode = this.visit(child) as ast.ExpressionNode;
+                    if (part === 'cond') {
+                        conditions.push(exprNode);
+                    } else if (part === 'update') {
+                        updaters.push(exprNode);
+                    }
+                }
             }
         }
 
@@ -242,97 +259,6 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
             conditions: conditions,
             updaters: updaters,
             body: body,
-            loc: getLoc(ctx)
-        };
-    }
-    // forInitializer 
-    visitForini(ctx: ForiniContext): ast.AssignmentStatementNode {
-        const left = this.createIdentifierNode(ctx.VAR_ID()!);
-        const operatorText: string | undefined = ctx.ASSIGN()!.getText();
-        if (operatorText === undefined) {
-            throw new ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        const right = this.visit(ctx.expr()!) as ast.ExpressionNode;
-        return {
-            kind: 'AssignmentStatement',
-            left: left,
-            operator: operatorText,
-            right: right,
-            loc: getLoc(ctx)
-        };
-    }
-    // forCondition 
-    visitForcon(ctx: ForconContext): ast.ExpressionNode {
-        return this.visit(ctx.expr()!) as ast.ExpressionNode;
-    }
-    // forUpdate の各代替規則 
-    // Forup1 は AssignmentStatementNode
-    visitForup1(ctx: Forup1Context): ast.AssignmentStatementNode {
-        const left = this.createIdentifierNode(ctx.VAR_ID()!);
-        const operatorText: string | undefined = ctx.ASSIGN()!.getText();
-        if (operatorText === undefined) {
-            throw new ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        const right = this.visit(ctx.expr()!) as ast.ExpressionNode;
-        return {
-            kind: 'AssignmentStatement',
-            left: left,
-            operator: operatorText,
-            right: right,
-            loc: getLoc(ctx)
-        };
-        }
-    // Forup2, Forup3 は UnaryOperationNode (後置インクリメント/デクリメント)
-    visitForup2(ctx: Forup2Context): ast.UnaryOperationNode {
-        const operand = this.createIdentifierNode(ctx.VAR_ID()!); 
-        const operatorText: string | undefined = ctx.INC()!.getText();
-        if (operatorText === undefined) {
-            throw new ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        return {
-            kind: 'UnaryOperation',
-            operator: operatorText,
-            operand: operand,
-            loc: getLoc(ctx)
-        };
-    }
-    visitForup3(ctx: Forup3Context): ast.UnaryOperationNode {
-        const operand = this.createIdentifierNode(ctx.VAR_ID()!);
-        const operatorText: string | undefined = ctx.DEC()!.getText();
-        if (operatorText === undefined) {
-            throw new ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        return {
-            kind: 'UnaryOperation',
-            operator: operatorText,
-            operand: operand,
-            loc: getLoc(ctx)
-        };
-    }
-    // Forup4, Forup5 は UnaryOperationNode (前置インクリメント/デクリメント)
-    visitForup4(ctx: Forup4Context): ast.UnaryOperationNode {
-        const operand = this.createIdentifierNode(ctx.VAR_ID()!);
-        const operatorText: string | undefined = ctx.INC()!.getText();
-        if (operatorText === undefined) {
-            throw new ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        return {
-            kind: 'UnaryOperation',
-            operator: operatorText,
-            operand: operand,
-            loc: getLoc(ctx)
-        };
-    }
-    visitForup5(ctx: Forup5Context): ast.UnaryOperationNode {
-        const operand = this.createIdentifierNode(ctx.VAR_ID()!);
-        const operatorText: string | undefined = ctx.DEC()!.getText();
-        if (operatorText === undefined) {
-            throw new ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        return {
-            kind: 'UnaryOperation',
-            operator: operatorText,
-            operand: operand,
             loc: getLoc(ctx)
         };
     }
@@ -463,7 +389,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
-    // Power 
+    // Power
     visitPower(ctx: PowerContext): ast.PowerOperationNode | ast.ExpressionNode {
         const base = this.visit(ctx.indexAccessExpr()!) as ast.ExpressionNode;
         if (ctx.POWER()) {
@@ -669,6 +595,40 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
+    // Distributed Polynomial Literals #DpLiteral
+    visitDpLiteral(ctx: DpLiteralContext): ast.DistributedPolynomialLiteralNode {
+        return this.visit(ctx.dpoly()!) as ast.DistributedPolynomialLiteralNode;
+    }
+
+    // dpoly #Dp
+    visitDp(ctx: DpContext): ast.DistributedPolynomialLiteralNode {
+        const allInts = ctx.INT();
+        const terms: number[] = [];
+        let modulus: number | undefined = undefined;
+
+        if (ctx.COLON()) {
+            // The last integer is the modulus
+            modulus = parseInt(allInts[allInts.length - 1].getText(), 10);
+            // The rest are terms
+            for (let i = 0; i < allInts.length - 1; i++) {
+                terms.push(parseInt(allInts[i].getText(), 10));
+            }
+        } else {
+            // All integers are terms
+            for (const intToken of allInts) {
+                terms.push(parseInt(intToken.getText(), 10));
+            }
+        }
+
+        return {
+            kind: 'DistributedPolynomialLiteral',
+            terms: terms,
+            modulus: modulus,
+            loc: getLoc(ctx)
+        };
+    }
+
+
     // --- ここからが未実装だった部分 ---
 
     // functionDefinition #Def
@@ -692,11 +652,16 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
     // functionWhile #While
     visitWhile(ctx: WhileContext): ast.WhileStatementNode {
-        const condition = this.visit(ctx.expr(0)!) as ast.ExpressionNode;
+        const conditions: ast.ExpressionNode[] = [];
+        if (ctx.expr()) {
+            for (const exprCtx of ctx.expr()) {
+                conditions.push(this.visit(exprCtx) as ast.ExpressionNode);
+            }
+        }
         const body = this.visit(ctx.block()!) as ast.StatementNode;
         return {
             kind: 'WhileStatement',
-            condition: condition,
+            conditions: conditions, // Assumes ast.WhileStatementNode is updated to take conditions[]
             body: body,
             loc: getLoc(ctx)
         };
@@ -705,11 +670,16 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     // functionDo #Do
     visitDo(ctx: DoContext): ast.DoWhileStatementNode {
         const body = this.visit(ctx.block()!) as ast.StatementNode;
-        const condition = this.visit(ctx.expr(0)!) as ast.ExpressionNode;
+        const conditions: ast.ExpressionNode[] = [];
+        if (ctx.expr()) {
+            for (const exprCtx of ctx.expr()) {
+                conditions.push(this.visit(exprCtx) as ast.ExpressionNode);
+            }
+        }
         return {
             kind: 'DoWhileStatement',
             body: body,
-            condition: condition,
+            conditions: conditions, // Assumes ast.DoWhileStatementNode is updated to take conditions[]
             loc: getLoc(ctx)
         };
     }

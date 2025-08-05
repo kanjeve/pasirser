@@ -1,12 +1,12 @@
 // 1. ASTノードの共通ベースインターフェース
 export interface ASTNode {
-    kind: string; 
+    kind: string;
 
     loc?: {
         startLine: number;
         startColumn: number;
-        endLine?: number;   
-        endColumn?: number; 
+        endLine?: number;
+        endColumn?: number;
     };
 }
 
@@ -25,13 +25,16 @@ export type ExpressionNode =
     | ParenExpressionNode
     | SpecialNumberNode
     | ListLiteralNode
+    | DistributedPolynomialLiteralNode // Added for dpoly
     ;
 
 // 3. 文を表すノードのユニオン型
 export type StatementNode =
-    | ExpressionStatementNode 
-    | EmptyStatementNode    
+    | ExpressionStatementNode
+    | EmptyStatementNode
     | AssignmentStatementNode
+    | StructMemberAssignmentNode      // Added for for-loop initializers
+    | ListDestructuringAssignmentNode // Added for for-loop initializers
     | DefinitionStatementNode
     | IfStatementNode
     | ForStatementNode
@@ -42,8 +45,7 @@ export type StatementNode =
     | ContinueStatementNode
     | StructStatementNode
     | ModuleStatementNode
-    | BlockNode 
-    // ... その他、あなたが定義したすべての文ノードの型をここに追加
+    | BlockNode
     ;
 
 
@@ -70,22 +72,29 @@ export interface ProgramNode extends ASTNode {
 // 数値
 export interface NumberLiteralNode extends ASTNode {
     kind: 'NumberLiteral';
-    value: number | string; 
+    value: number | string;
     rawText?: string;
 }
 
 // 文字列("")
 export interface StringLiteralNode extends ASTNode {
     kind: 'StringLiteral';
-    value: string; 
+    value: string;
     rawText?: string;
 }
 
 // 文字列('')
 export interface CharLiteralNode extends ASTNode {
     kind: 'CharLiteral';
-    value: string; 
+    value: string;
     rawText?: string;
+}
+
+// 分散表現多項式リテラル (e.g., <<1,2,3:4>>)
+export interface DistributedPolynomialLiteralNode extends ASTNode {
+    kind: 'DistributedPolynomialLiteral';
+    terms: number[];
+    modulus?: number;
 }
 
 
@@ -95,13 +104,13 @@ export interface IdentifierNode extends ASTNode {
     kind: 'Identifier';
     name: string;
     qualifier?: IdentifierNode;
-    isVar: boolean; 
+    isVar: boolean;
     isSpecialVar: boolean;
 }
 
 export interface SpecialNumberNode extends ASTNode {
     kind: 'SpecialNumber';
-    name: string; 
+    name: string;
 }
 
 // --- 演算子ノード ---
@@ -109,7 +118,7 @@ export interface SpecialNumberNode extends ASTNode {
 // 二項演算 (例: +, -, *, /, %, ==, !=, &&, ||, @==, @&& など)
 export interface BinaryOperationNode extends ASTNode {
     kind: 'BinaryOperation';
-    operator: string; 
+    operator: string;
     left: ExpressionNode;
     right: ExpressionNode;
 }
@@ -121,7 +130,7 @@ export interface UnaryOperationNode extends ASTNode {
     operand: ExpressionNode;
 }
 
-// べき乗演算 
+// べき乗演算
 export interface PowerOperationNode extends ASTNode {
     kind: 'PowerOperation';
     base: ExpressionNode;
@@ -141,52 +150,52 @@ export interface TernaryOperationNode extends ASTNode {
 // 添字アクセス (例: A[0], B[i][j])
 export interface IndexAccessNode extends ASTNode {
     kind: 'IndexAccess';
-    base: ExpressionNode; 
-    indices: ExpressionNode[]; 
+    base: ExpressionNode;
+    indices: ExpressionNode[];
 }
 
 // 関数呼び出し
 export interface FunctionCallNode extends ASTNode {
     kind: 'FunctionCall';
     callee: IdentifierNode;  // ::や.はここで対応
-    args: ExpressionNode[]; 
+    args: ExpressionNode[];
 }
 
 // 括弧で囲まれた式
 export interface ParenExpressionNode extends ASTNode {
     kind: 'ParenExpression';
-    expression: ExpressionNode; 
+    expression: ExpressionNode;
 }
 
 // --- コレクションリテラルノード ---
 export interface ListLiteralNode extends ASTNode {
     kind: 'ListLiteral';
-    elements: ExpressionNode[]; 
+    elements: ExpressionNode[];
 }
 
 
 // --- 文ノード ---
 
-// 式文 
+// 式文
 export interface ExpressionStatementNode extends ASTNode {
     kind: 'ExpressionStatement';
     expression: ExpressionNode;
 }
 
-// 空の文 
+// 空の文
 export interface EmptyStatementNode extends ASTNode {
     kind: 'EmptyStatement';
 }
 
-// 代入文 
+// 代入文
 export interface AssignmentStatementNode extends ASTNode {
     kind: 'AssignmentStatement';
-    left: ExpressionNode; // 代入される左辺 
-    operator: string; 
+    left: ExpressionNode; // 代入される左辺
+    operator: string;
     right: ExpressionNode; // 代入する右辺
 }
 
-// 構造体メンバーへの代入 
+// 構造体メンバーへの代入
 export interface StructMemberAssignmentNode extends ASTNode {
     kind: 'StructMemberAssignment';
     base: IdentifierNode; // 構造体変数名
@@ -195,7 +204,7 @@ export interface StructMemberAssignmentNode extends ASTNode {
     right: ExpressionNode;
 }
 
-// リスト要素一括代入 
+// リスト要素一括代入
 export interface ListDestructuringAssignmentNode extends ASTNode {
     kind: 'ListDestructuringAssignment';
     targets: IdentifierNode[]; // 代入対象の変数リスト
@@ -216,33 +225,33 @@ export interface IfStatementNode extends ASTNode {
     kind: 'IfStatement';
     condition: ExpressionNode;
     consequence: StatementNode;
-    alternative?: StatementNode; 
+    alternative?: StatementNode;
 }
 
-// For文 
+// For文
 export interface ForStatementNode extends ASTNode {
     kind: 'ForStatement';
-    initializers: AssignmentStatementNode[]; // 初期化ステートメントのリスト
+    initializers: (AssignmentStatementNode | StructMemberAssignmentNode | ListDestructuringAssignmentNode)[]; // 初期化ステートメントのリスト
     conditions: ExpressionNode[]; // 条件式のリスト
     updaters: ExpressionNode[]; // 更新式のリスト
     body: StatementNode; // ループ本体のブロック
 }
 
-// While文 
+// While文
 export interface WhileStatementNode extends ASTNode {
     kind: 'WhileStatement';
-    condition: ExpressionNode;
+    conditions: ExpressionNode[];
     body: StatementNode;
 }
 
-// Do-While文 
+// Do-While文
 export interface DoWhileStatementNode extends ASTNode {
     kind: 'DoWhileStatement';
     body: StatementNode;
-    condition: ExpressionNode;
+    conditions: ExpressionNode[];
 }
 
-// Return文 
+// Return文
 export interface ReturnStatementNode extends ASTNode {
     kind: 'ReturnStatement';
     value?: ExpressionNode;
@@ -258,7 +267,7 @@ export interface ContinueStatementNode extends ASTNode {
     kind: 'ContinueStatement';
 }
 
-// 構造体定義 
+// 構造体定義
 export interface StructStatementNode extends ASTNode {
     kind: 'StructStatement';
     name: IdentifierNode; // 構造体名
@@ -270,7 +279,7 @@ export interface StructStatementNode extends ASTNode {
 
 export interface ModuleVariableDeclarationNode extends ASTNode {
     kind: 'ModuleVariableDeclaration';
-    scope: 'extern' | 'static' | 'global' | 'local'; 
+    scope: 'extern' | 'static' | 'global' | 'local';
     variables: IdentifierNode[];
 }
 
@@ -288,7 +297,7 @@ export interface EndModuleNode extends ASTNode {
     kind: 'EndModule';
 }
 
-// ブロックノード 
+// ブロックノード
 export interface BlockNode extends ASTNode {
     kind: 'Block';
     statements: StatementNode[];

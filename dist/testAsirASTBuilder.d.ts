@@ -1,7 +1,7 @@
 import { AbstractParseTreeVisitor } from 'antlr4ng';
 import { testVisitor } from './.antlr/testVisitor.js';
 import * as ast from './testAst.js';
-import { ProgContext, ExprStatementContext, EmptyLineStatementContext, AssignStatementContext, DefinitionStatementContext, IfStatementContext, ForStatementContext, WhileStatementContext, DoStatementContext, ReturnStatementContext, BreakStatementContext, ContinueStatementContext, StructStatementContext, ModuleStatementContext, DefContext, IfContext, ForiniContext, ForconContext, Forup1Context, Forup2Context, Forup3Context, Forup4Context, Forup5Context, ForContext, WhileContext, DoContext, ReturnContext, ContinueContext, BreakContext, StrctContext, FcallContext, ModuleAssignContext, ModuleFunctionContext, ModuleStartContext, ModuleEndContext, MainContext, TernaryContext, QEorContext, QEandContext, QECompareContext, OrContext, AndContext, CompareContext, AddSubContext, MulDivSurContext, UnaryMinusContext, NotExprContext, PowerExprRuleContext, PowerContext, IndexAccessContext, RealContext, IdExprContext, ParenContext, SpecNumContext, StringLiteralContext, CharLiteralContext, RatContext, FloatContext, RatNumContext, DecNumContext, VIdContext, FIdContext, V2IdContext, ImaContext, PiContext, NapContext, BefContext, BefNContext, ListExprContext, SentenceContext, Sentence1Context, AssignContext, StructAssignContext, ListAssignContext } from "./.antlr/testParser.js";
+import { ProgContext, ExprStatementContext, EmptyLineStatementContext, AssignStatementContext, DefinitionStatementContext, IfStatementContext, ForStatementContext, WhileStatementContext, DoStatementContext, ReturnStatementContext, BreakStatementContext, ContinueStatementContext, StructStatementContext, ModuleStatementContext, DefContext, IfContext, ForContext, WhileContext, DoContext, ReturnContext, ContinueContext, BreakContext, StrctContext, FcallContext, ModuleAssignContext, ModuleFunctionContext, ModuleStartContext, ModuleEndContext, MainContext, TernaryContext, QEorContext, QEandContext, QECompareContext, OrContext, AndContext, CompareContext, AddSubContext, MulDivSurContext, UnaryMinusContext, NotExprContext, PowerExprRuleContext, PowerContext, IndexAccessContext, RealContext, IdExprContext, ParenContext, SpecNumContext, StringLiteralContext, CharLiteralContext, RatContext, FloatContext, RatNumContext, DecNumContext, VIdContext, FIdContext, V2IdContext, ImaContext, PiContext, NapContext, BefContext, BefNContext, ListExprContext, SentenceContext, Sentence1Context, AssignContext, StructAssignContext, ListAssignContext, DpLiteralContext, DpContext } from "./.antlr/testParser.js";
 export declare class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undefined> implements testVisitor<ast.ASTNode | undefined> {
     private createIdentifierNode;
     protected defaultResult(): ast.ASTNode | undefined;
@@ -18,13 +18,6 @@ export declare class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode
     visitIf(ctx: IfContext): ast.IfStatementNode;
     visitForStatement(ctx: ForStatementContext): ast.ForStatementNode;
     visitFor(ctx: ForContext): ast.ForStatementNode;
-    visitForini(ctx: ForiniContext): ast.AssignmentStatementNode;
-    visitForcon(ctx: ForconContext): ast.ExpressionNode;
-    visitForup1(ctx: Forup1Context): ast.AssignmentStatementNode;
-    visitForup2(ctx: Forup2Context): ast.UnaryOperationNode;
-    visitForup3(ctx: Forup3Context): ast.UnaryOperationNode;
-    visitForup4(ctx: Forup4Context): ast.UnaryOperationNode;
-    visitForup5(ctx: Forup5Context): ast.UnaryOperationNode;
     visitWhileStatement(ctx: WhileStatementContext): ast.WhileStatementNode;
     visitDoStatement(ctx: DoStatementContext): ast.DoWhileStatementNode;
     visitReturnStatement(ctx: ReturnStatementContext): ast.ReturnStatementNode;
@@ -63,6 +56,8 @@ export declare class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode
     visitStringLiteral(ctx: StringLiteralContext): ast.StringLiteralNode;
     visitCharLiteral(ctx: CharLiteralContext): ast.CharLiteralNode;
     visitListExpr(ctx: ListExprContext): ast.ListLiteralNode;
+    visitDpLiteral(ctx: DpLiteralContext): ast.DistributedPolynomialLiteralNode;
+    visitDp(ctx: DpContext): ast.DistributedPolynomialLiteralNode;
     visitDef(ctx: DefContext): ast.DefinitionStatementNode;
     visitWhile(ctx: WhileContext): ast.WhileStatementNode;
     visitDo(ctx: DoContext): ast.DoWhileStatementNode;

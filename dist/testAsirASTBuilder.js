@@ -187,24 +187,42 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     // functionFor #For
     visitFor(ctx) {
         const initializers = [];
-        for (const initCtx of ctx.forInitializer()) {
-            const initNode = this.visit(initCtx);
-            if (initNode) {
-                initializers.push(initNode);
-            }
-        }
         const conditions = [];
-        for (const condCtx of ctx.forCondition()) {
-            const condNode = this.visit(condCtx);
-            if (condNode) {
-                conditions.push(condNode);
-            }
-        }
         const updaters = [];
-        for (const updateCtx of ctx.forUpdate()) {
-            const updateNode = this.visit(updateCtx);
-            if (updateNode) {
-                updaters.push(updateNode);
+        // The grammar is: FOR LPAREN (assignment ...)? SEMI (expr ...)? SEMI (expr ...)? RPAREN block
+        // We determine the part of the loop (initializer, condition, updater) by tracking the semicolons.
+        let part = 'init';
+        if (ctx.children) {
+            for (const child of ctx.children) {
+                if (child instanceof antlr4ng_1.TerminalNode && child.symbol.type === testParser_js_1.testParser.SEMI) {
+                    if (part === 'init') {
+                        part = 'cond';
+                    }
+                    else {
+                        // The second SEMI transitions us to the update part
+                        part = 'update';
+                    }
+                }
+                else if (child instanceof testParser_js_2.AssignContext ||
+                    child instanceof testParser_js_2.StructAssignContext ||
+                    child instanceof testParser_js_2.ListAssignContext) {
+                    if (part === 'init') {
+                        const initNode = this.visit(child);
+                        if (initNode) {
+                            // The visit methods for assignments return the correct corresponding AST node types.
+                            initializers.push(initNode);
+                        }
+                    }
+                }
+                else if (child instanceof testParser_js_2.MainContext) { // expr rule is #Main
+                    const exprNode = this.visit(child);
+                    if (part === 'cond') {
+                        conditions.push(exprNode);
+                    }
+                    else if (part === 'update') {
+                        updaters.push(exprNode);
+                    }
+                }
             }
         }
         const body = this.visit(ctx.block());
@@ -217,97 +235,6 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             conditions: conditions,
             updaters: updaters,
             body: body,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // forInitializer 
-    visitForini(ctx) {
-        const left = this.createIdentifierNode(ctx.VAR_ID());
-        const operatorText = ctx.ASSIGN().getText();
-        if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        const right = this.visit(ctx.expr());
-        return {
-            kind: 'AssignmentStatement',
-            left: left,
-            operator: operatorText,
-            right: right,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // forCondition 
-    visitForcon(ctx) {
-        return this.visit(ctx.expr());
-    }
-    // forUpdate の各代替規則 
-    // Forup1 は AssignmentStatementNode
-    visitForup1(ctx) {
-        const left = this.createIdentifierNode(ctx.VAR_ID());
-        const operatorText = ctx.ASSIGN().getText();
-        if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        const right = this.visit(ctx.expr());
-        return {
-            kind: 'AssignmentStatement',
-            left: left,
-            operator: operatorText,
-            right: right,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // Forup2, Forup3 は UnaryOperationNode (後置インクリメント/デクリメント)
-    visitForup2(ctx) {
-        const operand = this.createIdentifierNode(ctx.VAR_ID());
-        const operatorText = ctx.INC().getText();
-        if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        return {
-            kind: 'UnaryOperation',
-            operator: operatorText,
-            operand: operand,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    visitForup3(ctx) {
-        const operand = this.createIdentifierNode(ctx.VAR_ID());
-        const operatorText = ctx.DEC().getText();
-        if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        return {
-            kind: 'UnaryOperation',
-            operator: operatorText,
-            operand: operand,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // Forup4, Forup5 は UnaryOperationNode (前置インクリメント/デクリメント)
-    visitForup4(ctx) {
-        const operand = this.createIdentifierNode(ctx.VAR_ID());
-        const operatorText = ctx.INC().getText();
-        if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        return {
-            kind: 'UnaryOperation',
-            operator: operatorText,
-            operand: operand,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    visitForup5(ctx) {
-        const operand = this.createIdentifierNode(ctx.VAR_ID());
-        const operatorText = ctx.DEC().getText();
-        if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Assignment operator text is undefined for Forup1. This indicates a parsing error.", ctx);
-        }
-        return {
-            kind: 'UnaryOperation',
-            operator: operatorText,
-            operand: operand,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
@@ -421,7 +348,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // Power 
+    // Power
     visitPower(ctx) {
         const base = this.visit(ctx.indexAccessExpr());
         if (ctx.POWER()) {
@@ -608,6 +535,36 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
+    // Distributed Polynomial Literals #DpLiteral
+    visitDpLiteral(ctx) {
+        return this.visit(ctx.dpoly());
+    }
+    // dpoly #Dp
+    visitDp(ctx) {
+        const allInts = ctx.INT();
+        const terms = [];
+        let modulus = undefined;
+        if (ctx.COLON()) {
+            // The last integer is the modulus
+            modulus = parseInt(allInts[allInts.length - 1].getText(), 10);
+            // The rest are terms
+            for (let i = 0; i < allInts.length - 1; i++) {
+                terms.push(parseInt(allInts[i].getText(), 10));
+            }
+        }
+        else {
+            // All integers are terms
+            for (const intToken of allInts) {
+                terms.push(parseInt(intToken.getText(), 10));
+            }
+        }
+        return {
+            kind: 'DistributedPolynomialLiteral',
+            terms: terms,
+            modulus: modulus,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
     // --- ここからが未実装だった部分 ---
     // functionDefinition #Def
     visitDef(ctx) {
@@ -629,11 +586,16 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
     // functionWhile #While
     visitWhile(ctx) {
-        const condition = this.visit(ctx.expr(0));
+        const conditions = [];
+        if (ctx.expr()) {
+            for (const exprCtx of ctx.expr()) {
+                conditions.push(this.visit(exprCtx));
+            }
+        }
         const body = this.visit(ctx.block());
         return {
             kind: 'WhileStatement',
-            condition: condition,
+            conditions: conditions, // Assumes ast.WhileStatementNode is updated to take conditions[]
             body: body,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
@@ -641,11 +603,16 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     // functionDo #Do
     visitDo(ctx) {
         const body = this.visit(ctx.block());
-        const condition = this.visit(ctx.expr(0));
+        const conditions = [];
+        if (ctx.expr()) {
+            for (const exprCtx of ctx.expr()) {
+                conditions.push(this.visit(exprCtx));
+            }
+        }
         return {
             kind: 'DoWhileStatement',
             body: body,
-            condition: condition,
+            conditions: conditions, // Assumes ast.DoWhileStatementNode is updated to take conditions[]
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }

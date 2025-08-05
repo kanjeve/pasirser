@@ -27,6 +27,16 @@ def calculate(A, B) {
         C = C - I;
     }
 
+/* New For loop tests */
+    for (J = newvect(3); J[0] < 10; J[0] = J[0] + 1) {
+        /* Complex initializer and updater */
+        K = J[0] * 2;
+    }
+    for (; G == 0;) {
+        /* Empty initializer and updater */
+        H = H + 1;
+    }
+
 /* While and Do-While loops */
     while (A < 5) {
         A = A + 1;
@@ -35,15 +45,28 @@ def calculate(A, B) {
         B = B - 1;
     } while (B > 0);
 
+/* New While and Do-While loop tests with multiple conditions */
+    while (A < 10, B > 0) {
+        A = A + 1;
+        B = B - 1;
+    }
+    do {
+        X = X + 1;
+    } while (X > 0, Y < 100);
+
 /* Ternary operator, list literal, and index access assignment */
     L = [1, 2, 3];
     N = ltov(L);
     N[0] = (C > 10) ? 100 : -100;
     L = vtol(N);
 
+/* Distributed Polynomial Literal tests */
+    P1 = <<1,2,3>>; /* Simple dpoly */
+    P2 = <<1,2,3:4>>; /* dpoly with modulus */
+
 /* Function call and return statement */
     print("Calculation finished");
-    return [A, B, C, L];
+    return [A, B, C, L, P1, P2];
 }
 
 /* Function call at the top level */

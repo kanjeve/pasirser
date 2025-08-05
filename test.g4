@@ -21,15 +21,7 @@ statement : expr (SEMI | DOLLAR)       #ExprStatement
 // キーワード
 functionDefinition : DEF FUNC_ID LPAREN (VAR_ID (COMMA VAR_ID)*)? RPAREN block #Def; 
 functionIf : IF LPAREN expr RPAREN block (ELSE (block | functionIf))? #If;
-forInitializer : VAR_ID ASSIGN expr #Forini;
-forCondition : expr #Forcon;
-forUpdate : VAR_ID ASSIGN expr #Forup1
-          | VAR_ID INC         #Forup2
-          | VAR_ID DEC         #Forup3
-          | INC VAR_ID         #Forup4
-          | DEC VAR_ID         #Forup5
-          ;
-functionFor : FOR LPAREN (forInitializer (COMMA forInitializer)*)? (SEMI | DOLLAR) (forCondition (COMMA forCondition)*)? (SEMI | DOLLAR) (forUpdate (COMMA forUpdate)*)? RPAREN block #For;
+functionFor : FOR LPAREN (assignment (COMMA assignment)*)? SEMI (expr (COMMA expr)*)? SEMI (expr (COMMA expr)*)? RPAREN block #For;
 functionWhile : WHILE LPAREN (expr (COMMA expr)*)? RPAREN block #While;
 functionDo : DO block WHILE LPAREN (expr (COMMA expr)*)? RPAREN #Do;
 functionReturn : RETURN expr? (SEMI | DOLLAR) #Return;
@@ -82,7 +74,10 @@ primaryExpr : num                   #Real
             | STRING2               #StringLiteral
             | STRING1               #CharLiteral
             | list                  #ListLiteral
+            | dpoly                 #DpLiteral
             ;
+
+dpoly : LTLT INT (COMMA INT)* (COLON INT)? GTGT #Dp;
 
 rational : (MINUS)? INT DIV (MINUS)? INT #Rat;
 
@@ -113,7 +108,7 @@ block : LBRANCE statement* RBRANCE #Sentence
       ;
 
 assignment : VAR_ID (LBRACKET expr RBRACKET)* (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) expr #Assign
-           | VAR_ID (ARROW (VAR_ID | FUNC_ID))+ ASSIGN expr #StructAssign
+           | VAR_ID (ARROW (VAR_ID | FUNC_ID))+ (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) expr #StructAssign
            | LBRACKET VAR_ID (COMMA VAR_ID)* RBRACKET (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) expr #ListAssign
            ;
 

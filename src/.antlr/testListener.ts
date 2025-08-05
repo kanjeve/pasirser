@@ -19,13 +19,6 @@ import { StructStatementContext } from "./testParser.js";
 import { ModuleStatementContext } from "./testParser.js";
 import { DefContext } from "./testParser.js";
 import { IfContext } from "./testParser.js";
-import { ForiniContext } from "./testParser.js";
-import { ForconContext } from "./testParser.js";
-import { Forup1Context } from "./testParser.js";
-import { Forup2Context } from "./testParser.js";
-import { Forup3Context } from "./testParser.js";
-import { Forup4Context } from "./testParser.js";
-import { Forup5Context } from "./testParser.js";
 import { ForContext } from "./testParser.js";
 import { WhileContext } from "./testParser.js";
 import { DoContext } from "./testParser.js";
@@ -61,6 +54,8 @@ import { SpecNumContext } from "./testParser.js";
 import { StringLiteralContext } from "./testParser.js";
 import { CharLiteralContext } from "./testParser.js";
 import { ListLiteralContext } from "./testParser.js";
+import { DpLiteralContext } from "./testParser.js";
+import { DpContext } from "./testParser.js";
 import { RatContext } from "./testParser.js";
 import { FloatContext } from "./testParser.js";
 import { RatNumContext } from "./testParser.js";
@@ -276,90 +271,6 @@ export class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitIf?: (ctx: IfContext) => void;
-    /**
-     * Enter a parse tree produced by the `Forini`
-     * labeled alternative in `testParser.forInitializer`.
-     * @param ctx the parse tree
-     */
-    enterForini?: (ctx: ForiniContext) => void;
-    /**
-     * Exit a parse tree produced by the `Forini`
-     * labeled alternative in `testParser.forInitializer`.
-     * @param ctx the parse tree
-     */
-    exitForini?: (ctx: ForiniContext) => void;
-    /**
-     * Enter a parse tree produced by the `Forcon`
-     * labeled alternative in `testParser.forCondition`.
-     * @param ctx the parse tree
-     */
-    enterForcon?: (ctx: ForconContext) => void;
-    /**
-     * Exit a parse tree produced by the `Forcon`
-     * labeled alternative in `testParser.forCondition`.
-     * @param ctx the parse tree
-     */
-    exitForcon?: (ctx: ForconContext) => void;
-    /**
-     * Enter a parse tree produced by the `Forup1`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     */
-    enterForup1?: (ctx: Forup1Context) => void;
-    /**
-     * Exit a parse tree produced by the `Forup1`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     */
-    exitForup1?: (ctx: Forup1Context) => void;
-    /**
-     * Enter a parse tree produced by the `Forup2`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     */
-    enterForup2?: (ctx: Forup2Context) => void;
-    /**
-     * Exit a parse tree produced by the `Forup2`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     */
-    exitForup2?: (ctx: Forup2Context) => void;
-    /**
-     * Enter a parse tree produced by the `Forup3`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     */
-    enterForup3?: (ctx: Forup3Context) => void;
-    /**
-     * Exit a parse tree produced by the `Forup3`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     */
-    exitForup3?: (ctx: Forup3Context) => void;
-    /**
-     * Enter a parse tree produced by the `Forup4`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     */
-    enterForup4?: (ctx: Forup4Context) => void;
-    /**
-     * Exit a parse tree produced by the `Forup4`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     */
-    exitForup4?: (ctx: Forup4Context) => void;
-    /**
-     * Enter a parse tree produced by the `Forup5`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     */
-    enterForup5?: (ctx: Forup5Context) => void;
-    /**
-     * Exit a parse tree produced by the `Forup5`
-     * labeled alternative in `testParser.forUpdate`.
-     * @param ctx the parse tree
-     */
-    exitForup5?: (ctx: Forup5Context) => void;
     /**
      * Enter a parse tree produced by the `For`
      * labeled alternative in `testParser.functionFor`.
@@ -780,6 +691,30 @@ export class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitListLiteral?: (ctx: ListLiteralContext) => void;
+    /**
+     * Enter a parse tree produced by the `DpLiteral`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     */
+    enterDpLiteral?: (ctx: DpLiteralContext) => void;
+    /**
+     * Exit a parse tree produced by the `DpLiteral`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     */
+    exitDpLiteral?: (ctx: DpLiteralContext) => void;
+    /**
+     * Enter a parse tree produced by the `Dp`
+     * labeled alternative in `testParser.dpoly`.
+     * @param ctx the parse tree
+     */
+    enterDp?: (ctx: DpContext) => void;
+    /**
+     * Exit a parse tree produced by the `Dp`
+     * labeled alternative in `testParser.dpoly`.
+     * @param ctx the parse tree
+     */
+    exitDp?: (ctx: DpContext) => void;
     /**
      * Enter a parse tree produced by the `Rat`
      * labeled alternative in `testParser.rational`.
