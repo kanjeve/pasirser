@@ -16,6 +16,12 @@ import { BreakStatementContext } from "./testParser.js";
 import { ContinueStatementContext } from "./testParser.js";
 import { StructStatementContext } from "./testParser.js";
 import { ModuleStatementContext } from "./testParser.js";
+import { PreproStatementContext } from "./testParser.js";
+import { PreChrContext } from "./testParser.js";
+import { PreChrPlusContext } from "./testParser.js";
+import { PDefContext } from "./testParser.js";
+import { PIfContext } from "./testParser.js";
+import { PIncContext } from "./testParser.js";
 import { DefContext } from "./testParser.js";
 import { IfContext } from "./testParser.js";
 import { ForContext } from "./testParser.js";
@@ -24,7 +30,7 @@ import { DoContext } from "./testParser.js";
 import { ReturnContext } from "./testParser.js";
 import { ContinueContext } from "./testParser.js";
 import { BreakContext } from "./testParser.js";
-import { StrctContext } from "./testParser.js";
+import { StructContext } from "./testParser.js";
 import { FcallContext } from "./testParser.js";
 import { ModuleAssignContext } from "./testParser.js";
 import { ModuleFunctionContext } from "./testParser.js";
@@ -36,6 +42,8 @@ import { AssignContext } from "./testParser.js";
 import { StructAssignContext } from "./testParser.js";
 import { ListAssignContext } from "./testParser.js";
 import { TernaryContext } from "./testParser.js";
+import { QuoteContext } from "./testParser.js";
+import { QEnotContext } from "./testParser.js";
 import { QEorContext } from "./testParser.js";
 import { QEandContext } from "./testParser.js";
 import { QECompareContext } from "./testParser.js";
@@ -46,38 +54,45 @@ import { AddSubContext } from "./testParser.js";
 import { MulDivSurContext } from "./testParser.js";
 import { UnaryMinusContext } from "./testParser.js";
 import { NotExprContext } from "./testParser.js";
-import { PreIncrementContext } from "./testParser.js";
-import { PreDecrementContext } from "./testParser.js";
-import { PostFixExprContext } from "./testParser.js";
 import { PowExprContext } from "./testParser.js";
+import { PowExContext } from "./testParser.js";
+import { FactrialExprContext } from "./testParser.js";
+import { PreFixContext } from "./testParser.js";
 import { PostFixContext } from "./testParser.js";
-import { PowerContext } from "./testParser.js";
 import { IndexAccessContext } from "./testParser.js";
+import { IndExprContext } from "./testParser.js";
 import { RealContext } from "./testParser.js";
 import { IdExprContext } from "./testParser.js";
 import { FCallExprContext } from "./testParser.js";
 import { ParenContext } from "./testParser.js";
-import { SpecNumContext } from "./testParser.js";
 import { StringLiteralContext } from "./testParser.js";
-import { CharLiteralContext } from "./testParser.js";
 import { ListLiteralContext } from "./testParser.js";
 import { DpLiteralContext } from "./testParser.js";
+import { PreChrExprContext } from "./testParser.js";
 import { DpContext } from "./testParser.js";
 import { RatContext } from "./testParser.js";
 import { FloatContext } from "./testParser.js";
+import { HexNumContext } from "./testParser.js";
+import { BitNumContext } from "./testParser.js";
 import { RatNumContext } from "./testParser.js";
 import { DecNumContext } from "./testParser.js";
+import { ImaNumContext } from "./testParser.js";
 import { VIdContext } from "./testParser.js";
-import { FIdContext } from "./testParser.js";
-import { V2IdContext } from "./testParser.js";
-import { ImaContext } from "./testParser.js";
-import { PiContext } from "./testParser.js";
-import { NapContext } from "./testParser.js";
 import { BefContext } from "./testParser.js";
 import { BefNContext } from "./testParser.js";
+import { V2IdContext } from "./testParser.js";
+import { FuncContext } from "./testParser.js";
+import { AtFuncContext } from "./testParser.js";
+import { ChFuncContext } from "./testParser.js";
 import { ListExprContext } from "./testParser.js";
 import { SentenceContext } from "./testParser.js";
 import { Sentence1Context } from "./testParser.js";
+import { ExprlistContext } from "./testParser.js";
+import { TerminatorContext } from "./testParser.js";
+import { MemberNameContext } from "./testParser.js";
+import { SystemPathContext } from "./testParser.js";
+import { OptionPairContext } from "./testParser.js";
+import { QualifiedIdentifierContext } from "./testParser.js";
 
 
 /**
@@ -179,6 +194,48 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitModuleStatement?: (ctx: ModuleStatementContext) => Result;
     /**
+     * Visit a parse tree produced by the `PreproStatement`
+     * labeled alternative in `testParser.statement`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPreproStatement?: (ctx: PreproStatementContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PreChr`
+     * labeled alternative in `testParser.prechar`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPreChr?: (ctx: PreChrContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PreChrPlus`
+     * labeled alternative in `testParser.prechar`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPreChrPlus?: (ctx: PreChrPlusContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PDef`
+     * labeled alternative in `testParser.preprocessor`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPDef?: (ctx: PDefContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PIf`
+     * labeled alternative in `testParser.preprocessor`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPIf?: (ctx: PIfContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PInc`
+     * labeled alternative in `testParser.preprocessor`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPInc?: (ctx: PIncContext) => Result;
+    /**
      * Visit a parse tree produced by the `Def`
      * labeled alternative in `testParser.functionDefinition`.
      * @param ctx the parse tree
@@ -235,12 +292,12 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitBreak?: (ctx: BreakContext) => Result;
     /**
-     * Visit a parse tree produced by the `Strct`
+     * Visit a parse tree produced by the `Struct`
      * labeled alternative in `testParser.functionStruct`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitStrct?: (ctx: StrctContext) => Result;
+    visitStruct?: (ctx: StructContext) => Result;
     /**
      * Visit a parse tree produced by the `Fcall`
      * labeled alternative in `testParser.functionCall`.
@@ -319,6 +376,20 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitTernary?: (ctx: TernaryContext) => Result;
     /**
+     * Visit a parse tree produced by the `Quote`
+     * labeled alternative in `testParser.quoteExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitQuote?: (ctx: QuoteContext) => Result;
+    /**
+     * Visit a parse tree produced by the `QEnot`
+     * labeled alternative in `testParser.qeNotExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitQEnot?: (ctx: QEnotContext) => Result;
+    /**
      * Visit a parse tree produced by the `QEor`
      * labeled alternative in `testParser.qeOrExpr`.
      * @param ctx the parse tree
@@ -389,33 +460,33 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitNotExpr?: (ctx: NotExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `PreIncrement`
-     * labeled alternative in `testParser.unaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitPreIncrement?: (ctx: PreIncrementContext) => Result;
-    /**
-     * Visit a parse tree produced by the `PreDecrement`
-     * labeled alternative in `testParser.unaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitPreDecrement?: (ctx: PreDecrementContext) => Result;
-    /**
-     * Visit a parse tree produced by the `PostFixExpr`
-     * labeled alternative in `testParser.unaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitPostFixExpr?: (ctx: PostFixExprContext) => Result;
-    /**
      * Visit a parse tree produced by the `PowExpr`
      * labeled alternative in `testParser.unaryExpr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
     visitPowExpr?: (ctx: PowExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PowEx`
+     * labeled alternative in `testParser.powerExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPowEx?: (ctx: PowExContext) => Result;
+    /**
+     * Visit a parse tree produced by the `FactrialExpr`
+     * labeled alternative in `testParser.factExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitFactrialExpr?: (ctx: FactrialExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PreFix`
+     * labeled alternative in `testParser.prefixExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPreFix?: (ctx: PreFixContext) => Result;
     /**
      * Visit a parse tree produced by the `PostFix`
      * labeled alternative in `testParser.postfixExpr`.
@@ -424,19 +495,19 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitPostFix?: (ctx: PostFixContext) => Result;
     /**
-     * Visit a parse tree produced by the `Power`
-     * labeled alternative in `testParser.powerExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitPower?: (ctx: PowerContext) => Result;
-    /**
      * Visit a parse tree produced by the `IndexAccess`
      * labeled alternative in `testParser.indexAccessExpr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
     visitIndexAccess?: (ctx: IndexAccessContext) => Result;
+    /**
+     * Visit a parse tree produced by the `IndExpr`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitIndExpr?: (ctx: IndExprContext) => Result;
     /**
      * Visit a parse tree produced by the `Real`
      * labeled alternative in `testParser.primaryExpr`.
@@ -466,26 +537,12 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitParen?: (ctx: ParenContext) => Result;
     /**
-     * Visit a parse tree produced by the `SpecNum`
-     * labeled alternative in `testParser.primaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitSpecNum?: (ctx: SpecNumContext) => Result;
-    /**
      * Visit a parse tree produced by the `StringLiteral`
      * labeled alternative in `testParser.primaryExpr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
     visitStringLiteral?: (ctx: StringLiteralContext) => Result;
-    /**
-     * Visit a parse tree produced by the `CharLiteral`
-     * labeled alternative in `testParser.primaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitCharLiteral?: (ctx: CharLiteralContext) => Result;
     /**
      * Visit a parse tree produced by the `ListLiteral`
      * labeled alternative in `testParser.primaryExpr`.
@@ -500,6 +557,13 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      * @return the visitor result
      */
     visitDpLiteral?: (ctx: DpLiteralContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PreChrExpr`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPreChrExpr?: (ctx: PreChrExprContext) => Result;
     /**
      * Visit a parse tree produced by the `Dp`
      * labeled alternative in `testParser.dpoly`.
@@ -522,6 +586,20 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitFloat?: (ctx: FloatContext) => Result;
     /**
+     * Visit a parse tree produced by the `HexNum`
+     * labeled alternative in `testParser.num`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitHexNum?: (ctx: HexNumContext) => Result;
+    /**
+     * Visit a parse tree produced by the `BitNum`
+     * labeled alternative in `testParser.num`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitBitNum?: (ctx: BitNumContext) => Result;
+    /**
      * Visit a parse tree produced by the `RatNum`
      * labeled alternative in `testParser.num`.
      * @param ctx the parse tree
@@ -536,6 +614,13 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitDecNum?: (ctx: DecNumContext) => Result;
     /**
+     * Visit a parse tree produced by the `ImaNum`
+     * labeled alternative in `testParser.num`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitImaNum?: (ctx: ImaNumContext) => Result;
+    /**
      * Visit a parse tree produced by the `VId`
      * labeled alternative in `testParser.id`.
      * @param ctx the parse tree
@@ -543,12 +628,19 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitVId?: (ctx: VIdContext) => Result;
     /**
-     * Visit a parse tree produced by the `FId`
+     * Visit a parse tree produced by the `Bef`
      * labeled alternative in `testParser.id`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitFId?: (ctx: FIdContext) => Result;
+    visitBef?: (ctx: BefContext) => Result;
+    /**
+     * Visit a parse tree produced by the `BefN`
+     * labeled alternative in `testParser.id`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitBefN?: (ctx: BefNContext) => Result;
     /**
      * Visit a parse tree produced by the `V2Id`
      * labeled alternative in `testParser.id`.
@@ -557,40 +649,26 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitV2Id?: (ctx: V2IdContext) => Result;
     /**
-     * Visit a parse tree produced by the `Ima`
-     * labeled alternative in `testParser.specialnum`.
+     * Visit a parse tree produced by the `Func`
+     * labeled alternative in `testParser.indeterminate`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitIma?: (ctx: ImaContext) => Result;
+    visitFunc?: (ctx: FuncContext) => Result;
     /**
-     * Visit a parse tree produced by the `Pi`
-     * labeled alternative in `testParser.specialnum`.
+     * Visit a parse tree produced by the `AtFunc`
+     * labeled alternative in `testParser.indeterminate`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitPi?: (ctx: PiContext) => Result;
+    visitAtFunc?: (ctx: AtFuncContext) => Result;
     /**
-     * Visit a parse tree produced by the `Nap`
-     * labeled alternative in `testParser.specialnum`.
+     * Visit a parse tree produced by the `ChFunc`
+     * labeled alternative in `testParser.indeterminate`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitNap?: (ctx: NapContext) => Result;
-    /**
-     * Visit a parse tree produced by the `Bef`
-     * labeled alternative in `testParser.specialnum`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitBef?: (ctx: BefContext) => Result;
-    /**
-     * Visit a parse tree produced by the `BefN`
-     * labeled alternative in `testParser.specialnum`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitBefN?: (ctx: BefNContext) => Result;
+    visitChFunc?: (ctx: ChFuncContext) => Result;
     /**
      * Visit a parse tree produced by the `ListExpr`
      * labeled alternative in `testParser.list`.
@@ -612,5 +690,41 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      * @return the visitor result
      */
     visitSentence1?: (ctx: Sentence1Context) => Result;
+    /**
+     * Visit a parse tree produced by `testParser.exprlist`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitExprlist?: (ctx: ExprlistContext) => Result;
+    /**
+     * Visit a parse tree produced by `testParser.terminator`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitTerminator?: (ctx: TerminatorContext) => Result;
+    /**
+     * Visit a parse tree produced by `testParser.memberName`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitMemberName?: (ctx: MemberNameContext) => Result;
+    /**
+     * Visit a parse tree produced by `testParser.systemPath`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitSystemPath?: (ctx: SystemPathContext) => Result;
+    /**
+     * Visit a parse tree produced by `testParser.optionPair`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitOptionPair?: (ctx: OptionPairContext) => Result;
+    /**
+     * Visit a parse tree produced by `testParser.qualifiedIdentifier`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitQualifiedIdentifier?: (ctx: QualifiedIdentifierContext) => Result;
 }
 

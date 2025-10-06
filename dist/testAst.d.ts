@@ -7,103 +7,113 @@ export interface ASTNode {
         endColumn?: number;
     };
 }
-export type ExpressionNode = NumberLiteralNode | StringLiteralNode | CharLiteralNode | IdentifierNode | BinaryOperationNode | UnaryOperationNode | TernaryOperationNode | PowerOperationNode | IndexAccessNode | FunctionCallNode | ParenExpressionNode | SpecialNumberNode | ListLiteralNode | DistributedPolynomialLiteralNode | AssignmentExpressionNode | StructMemberAssignmentNode | ListDestructuringAssignmentNode;
-export type StatementNode = ExpressionStatementNode | EmptyStatementNode | DefinitionStatementNode | IfStatementNode | ForStatementNode | WhileStatementNode | DoWhileStatementNode | ReturnStatementNode | BreakStatementNode | ContinueStatementNode | StructStatementNode | ModuleStatementNode | BlockNode;
+export interface TypedExpressionNode extends ASTNode {
+    resolvedType?: AsirType;
+}
+export type LValueNode = IdentifierNode | IndexAccessNode;
+export type ExpressionNode = NumberLiteralNode | StringLiteralNode | CharLiteralNode | IdentifierNode | QualifiedIdentifierNode | BinaryOperationNode | UnaryOperationNode | TernaryOperationNode | PowerOperationNode | IndexAccessNode | FunctionCallNode | ParenExpressionNode | ListLiteralNode | DistributedPolynomialLiteralNode | AssignmentExpressionNode | StructMemberAssignmentNode | ListDestructuringAssignmentNode;
+export type StatementNode = ExpressionStatementNode | EmptyStatementNode | DefinitionStatementNode | IfStatementNode | ForStatementNode | WhileStatementNode | DoWhileStatementNode | ReturnStatementNode | BreakStatementNode | ContinueStatementNode | StructStatementNode | ModuleStatementNode | PreprocessorNode | BlockNode;
 export type ModuleStatementNode = ModuleVariableDeclarationNode | LocalFunctionDeclarationNode | ModuleDeclarationNode | EndModuleNode;
+export type PreprocessorNode = PreprocessorDefineNode | PreprocessorIfNode | PreprocessorIncludeNode;
 export interface ProgramNode extends ASTNode {
     kind: 'Program';
     statements: StatementNode[];
 }
-export interface NumberLiteralNode extends ASTNode {
+export interface NumberLiteralNode extends TypedExpressionNode {
     kind: 'NumberLiteral';
     value: number | string;
     rawText?: string;
 }
-export interface StringLiteralNode extends ASTNode {
+export interface StringLiteralNode extends TypedExpressionNode {
     kind: 'StringLiteral';
     value: string;
     rawText?: string;
 }
-export interface CharLiteralNode extends ASTNode {
+export interface CharLiteralNode extends TypedExpressionNode {
     kind: 'CharLiteral';
     value: string;
     rawText?: string;
 }
-export interface DistributedPolynomialLiteralNode extends ASTNode {
+export interface DistributedPolynomialLiteralNode extends TypedExpressionNode {
     kind: 'DistributedPolynomialLiteral';
     terms: number[];
     modulus?: number;
 }
-export interface IdentifierNode extends ASTNode {
+export interface IdentifierNode extends TypedExpressionNode {
     kind: 'Identifier';
     name: string;
-    qualifier?: IdentifierNode;
     isVar: boolean;
     isSpecialVar: boolean;
+    resolvedSymbol?: Symbol;
 }
-export interface SpecialNumberNode extends ASTNode {
-    kind: 'SpecialNumber';
-    name: string;
+export interface QualifiedIdentifierNode extends TypedExpressionNode {
+    kind: 'QualifiedIdentifier';
+    path: IdentifierNode[];
 }
-export interface BinaryOperationNode extends ASTNode {
+export interface BinaryOperationNode extends TypedExpressionNode {
     kind: 'BinaryOperation';
     operator: string;
     left: ExpressionNode;
     right: ExpressionNode;
 }
-export interface UnaryOperationNode extends ASTNode {
+export interface UnaryOperationNode extends TypedExpressionNode {
     kind: 'UnaryOperation';
     operator: string;
     operand: ExpressionNode;
     isPostfix?: boolean;
 }
-export interface PowerOperationNode extends ASTNode {
+export interface PowerOperationNode extends TypedExpressionNode {
     kind: 'PowerOperation';
     base: ExpressionNode;
     exponent: ExpressionNode;
 }
-export interface TernaryOperationNode extends ASTNode {
+export interface TernaryOperationNode extends TypedExpressionNode {
     kind: 'TernaryOperation';
     condition: ExpressionNode;
     consequence: ExpressionNode;
     alternative: ExpressionNode;
 }
-export interface IndexAccessNode extends ASTNode {
+export interface IndexAccessNode extends TypedExpressionNode {
     kind: 'IndexAccess';
     base: ExpressionNode;
     indices: ExpressionNode[];
 }
-export interface FunctionCallNode extends ASTNode {
+export interface FunctionCallNode extends TypedExpressionNode {
     kind: 'FunctionCall';
-    callee: IdentifierNode;
+    callee: QualifiedIdentifierNode;
+    isGlobal: boolean;
     args: ExpressionNode[];
+    options: OptionPairNode[];
 }
-export interface ParenExpressionNode extends ASTNode {
+export interface OptionPairNode extends ASTNode {
+    kind: 'OptionPair';
+    key: QualifiedIdentifierNode;
+    value: ExpressionNode;
+}
+export interface ParenExpressionNode extends TypedExpressionNode {
     kind: 'ParenExpression';
     expression: ExpressionNode;
 }
-export interface ListLiteralNode extends ASTNode {
+export interface ListLiteralNode extends TypedExpressionNode {
     kind: 'ListLiteral';
     elements: ExpressionNode[];
 }
-export interface AssignmentExpressionNode extends ASTNode {
-    kind: 'AssignmentExpression';
-    left: ExpressionNode;
+export interface BaseAssignmentNode extends TypedExpressionNode {
     operator: string;
     right: ExpressionNode;
 }
-export interface StructMemberAssignmentNode extends ASTNode {
+export interface AssignmentExpressionNode extends BaseAssignmentNode {
+    kind: 'AssignmentExpression';
+    left: LValueNode;
+}
+export interface StructMemberAssignmentNode extends BaseAssignmentNode {
     kind: 'StructMemberAssignment';
     base: IdentifierNode;
     members: IdentifierNode[];
-    operator: string;
-    right: ExpressionNode;
 }
-export interface ListDestructuringAssignmentNode extends ASTNode {
+export interface ListDestructuringAssignmentNode extends BaseAssignmentNode {
     kind: 'ListDestructuringAssignment';
     targets: IdentifierNode[];
-    operator: string;
-    right: ExpressionNode;
 }
 export interface ExpressionStatementNode extends ASTNode {
     kind: 'ExpressionStatement';
@@ -121,8 +131,8 @@ export interface DefinitionStatementNode extends ASTNode {
 export interface IfStatementNode extends ASTNode {
     kind: 'IfStatement';
     condition: ExpressionNode;
-    consequence: StatementNode;
-    alternative?: StatementNode;
+    thenStatement: StatementNode;
+    elseStatement?: StatementNode;
 }
 export interface ForStatementNode extends ASTNode {
     kind: 'ForStatement';
@@ -175,4 +185,41 @@ export interface EndModuleNode extends ASTNode {
 export interface BlockNode extends ASTNode {
     kind: 'Block';
     statements: StatementNode[];
+}
+export interface PreprocessorDefineNode extends ASTNode {
+    kind: 'PreprocessorDefine';
+    name: QualifiedIdentifierNode;
+    parameters: IdentifierNode[];
+    body: ExpressionNode;
+}
+export interface PreprocessorIfNode extends ASTNode {
+    kind: 'PreprocessorIf';
+    directive: 'if' | 'ifdef' | 'ifndef';
+    condition: ExpressionNode;
+    thenStatements: StatementNode[];
+    elifClauses: PreprocessorElifNode[];
+    elseStatements?: StatementNode[];
+}
+export interface PreprocessorElifNode extends ASTNode {
+    kind: 'PreprocessorElif';
+    condition: ExpressionNode;
+    statements: StatementNode[];
+}
+export interface PreprocessorIncludeNode extends ASTNode {
+    kind: 'PreprocessorIncludeNode';
+    pathtype: 'system' | 'local';
+    path: string;
+}
+export interface ExpressionListNode extends ASTNode {
+    kind: 'ExpressionList';
+    expressions: ExpressionNode[];
+}
+export type AsirType = 'number' | 'polynomial' | 'list' | 'string' | 'function' | 'struct' | 'module' | 'any' | 'unknown';
+export interface Symbol {
+    name: string;
+    type: AsirType;
+    definedAt: {
+        line: number;
+        column: number;
+    };
 }

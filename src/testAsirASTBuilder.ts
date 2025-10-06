@@ -3,40 +3,168 @@ import { Token, ParserRuleContext, TerminalNode, AbstractParseTreeVisitor } from
 import { testVisitor } from './.antlr/testVisitor.js';
 import * as ast from './testAst.js'
 import { ASTBuilderError, getLoc } from './errors.js';
-import { testParser } from './.antlr/testParser.js'; // Add this line
+import { FactExprContext, testParser } from './.antlr/testParser.js';
 
-// コンテキストクラスの型をインポート
-import { ProgContext, ExprStatementContext, EmptyLineStatementContext, DefinitionStatementContext, IfStatementContext, ForStatementContext, WhileStatementContext, DoStatementContext, ReturnStatementContext, BreakStatementContext, ContinueStatementContext, StructStatementContext, ModuleStatementContext, DefContext, IfContext, ForContext, WhileContext, DoContext, ReturnContext, ContinueContext, BreakContext, StrctContext, FcallContext, ModuleAssignContext, ModuleFunctionContext, ModuleStartContext, ModuleEndContext, MainContext, TernaryContext, QEorContext, QEandContext, QECompareContext, OrContext, AndContext, CompareContext, AddSubContext, MulDivSurContext, UnaryMinusContext, NotExprContext, PowerContext, IndexAccessContext, RealContext, IdExprContext, FCallExprContext, ParenContext, SpecNumContext, StringLiteralContext, CharLiteralContext, ListLiteralContext, RatContext, FloatContext, RatNumContext, DecNumContext, VIdContext, FIdContext, V2IdContext, ImaContext, PiContext, NapContext, BefContext, BefNContext, ListExprContext, SentenceContext, Sentence1Context, AssignContext, StructAssignContext, ListAssignContext, DpLiteralContext, DpContext, PreIncrementContext, PreDecrementContext, PostFixContext, PostFixExprContext, PowExprContext, NoAssignmentContext } from "./.antlr/testParser.js";
+// Import all context types
+import { ProgContext } from "./.antlr/testParser.js";
+import { ExprStatementContext } from "./.antlr/testParser.js";
+import { EmptyLineStatementContext } from "./.antlr/testParser.js";
+import { DefinitionStatementContext } from "./.antlr/testParser.js";
+import { IfStatementContext } from "./.antlr/testParser.js";
+import { ForStatementContext } from "./.antlr/testParser.js";
+import { WhileStatementContext } from "./.antlr/testParser.js";
+import { DoStatementContext } from "./.antlr/testParser.js";
+import { ReturnStatementContext } from "./.antlr/testParser.js";
+import { BreakStatementContext } from "./.antlr/testParser.js";
+import { ContinueStatementContext } from "./.antlr/testParser.js";
+import { StructStatementContext } from "./.antlr/testParser.js";
+import { ModuleStatementContext } from "./.antlr/testParser.js";
+import { PreproStatementContext } from "./.antlr/testParser.js";
+import { PreChrContext } from "./.antlr/testParser.js";
+import { PreChrPlusContext } from "./.antlr/testParser.js";
+import { PDefContext } from "./.antlr/testParser.js";
+import { PIfContext } from "./.antlr/testParser.js";
+import { PIncContext } from "./.antlr/testParser.js";
+import { DefContext } from "./.antlr/testParser.js";
+import { IfContext } from "./.antlr/testParser.js";
+import { ForContext } from "./.antlr/testParser.js";
+import { WhileContext } from "./.antlr/testParser.js";
+import { DoContext } from "./.antlr/testParser.js";
+import { ReturnContext } from "./.antlr/testParser.js";
+import { ContinueContext } from "./.antlr/testParser.js";
+import { BreakContext } from "./.antlr/testParser.js";
+import { StructContext } from "./.antlr/testParser.js";
+import { FcallContext } from "./.antlr/testParser.js";
+import { ModuleAssignContext } from "./.antlr/testParser.js";
+import { ModuleFunctionContext } from "./.antlr/testParser.js";
+import { ModuleStartContext } from "./.antlr/testParser.js";
+import { ModuleEndContext } from "./.antlr/testParser.js";
+import { MainContext } from "./.antlr/testParser.js";
+import { NoAssignmentContext } from "./.antlr/testParser.js";
+import { AssignContext } from "./.antlr/testParser.js";
+import { StructAssignContext } from "./.antlr/testParser.js";
+import { ListAssignContext } from "./.antlr/testParser.js";
+import { TernaryContext } from "./.antlr/testParser.js";
+import { QuoteContext } from "./.antlr/testParser.js";
+import { QEnotContext } from "./.antlr/testParser.js";
+import { QEorContext } from "./.antlr/testParser.js";
+import { QEandContext } from "./.antlr/testParser.js";
+import { QECompareContext } from "./.antlr/testParser.js";
+import { OrContext } from "./.antlr/testParser.js";
+import { AndContext } from "./.antlr/testParser.js";
+import { CompareContext } from "./.antlr/testParser.js";
+import { AddSubContext } from "./.antlr/testParser.js";
+import { MulDivSurContext } from "./.antlr/testParser.js";
+import { UnaryMinusContext } from "./.antlr/testParser.js";
+import { NotExprContext } from "./.antlr/testParser.js";
+import { PowExprContext } from "./.antlr/testParser.js";
+import { PowExContext } from "./.antlr/testParser.js";
+import { FactrialExprContext } from "./.antlr/testParser.js";
+import { PreFixContext } from "./.antlr/testParser.js";
+import { PostFixContext } from "./.antlr/testParser.js";
+import { IndexAccessContext } from "./.antlr/testParser.js";
+import { IndExprContext } from "./.antlr/testParser.js";
+import { RealContext } from "./.antlr/testParser.js";
+import { IdExprContext } from "./.antlr/testParser.js";
+import { FCallExprContext } from "./.antlr/testParser.js";
+import { ParenContext } from "./.antlr/testParser.js";
+import { StringLiteralContext } from "./.antlr/testParser.js";
+import { ListLiteralContext } from "./.antlr/testParser.js";
+import { DpLiteralContext } from "./.antlr/testParser.js";
+import { PreChrExprContext } from "./.antlr/testParser.js";
+import { DpContext } from "./.antlr/testParser.js";
+import { RatContext } from "./.antlr/testParser.js";
+import { FloatContext } from "./.antlr/testParser.js";
+import { HexNumContext } from "./.antlr/testParser.js";
+import { BitNumContext } from "./.antlr/testParser.js";
+import { RatNumContext } from "./.antlr/testParser.js";
+import { DecNumContext } from "./.antlr/testParser.js";
+import { ImaNumContext } from "./.antlr/testParser.js";
+import { VIdContext } from "./.antlr/testParser.js";
+import { BefContext } from "./.antlr/testParser.js";
+import { BefNContext } from "./.antlr/testParser.js";
+import { V2IdContext } from "./.antlr/testParser.js";
+import { FuncContext } from "./.antlr/testParser.js";
+import { AtFuncContext } from "./.antlr/testParser.js";
+import { ChFuncContext } from "./.antlr/testParser.js";
+import { ListExprContext } from "./.antlr/testParser.js";
+import { SentenceContext } from "./.antlr/testParser.js";
+import { Sentence1Context } from "./.antlr/testParser.js";
+import { ExprlistContext } from "./.antlr/testParser.js";
+import { TerminatorContext } from "./.antlr/testParser.js";
+import { MemberNameContext } from "./.antlr/testParser.js";
+import { SystemPathContext } from "./.antlr/testParser.js";
+import { OptionPairContext } from "./.antlr/testParser.js";
+import { QualifiedIdentifierContext } from "./.antlr/testParser.js";
+import { createContext } from 'vm';
+import { Identifier } from 'acorn';
+import { ChildProcess } from 'child_process';
 
-// カスタム Visitor クラス
+
+// Custom Visitor Class
 export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undefined> implements testVisitor<ast.ASTNode | undefined> {
 
-    private createIdentifierNode(token: TerminalNode): ast.IdentifierNode {
+    // --- Helper Methods ---
+
+    private createIdentifierNode(tokenOrNode: TerminalNode | Token): ast.IdentifierNode {
+        const token = (tokenOrNode instanceof TerminalNode) ? tokenOrNode.symbol : tokenOrNode;
         return {
             kind: 'Identifier',
-            name: token.getText(),
-            isVar: token.symbol.type === testParser.VAR_ID,
-            isSpecialVar: token.symbol.type === testParser.VAR_2,
-            loc: getLoc(token)
+            name: token.text!,
+            isVar: token.type === testParser.VAR_ID,
+            isSpecialVar: token.type === testParser.VAR_2,
+            loc: getLoc(tokenOrNode)
         };
     }
 
-    // visit メソッドが何も返さなかった場合のデフォルト値
+    private visitAndCheck<T extends ast.ASTNode>(ctx: ParserRuleContext | undefined, expectedKind?: T['kind']): T {
+        if (!ctx) {
+            throw new Error("Internal Error: Attempted to visit an undefined context.");
+        }
+        const node = this.visit(ctx);
+        if (!node) {
+            throw new ASTBuilderError(`Visiting context '${ctx.getText()}' returned undefined.`, ctx);
+        }
+        if (expectedKind && node.kind !== expectedKind) {
+            throw new ASTBuilderError(`Expected node of kind '${expectedKind}' but got '${node.kind}'.`, ctx);
+        }
+        return node as T;
+    }
+
+    private visitBinaryOp(ctx: ParserRuleContext, operandGetter: (i: number) => ParserRuleContext | null): ast.ExpressionNode {
+        let left = this.visitAndCheck<ast.ExpressionNode>(operandGetter(0)!);
+        for (let i = 1; ; i++) {
+            const operandCtx = operandGetter(i);
+            if (!operandCtx) break;
+
+            const operator = ctx.getChild(i * 2 - 1) as TerminalNode;
+            const right = this.visitAndCheck<ast.ExpressionNode>(operandCtx);
+
+            left = {
+                kind: 'BinaryOperation',
+                operator: operator.getText(),
+                left: left,
+                right: right,
+                loc: getLoc(ctx)
+            };
+        }
+        return left;
+    }
+
     protected defaultResult(): ast.ASTNode | undefined {
         return undefined;
     }
 
-    // 子ノードの訪問結果を結合する方法
     protected aggregateResult(aggregate: ast.ASTNode | undefined, nextResult: ast.ASTNode | undefined): ast.ASTNode | undefined {
         return nextResult !== undefined ? nextResult : aggregate;
     }
 
-    // --- プログラムのルートノード ---
+    // --- Program Entry --- 
     visitProg(ctx: ProgContext): ast.ProgramNode {
         const statements: ast.StatementNode[] = [];
         for (const stmtCtx of ctx.statement()) {
-            const stmtNode = this.visit(stmtCtx); // statementルールを訪問
-            if (stmtNode && (stmtNode as ast.StatementNode).kind) { // kindプロパティでStatementNodeか確認
+            const stmtNode = this.visit(stmtCtx);
+            if (stmtNode) {
                 statements.push(stmtNode as ast.StatementNode);
             }
         }
@@ -47,19 +175,16 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
-    // --- 文 (Statement) の訪問 ---
+    // --- Statements ---
 
-    // expr (SEMI | DOLLAR) #ExprStatement
     visitExprStatement(ctx: ExprStatementContext): ast.ExpressionStatementNode {
-        const expression = this.visit(ctx.expr()!) as ast.ExpressionNode;
         return {
             kind: 'ExpressionStatement',
-            expression: expression,
+            expression: this.visitAndCheck<ast.ExpressionNode>(ctx.expr()!),
             loc: getLoc(ctx)
         };
     }
 
-    // (SEMI | DOLLAR) #EmptyLineStatement
     visitEmptyStatement(ctx: EmptyLineStatementContext): ast.EmptyStatementNode {
         return {
             kind: 'EmptyStatement',
@@ -67,70 +192,206 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
-    // assignmentExprの #Assign (VAR_ID ... ASSIGN assignmentExpr)
-    visitAssign(ctx: AssignContext): ast.AssignmentExpressionNode {
-        const varIdNode = this.createIdentifierNode(ctx.VAR_ID()!);
-        let left: ast.ExpressionNode = varIdNode;
+    visitDefinitionStatement(ctx: DefinitionStatementContext): ast.DefinitionStatementNode {
+        return this.visitAndCheck<ast.DefinitionStatementNode>(ctx.functionDefinition()!);
+    }
 
-        // 添字アクセスがある場合
-        if (ctx.LBRACKET().length > 0) {
-            const indices: ast.ExpressionNode[] = [];
-            // The right-most expression is the assignment's RHS, so we exclude it.
-            for (const exprCtx of ctx.expr()) {
-                indices.push(this.visit(exprCtx) as ast.ExpressionNode);
-            }
-            left = {
-                kind: 'IndexAccess',
-                base: varIdNode,
-                indices: indices,
-                loc: getLoc(ctx)
-            };
-        }
+    visitIfStatement(ctx: IfStatementContext): ast.IfStatementNode {
+        return this.visitAndCheck<ast.IfStatementNode>(ctx.functionIf()!);
+    }
 
-        const operatorText: string | undefined =
-            ctx.PLUSEQ()?.getText() ||
-            ctx.MINUSEQ()?.getText() ||
-            ctx.MULTEQ()?.getText() ||
-            ctx.DIVEQ()?.getText() ||
-            ctx.SUREQ()?.getText() ||
-            ctx.POWEREQ()?.getText() ||
-            ctx.ASSIGN()?.getText();
+    visitForStatement(ctx: ForStatementContext): ast.ForStatementNode {
+        return this.visitAndCheck<ast.ForStatementNode>(ctx.functionFor()!);
+    }
 
-        if (operatorText === undefined) {
-            throw new ASTBuilderError("Assignment operator text not found.", ctx);
-        }
-        // The right-hand side is now an assignmentExpr
-        const right = this.visit(ctx.assignmentExpr()!) as ast.ExpressionNode;
+    visitWhileStatement(ctx: WhileStatementContext): ast.WhileStatementNode {
+        return this.visitAndCheck<ast.WhileStatementNode>(ctx.functionWhile()!);
+    }
 
+    visitDoStatement(ctx: DoStatementContext): ast.DoWhileStatementNode {
+        const doNode = this.visitAndCheck<ast.DoWhileStatementNode>(ctx.functionDo()!);
+        // The semicolon is consumed as a separate statement, so we need to handle it here.
+        // This is a workaround for the grammar ambiguity.
+        return doNode;
+    }
+
+    visitReturnStatement(ctx: ReturnStatementContext): ast.ReturnStatementNode {
+        return this.visitAndCheck<ast.ReturnStatementNode>(ctx.functionReturn()!);
+    }
+
+    visitBreakStatement(ctx: BreakStatementContext): ast.BreakStatementNode {
+        return this.visitAndCheck<ast.BreakStatementNode>(ctx.functionBreak()!);
+    }
+
+    visitContinueStatement(ctx: ContinueStatementContext): ast.ContinueStatementNode {
+        return this.visitAndCheck<ast.ContinueStatementNode>(ctx.functionContinue()!);
+    }
+
+    visitStructStatement(ctx: StructStatementContext): ast.StructStatementNode {
+        return this.visitAndCheck<ast.StructStatementNode>(ctx.functionStruct()!);
+    }
+
+    visitModuleStatement(ctx: ModuleStatementContext): ast.ModuleStatementNode {
+        return this.visitAndCheck<ast.ModuleStatementNode>(ctx.functionModule()!);
+    }
+
+    visitPreproStatement(ctx: PreproStatementContext): ast.PreprocessorNode {
+        return this.visitAndCheck<ast.PreprocessorNode>(ctx.preprocessor());
+    }
+
+    // --- Preprocessor ---
+
+    visitPreChr(ctx: PreChrContext): ast.UnaryOperationNode {
         return {
-            kind: 'AssignmentExpression',
-            left: left,
-            operator: operatorText,
-            right: right,
+            kind: 'UnaryOperation',
+            operator: '#',
+            operand: this.visitAndCheck<ast.IdentifierNode>(ctx.memberName()),
             loc: getLoc(ctx)
         };
     }
 
-    // assignmentExprの #StructAssign (VAR_ID -> ... ASSIGN assignmentExpr)
-    visitStructAssign(ctx: StructAssignContext): ast.StructMemberAssignmentNode {
-        const base = this.createIdentifierNode(ctx.VAR_ID(0)!);
-        const members: ast.IdentifierNode[] = [];
-        for (let i=0; i< ctx.ARROW().length; i++) {
-            const nextMemberCtx = ctx.VAR_ID(i+1) || ctx.FUNC_ID(i);
-            if (nextMemberCtx) {
-                members.push(this.createIdentifierNode(nextMemberCtx as TerminalNode));
-            } else {
-                throw new ASTBuilderError(`Member identifier not found after ARROW at index ${i}`, ctx);
+    visitPreChrPlus(ctx: PreChrPlusContext): ast.BinaryOperationNode {
+        const leftNode = this.visitAndCheck<ast.IdentifierNode>(ctx.memberName(0)!);
+        const rightNode = this.visitAndCheck<ast.IdentifierNode>(ctx.memberName(1)!);
+        return {
+            kind: 'BinaryOperation',
+            operator: '##',
+            left: leftNode,
+            right: rightNode,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitPDef(ctx: PDefContext): ast.PreprocessorDefineNode {
+        const nameNode = this.visitAndCheck<ast.QualifiedIdentifierNode>(ctx._name);
+        const parmNodes = (ctx._params || []).map(p => this.visitAndCheck<ast.IdentifierNode>(p) );
+        const bodyNode = this.visitAndCheck<ast.ExpressionNode>(ctx._body);
+
+        return {
+            kind: 'PreprocessorDefine',
+            name: nameNode,
+            parameters: parmNodes,
+            body: bodyNode,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitPInc(ctx: PIncContext): ast.PreprocessorIncludeNode {
+        let pathType: 'system' | 'local';
+        let path: string;
+        if (ctx._path_sys) {
+            pathType = 'system';
+            const rawPath = ctx._path_sys.getText();
+            path = rawPath.substring(1, rawPath.length - 1);
+        } else {
+            pathType = 'local';
+            const rawPath = ctx._path_loc!.text!;
+            path = rawPath.substring(1, rawPath.length - 1);
+        }
+
+        return {
+            kind: 'PreprocessorIncludeNode',
+            pathtype: pathType,
+            path: path,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitPIf(ctx: PIfContext): ast.PreprocessorIfNode {
+        const directive = (ctx.PIF() || ctx.PIFDEF() || ctx.PIFNDEF())!.getText() as ast.PreprocessorIfNode['directive'];
+        const mainCondition = this.visitAndCheck<ast.ExpressionNode>(ctx.expr(0)!);
+        const thenStatements: ast.StatementNode[] = [];
+        const elifClauses: ast.PreprocessorElifNode[] = [];
+        let elseStatements: ast.StatementNode[] | undefined = undefined;
+        let currentStatements: ast.StatementNode[] = thenStatements;
+        let currentElif: ast.PreprocessorElifNode | null = null;
+
+        if (ctx.children) {
+            for (const child of ctx.children) {
+                if (child instanceof TerminalNode) {
+                    if (child.symbol.type === testParser.PELIF) {
+                        if (currentElif) { elifClauses.push(currentElif); }
+                        currentElif = {
+                            kind: 'PreprocessorElif',
+                            condition: null as any,
+                            statements: [],
+                            loc: getLoc(child)
+                        };
+                    } else if (child.symbol.type === testParser.PELSE) {
+                        if (currentElif) {
+                            elifClauses.push(currentElif);
+                            currentElif = null;
+                        }
+                        elseStatements = [];
+                        currentStatements = elseStatements;
+                    }
+                } else if (child instanceof ParserRuleContext) {
+                    if (child.ruleIndex=== testParser.RULE_expr) {
+                        if (currentElif && !currentElif.condition) {
+                            currentElif.condition = this.visitAndCheck<ast.ExpressionNode>(child);
+                        }
+                    } else if (child.ruleIndex === testParser.RULE_statement) {
+                        currentStatements.push(this.visitAndCheck<ast.StatementNode>(child));
+                    }
+                }
             }
         }
-        const operatorToken = ctx.ASSIGN();
-        if (!operatorToken) throw new ASTBuilderError("Assignment operator not found for struct", ctx);
-        // The right-hand side is now an assignmentExpr
-        const right = this.visit(ctx.assignmentExpr()!) as ast.ExpressionNode;
-        const operatorText: string | undefined = operatorToken.getText();
-        if (operatorText === undefined) {
-            throw new ASTBuilderError("Operator text is undefined for struct assignment.", ctx);
-        }
+        if (currentElif) { elifClauses.push(currentElif); }
+
+        return {
+            kind: 'PreprocessorIf',
+            directive: directive,
+            condition: mainCondition,
+            thenStatements: thenStatements,
+            elifClauses: elifClauses,
+            elseStatements: elseStatements,
+            loc: getLoc(ctx)
+        };
+    }
+
+    // --- Expressions (Entry) ---
+
+    visitMain(ctx: MainContext): ast.ExpressionNode {
+        return this.visitAndCheck<ast.ExpressionNode>(ctx.assignmentExpr()!);
+    }
+
+    // --- Assignment Expressions ---
+
+    visitNoAssignment(ctx: NoAssignmentContext): ast.ExpressionNode {
+        return this.visitAndCheck<ast.ExpressionNode>(ctx.ternaryExpr()!);
+    }
+
+    visitAssign(ctx: AssignContext): ast.AssignmentExpressionNode {
+        const targetNode = this.createIdentifierNode(ctx._left!);
+        let leftNode: ast.LValueNode = targetNode;
+
+        if (ctx._indices && ctx._indices.length > 0) {
+            const indices = ctx._indices.map(e => this.visitAndCheck<ast.ExpressionNode>(e));
+            leftNode = {
+                kind: 'IndexAccess',
+                base: targetNode,
+                indices: indices,
+                loc: getLoc(ctx) 
+            };
+        } else { leftNode = targetNode; }
+
+        const operatorText = ctx._op!.text!;
+        const rightNode = this.visitAndCheck<ast.ExpressionNode>(ctx._right);
+
+        return {
+            kind: 'AssignmentExpression',
+            left: leftNode,
+            operator: operatorText,
+            right: rightNode,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitStructAssign(ctx: StructAssignContext): ast.StructMemberAssignmentNode {
+        const base = this.createIdentifierNode(ctx.VAR_ID()!);
+        const members = ctx.memberName().map(m => this.visitAndCheck<ast.IdentifierNode>(m));
+        const operatorText = (ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN())!.getText();
+        const right = this.visitAndCheck<ast.ExpressionNode>(ctx.assignmentExpr()!)
 
         return {
             kind: 'StructMemberAssignment',
@@ -142,234 +403,27 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
-    // assignmentExprの #ListAssign ([VAR_ID, ...] = assignmentExpr)
     visitListAssign(ctx: ListAssignContext): ast.ListDestructuringAssignmentNode {
-        const targets: ast.IdentifierNode[] = [];
-        for (const varIdCtx of ctx.VAR_ID()) {
-            targets.push(this.createIdentifierNode(varIdCtx));
-        }
-        const operatorToken = ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN();
-        if (!operatorToken) throw new ASTBuilderError("Assignment operator not found for list assign", ctx);
-        // The right-hand side is now an assignmentExpr
-        const right = this.visit(ctx.assignmentExpr()!) as ast.ExpressionNode;
-        const operatorText: string | undefined = operatorToken.getText();
-        if (operatorText === undefined) {
-            throw new ASTBuilderError("Operator text is undefined for list assignment.", ctx);
-        }
+        const operatorText = (ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN())!.getText();
 
         return {
             kind: 'ListDestructuringAssignment',
-            targets: targets,
+            targets: ctx.VAR_ID().map(v => this.createIdentifierNode(v)),
             operator: operatorText,
-            right: right,
+            right: this.visitAndCheck<ast.ExpressionNode>(ctx.assignmentExpr()!),
             loc: getLoc(ctx)
         };
     }
 
-    // New: Handles the #NoAssignment case, which is just a ternary expression
-    visitNoAssignment(ctx: NoAssignmentContext): ast.ExpressionNode {
-        return this.visit(ctx.ternaryExpr()!) as ast.ExpressionNode;
-    }
+    // --- Conditional and Binary Operations ---
 
-    visitDefinitionStatement(ctx: DefinitionStatementContext): ast.DefinitionStatementNode {
-        return this.visit(ctx.functionDefinition()!) as ast.DefinitionStatementNode;
-    }
+    visitTernary(ctx: TernaryContext): ast.ExpressionNode {
+        const condition = this.visitAndCheck<ast.ExpressionNode>(ctx._condition);
 
-    // ifstatement
-    visitIfStatement(ctx: IfStatementContext): ast.IfStatementNode {
-        return this.visit(ctx.functionIf()!) as ast.IfStatementNode;
-    }
+        if (ctx._consequence) {
+            const consequence = this.visitAndCheck<ast.ExpressionNode>(ctx._consequence);
+            const alternative =this.visitAndCheck<ast.ExpressionNode>(ctx._alternative);
 
-    // functionIf #If
-    visitIf(ctx: IfContext): ast.IfStatementNode {
-        const condition = this.visit(ctx.expr()!) as ast.ExpressionNode;
-        const consequence = this.visit(ctx.block(0)!) as ast.StatementNode; // 最初のblock
-
-        let alternative: ast.StatementNode | undefined;
-        if (ctx.ELSE()) {
-            if (ctx.block(1)) { // else block
-                alternative = this.visit(ctx.block(1)!) as ast.StatementNode;
-            } else if (ctx.functionIf()) {
-                alternative = this.visit(ctx.functionIf()!) as ast.StatementNode;
-            }
-        }
-
-        return {
-            kind: 'IfStatement',
-            condition: condition,
-            consequence: consequence,
-            alternative: alternative,
-            loc: getLoc(ctx)
-        };
-    }
-
-    // forstatement
-    visitForStatement(ctx: ForStatementContext): ast.ForStatementNode {
-        return this.visit(ctx.functionFor()!) as ast.ForStatementNode;
-    }
-
-    // functionFor #For
-    visitFor(ctx: ForContext): ast.ForStatementNode {
-        const initializers: ast.ExpressionNode[] = [];
-        const conditions: ast.ExpressionNode[] = [];
-        const updaters: ast.ExpressionNode[] = [];
-
-        let semiCount = 0;
-        if (ctx.children) {
-            for (const child of ctx.children) {
-                if (child instanceof TerminalNode && child.symbol.type === testParser.SEMI) {
-                    semiCount++;
-                } else if (child instanceof MainContext || child instanceof NoAssignmentContext) {
-                    const exprNode = this.visit(child) as ast.ExpressionNode;
-                    if (semiCount === 0) {
-                        initializers.push(exprNode);
-                    } else if (semiCount === 1) {
-                        conditions.push(exprNode);
-                    } else if (semiCount === 2) {
-                        updaters.push(exprNode);
-                    }
-                }
-            }
-        }
-
-        const body = this.visit(ctx.block()!) as ast.StatementNode;
-        if (!body) {
-            throw new ASTBuilderError("For loop body cannot be empty", ctx);
-        }
-
-        return {
-            kind: 'ForStatement',
-            initializers: initializers,
-            conditions: conditions,
-            updaters: updaters,
-            body: body,
-            loc: getLoc(ctx)
-        };
-    }
-
-    // Pre-increment (e.g., ++I)
-    visitPreIncrement(ctx: PreIncrementContext): ast.UnaryOperationNode {
-        const operand = this.createIdentifierNode(ctx.VAR_ID()!);
-        return {
-            kind: 'UnaryOperation',
-            operator: '++',
-            operand: operand,
-            loc: getLoc(ctx),
-            isPostfix: false
-        };
-    }
-
-    // Pre-decrement (e.g., --I)
-    visitPreDecrement(ctx: PreDecrementContext): ast.UnaryOperationNode {
-        const operand = this.createIdentifierNode(ctx.VAR_ID()!);
-        return {
-            kind: 'UnaryOperation',
-            operator: '--',
-            operand: operand,
-            loc: getLoc(ctx),
-            isPostfix: false
-        };
-    }
-
-    // Postfix Increment/Decrement (e.g., I++, J[0]--)
-    visitPostFix(ctx: PostFixContext): ast.UnaryOperationNode {
-        const operand = this.visit(ctx.powerExpr()!) as ast.ExpressionNode;
-        if (ctx.INC()) {
-            return {
-                kind: 'UnaryOperation',
-                operator: '++',
-                operand: operand,
-                loc: getLoc(ctx),
-                isPostfix: true
-            };
-        } else if (ctx.DEC()) {
-            return {
-                kind: 'UnaryOperation',
-                operator: '--',
-                operand: operand,
-                loc: getLoc(ctx),
-                isPostfix: true
-            };
-        }
-        throw new ASTBuilderError("Postfix operator not found. This should not happen with a valid parse tree.", ctx);
-    }
-
-    // New: Handles postfix expressions (#PostFixExpr)
-    visitPostFixExpr(ctx: PostFixExprContext): ast.UnaryOperationNode {
-        return this.visit(ctx.postfixExpr()!) as ast.UnaryOperationNode;
-    }
-
-    // New: Handles power expressions (#PowExpr)
-    visitPowExpr(ctx: PowExprContext): ast.PowerOperationNode | ast.ExpressionNode {
-        return this.visit(ctx.powerExpr()!) as ast.PowerOperationNode | ast.ExpressionNode;
-    }
-
-    visitWhileStatement(ctx: WhileStatementContext): ast.WhileStatementNode {
-        return this.visit(ctx.functionWhile()!) as ast.WhileStatementNode;
-    }
-
-    visitDoStatement(ctx: DoStatementContext): ast.DoWhileStatementNode {
-        return this.visit(ctx.functionDo()!) as ast.DoWhileStatementNode;
-    }
-
-    visitReturnStatement(ctx: ReturnStatementContext): ast.ReturnStatementNode {
-        return this.visit(ctx.functionReturn()!) as ast.ReturnStatementNode;
-    }
-
-    visitBreakStatement(ctx: BreakStatementContext): ast.BreakStatementNode {
-        return this.visit(ctx.functionBreak()!) as ast.BreakStatementNode;
-    }
-
-    visitContinueStatement(ctx: ContinueStatementContext): ast.ContinueStatementNode {
-        return {
-            kind: 'ContinueStatement',
-            loc: getLoc(ctx)
-        };
-    }
-
-    visitStructStatement(ctx: StructStatementContext): ast.StructStatementNode {
-        return this.visit(ctx.functionStruct()!) as ast.StructStatementNode;
-        }
-
-    visitModuleStatement(ctx: ModuleStatementContext): ast.ModuleStatementNode {
-        return this.visit(ctx.functionModule()!) as ast.ModuleStatementNode;
-    }
-
-
-    // block #Sentence と #Sentence1
-    visitSentence(ctx: SentenceContext): ast.BlockNode {
-        const statements: ast.StatementNode[] = [];
-        for (const stmtCtx of ctx.statement()) {
-            const stmtNode = this.visit(stmtCtx);
-            if (stmtNode) {
-                statements.push(stmtNode as ast.StatementNode);
-            }
-        }
-        return { kind: 'Block', statements: statements, loc: getLoc(ctx) };
-    }
-
-    visitSentence1(ctx: Sentence1Context): ast.BlockNode {
-        const stmtNode = this.visit(ctx.statement()!);
-        if (stmtNode) {
-            return { kind: 'Block', statements: [stmtNode as ast.StatementNode], loc: getLoc(ctx) };
-        }
-        return { kind: 'Block', statements: [], loc: getLoc(ctx) };
-    }
-
-
-    // --- 式 (Expression) の訪問 ---
-    visitMain(ctx: MainContext): ast.ExpressionNode {
-        // The entry point for an expression is now assignmentExpr
-        return this.visit(ctx.assignmentExpr()!) as ast.ExpressionNode;
-    }
-
-    // Ternary #Ternary
-    visitTernary(ctx: TernaryContext): ast.TernaryOperationNode | ast.ExpressionNode {
-        const condition = this.visit(ctx.qeOrExpr()!) as ast.ExpressionNode;
-        if (ctx.QUESTION()) { // 三項演算子の部分が存在する場合
-            // expr が2つあるので、1つ目が consequence, 2つ目が alternative
-            const consequence = this.visit(ctx.expr(0)!) as ast.ExpressionNode;
-            const alternative = this.visit(ctx.expr(1)!) as ast.ExpressionNode;
             return {
                 kind: 'TernaryOperation',
                 condition: condition,
@@ -378,471 +432,359 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
                 loc: getLoc(ctx)
             };
         }
-        return condition; // 三項演算子がない場合は、qeOrExprの結果をそのまま返す
+        return condition;
     }
 
-    // Binary Operation (AddSub, MulDivSur, Compare, And, Or, QECompare, QEand, QEor)
-    visitAddSub(ctx: AddSubContext): ast.ExpressionNode {
-        let left = this.visit(ctx.mulDivSurExpr(0)!) as ast.ExpressionNode;
-        for (let i = 1; i < ctx.mulDivSurExpr().length; i++) {
-            const right = this.visit(ctx.mulDivSurExpr(i)!) as ast.ExpressionNode;
-            const operator = ctx.getChild(2 * i - 1) as TerminalNode;
-            left = {
-                kind: 'BinaryOperation',
-                operator: operator.getText()!,
-                left: left,
-                right: right,
-                loc: getLoc(ctx)
-            };
-        }
-        return left;
+    visitQuote(ctx: QuoteContext): ast.UnaryOperationNode {
+        return { kind: 'UnaryOperation', operator: '`', operand: this.visitAndCheck<ast.ExpressionNode>(ctx.qeNotExpr()!), loc: getLoc(ctx) };
     }
 
-    visitMulDivSur(ctx: MulDivSurContext): ast.ExpressionNode {
-        let left = this.visit(ctx.unaryExpr(0)!) as ast.ExpressionNode;
-        for (let i = 1; i < ctx.unaryExpr().length; i++) {
-            const right = this.visit(ctx.unaryExpr(i)!) as ast.ExpressionNode;
-            const operator = ctx.getChild(2 * i - 1) as TerminalNode;
-            left = {
-                kind: 'BinaryOperation',
-                operator: operator.getText()!,
-                left: left,
-                right: right,
-                loc: getLoc(ctx)
-            };
-        }
-        return left;
-    }
+    visitQEnot(ctx: QEnotContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.qeOrExpr(i)); }
+    visitQEor(ctx: QEorContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.qeAndExpr(i)); }
+    visitQEand(ctx: QEandContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.qeCompareExpr(i)); }
+    visitQECompare(ctx: QECompareContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.orExpr(i)); }
+    visitOr(ctx: OrContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.andExpr(i)); }
+    visitAnd(ctx: AndContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.compareExpr(i)); }
+    visitCompare(ctx: CompareContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.addSubExpr(i)); }
+    visitAddSub(ctx: AddSubContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.mulDivSurExpr(i)); }
+    visitMulDivSur(ctx: MulDivSurContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.unaryExpr(i)); }
 
-    // Unary Operations (Minus, Not)
+    // --- Unary Operations ---
+
     visitUnaryMinus(ctx: UnaryMinusContext): ast.UnaryOperationNode {
-        const operand = this.visit(ctx.unaryExpr()!) as ast.ExpressionNode;
-        return {
-            kind: 'UnaryOperation',
-            operator: '-',
-            operand: operand,
-            loc: getLoc(ctx)
-        };
-    }
-    visitNotExpr(ctx: NotExprContext): ast.UnaryOperationNode {
-        const operand = this.visit(ctx.unaryExpr()!) as ast.ExpressionNode;
-        return {
-            kind: 'UnaryOperation',
-            operator: '!',
-            operand: operand,
-            loc: getLoc(ctx)
-        };
+        return { kind: 'UnaryOperation', operator: '-', operand: this.visitAndCheck<ast.ExpressionNode>(ctx.unaryExpr()!), loc: getLoc(ctx) };
     }
 
-    // Power
-    visitPower(ctx: PowerContext): ast.PowerOperationNode | ast.ExpressionNode {
-        const base = this.visit(ctx.indexAccessExpr()!) as ast.ExpressionNode;
+    visitNotExpr(ctx: NotExprContext): ast.UnaryOperationNode {
+        return { kind: 'UnaryOperation', operator: '!', operand: this.visitAndCheck<ast.ExpressionNode>(ctx.unaryExpr()!), loc: getLoc(ctx) };
+    }
+
+    visitPowExpr(ctx: PowExprContext): ast.ExpressionNode { return this.visitAndCheck<ast.ExpressionNode>(ctx.powerExpr()!); }
+
+    // --- Power, Pre/PostFix, and Access Expressions ---
+
+    visitPower(ctx: PowExContext): ast.ExpressionNode {
+        const base = this.visitAndCheck<ast.ExpressionNode>(ctx._base);
         if (ctx.POWER()) {
-            const exponent = this.visit(ctx.powerExpr()!) as ast.ExpressionNode;
             return {
                 kind: 'PowerOperation',
                 base: base,
-                exponent: exponent,
+                exponent: this.visitAndCheck<ast.ExpressionNode>(ctx._exponent),
                 loc: getLoc(ctx)
             };
         }
         return base;
     }
 
-    // IndexAccess (添字アクセス)
+    visitFactrialExpr(ctx: FactrialExprContext): ast.ExpressionNode {
+        const baseExpr = this.visit(ctx.postfixExpr()! || ctx.prefixExpr()! || ctx.indexAccessExpr()!);
+
+        if (ctx.NOT()) {
+            return {
+                kind: 'UnaryOperation',
+                operator: '!',
+                operand: baseExpr as ast.ExpressionNode,
+                isPostfix: true,
+                loc: getLoc(ctx)
+            };
+        }
+
+        return baseExpr as ast.ExpressionNode;
+    }
+
+    visitPreFix(ctx: PreFixContext): ast.UnaryOperationNode {
+        return {
+            kind: 'UnaryOperation',
+            operator: ctx.INC() ? '++' : '--',
+            operand: this.visitAndCheck<ast.ExpressionNode>(ctx.indexAccessExpr()!),
+            loc: getLoc(ctx),
+            isPostfix: false
+        };
+    }
+
+    visitPostFix(ctx: PostFixContext): ast.UnaryOperationNode {
+        return {
+            kind: 'UnaryOperation',
+            operator: ctx.INC() ? '++' : '--',
+            operand: this.visitAndCheck<ast.ExpressionNode>(ctx.indexAccessExpr()!),
+            loc: getLoc(ctx),
+            isPostfix: true
+        };
+    }
+
+
     visitIndexAccess(ctx: IndexAccessContext): ast.ExpressionNode {
-        const base = this.visit(ctx.primaryExpr()!) as ast.ExpressionNode;
-        if (ctx.LBRACKET().length === 0) {
-            return base;
+        const base = this.visitAndCheck<ast.ExpressionNode>(ctx.primaryExpr()!);
+        if (ctx.LBRACKET().length > 0) {
+            return {
+                kind: 'IndexAccess',
+                base: base,
+                indices: ctx.expr().map(e => this.visitAndCheck<ast.ExpressionNode>(e)),
+                loc: getLoc(ctx)
+            };
         }
-        const indices: ast.ExpressionNode[] = [];
-        for (const exprCtx of ctx.expr()) {
-            indices.push(this.visit(exprCtx) as ast.ExpressionNode);
-        }
-        return {
-            kind: 'IndexAccess',
-            base: base,
-            indices: indices,
-            loc: getLoc(ctx)
-        };
+        return base;
     }
 
-    // Number Literals (RatNum, DecNum, Real)
-    visitReal(ctx: RealContext): ast.NumberLiteralNode {
-        const numNode = this.visit(ctx.num()!);
-        if (numNode && numNode.kind === 'NumberLiteral') {
-            return numNode as ast.NumberLiteralNode;
-        }
-        throw new ASTBuilderError('Expected NumberLiteralNode from num', ctx);
-    }
+    // --- Primary Expressions ---
 
-    visitRatNum(ctx: RatNumContext): ast.NumberLiteralNode {
-        return this.visit(ctx.rational()!) as ast.NumberLiteralNode;
-    }
-
-    visitDecNum(ctx: DecNumContext): ast.NumberLiteralNode {
-        return this.visit(ctx.decimal()!) as ast.NumberLiteralNode;
-    }
-
-    visitRat(ctx: RatContext): ast.NumberLiteralNode {
-        const value = ctx.getText();
-        return {
-            kind: 'NumberLiteral',
-            value: value,
-            rawText: value,
-            loc: getLoc(ctx)
-        };
-    }
-
-    visitFloat(ctx: FloatContext): ast.NumberLiteralNode {
-        const value = ctx.getText();
-        return {
-            kind: 'NumberLiteral',
-            value: parseFloat(value),
-            rawText: value,
-            loc: getLoc(ctx)
-        };
-    }
-
-
-    // Identifier (VId, FId, V2Id)
-    visitIdExpr(ctx: IdExprContext): ast.IdentifierNode {
-        const idNode = this.visit(ctx.id()!);
-        if (idNode && idNode.kind === 'Identifier') {
-            return idNode as ast.IdentifierNode;
-        }
-        throw new ASTBuilderError('Expected IdentifierNode from idExpr', ctx);
-    }
-    visitVId(ctx: VIdContext): ast.IdentifierNode {
-        return this.createIdentifierNode(ctx.VAR_ID()!);
-    }
-    visitFId(ctx: FIdContext): ast.IdentifierNode {
-        const nameNode = this.createIdentifierNode(ctx.FUNC_ID(ctx.FUNC_ID().length - 1)!);
-        if (ctx.POINT()) {
-            const qualifierNode = this.createIdentifierNode(ctx.FUNC_ID(0)!);
-            nameNode.qualifier = qualifierNode;
-        }
-        return nameNode;
-    }
-    visitV2Id(ctx: V2IdContext): ast.IdentifierNode {
-        return this.createIdentifierNode(ctx.VAR_2()!);
-    }
-
-    // FunctionCall #Fcall
-    visitFcall(ctx: FcallContext): ast.FunctionCallNode {
-        const calleeNameCtx = ctx.FUNC_ID(ctx.FUNC_ID().length - 1)!;
-        const callee: ast.IdentifierNode = this.createIdentifierNode(calleeNameCtx);
-
-        if (ctx.COLON2()) {
-            callee.name = ctx.COLON2()!.getText() + callee.name;
-        }
-        if (ctx.POINT()) {
-            const moduleNameNode = this.createIdentifierNode(ctx.FUNC_ID(0)!);
-            callee.qualifier = moduleNameNode;
-        }
-
-        const args: ast.ExpressionNode[] = [];
-        if (ctx.expr()) {
-            for (const argCtx of ctx.expr()) {
-                args.push(this.visit(argCtx) as ast.ExpressionNode);
-            }
-        }
-        return {
-            kind: 'FunctionCall',
-            callee: callee,
-            args: args,
-            loc: getLoc(ctx)
-        };
-    }
-
-    // Paren #Paren
+    visitIndExpr(ctx: IndExprContext): ast.IdentifierNode{ return this.visitAndCheck<ast.IdentifierNode>(ctx.indeterminate()!); }
+    visitReal(ctx: RealContext): ast.NumberLiteralNode { return this.visitAndCheck<ast.NumberLiteralNode>(ctx.num()!); }
+    visitIdExpr(ctx: IdExprContext): ast.IdentifierNode { return this.visitAndCheck<ast.IdentifierNode>(ctx.id()!); }
+    visitFCallExpr(ctx: FCallExprContext): ast.FunctionCallNode { return this.visitAndCheck<ast.FunctionCallNode>(ctx.functionCall()!); }
     visitParen(ctx: ParenContext): ast.ParenExpressionNode {
-        const expression = this.visit(ctx.expr()!) as ast.ExpressionNode;
-        return {
-            kind: 'ParenExpression',
-            expression: expression,
-            loc: getLoc(ctx)
-        };
+        return { kind: 'ParenExpression', expression: this.visitAndCheck<ast.ExpressionNode>(ctx.expr()!), loc: getLoc(ctx) };
     }
-
-    // Special Numbers
-    visitSpecNum(ctx: SpecNumContext): ast.SpecialNumberNode {
-        if (ctx instanceof ImaContext) {
-            return this.visitIma(ctx);
-        } else if (ctx instanceof PiContext) {
-            return this.visitPi(ctx);
-        } else if (ctx instanceof NapContext) {
-            return this.visitNap(ctx);
-        } else if (ctx instanceof BefContext) {
-            return this.visitBef(ctx);
-        } else if (ctx instanceof BefNContext) {
-            return this.visitBefN(ctx);
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: ctx.getText(),
-            loc: getLoc(ctx)
-        };
-    }
-
-    visitIma(ctx: ImaContext): ast.SpecialNumberNode {
-        return { kind: 'SpecialNumber', name: ctx.IMAGINARY()!.getText(), loc: getLoc(ctx) };
-    }
-
-    visitPi(ctx: PiContext): ast.SpecialNumberNode {
-        return { kind: 'SpecialNumber', name: ctx.PI()!.getText(), loc: getLoc(ctx) };
-    }
-
-    visitNap(ctx: NapContext): ast.SpecialNumberNode {
-        return { kind: 'SpecialNumber', name: ctx.NAPIER()!.getText(), loc: getLoc(ctx) };
-    }
-
-    visitBef(ctx: BefContext): ast.SpecialNumberNode {
-        return { kind: 'SpecialNumber', name: ctx.BEFORE()!.getText(), loc: getLoc(ctx) };
-    }
-
-    visitBefN(ctx: BefNContext): ast.SpecialNumberNode {
-        return { kind: 'SpecialNumber', name: ctx.BEFORE_N()!.getText(), loc: getLoc(ctx) };
-    }
-
-
-    // String Literals #StringLiteral, #CharLiteral
     visitStringLiteral(ctx: StringLiteralContext): ast.StringLiteralNode {
-        const rawText = ctx.STRING2()!.getText();
-        const value = rawText.substring(1, rawText.length - 1); // クォートを除去
-        return { kind: 'StringLiteral', value: value, rawText: rawText, loc: getLoc(ctx) };
+        const rawText = ctx.STRING()!.getText();
+        return { kind: 'StringLiteral', value: rawText.substring(1, rawText.length - 1), rawText: rawText, loc: getLoc(ctx) };
     }
-    visitCharLiteral(ctx: CharLiteralContext): ast.CharLiteralNode {
-        const rawText = ctx.STRING1()!.getText();
-        const value = rawText.substring(1, rawText.length - 1); // クォートを除去
-        return { kind: 'CharLiteral', value: value, rawText: rawText, loc: getLoc(ctx) };
-    }
+    visitListLiteral(ctx: ListLiteralContext): ast.ListLiteralNode { return this.visitAndCheck<ast.ListLiteralNode>(ctx.list()!); }
+    visitDpLiteral(ctx: DpLiteralContext): ast.DistributedPolynomialLiteralNode { return this.visitAndCheck<ast.DistributedPolynomialLiteralNode>(ctx.dpoly()!); }
+    visitPreChrExpr(ctx: PreChrExprContext): ast.ExpressionNode { return this.visitAndCheck<ast.ExpressionNode>(ctx.prechar()); }
 
-    // List Literals #List (ListContext)
+    // --- Literals and Identifiers ---
+
+    visitHexNum(ctx: HexNumContext): ast.NumberLiteralNode {
+        const rawText = ctx.HEX()!.getText();
+        return { kind: 'NumberLiteral', value: ctx.getText(), rawText: rawText, loc: getLoc(ctx) };
+    }
+    visitBitNum(ctx: BitNumContext): ast.NumberLiteralNode {
+        const rawText = ctx.BIT()!.getText();
+        return { kind: 'NumberLiteral', value: ctx.getText(), rawText: rawText, loc: getLoc(ctx) };
+    }
+    visitRatNum(ctx: RatNumContext): ast.NumberLiteralNode { return this.visitAndCheck<ast.NumberLiteralNode>(ctx.rational()!); }
+    visitDecNum(ctx: DecNumContext): ast.NumberLiteralNode { return this.visitAndCheck<ast.NumberLiteralNode>(ctx.decimal()!); }
+    visitImaNum(ctx: ImaNumContext): ast.NumberLiteralNode {
+        const rawText = ctx.IMAGINARY()!.getText();
+        return { kind: 'NumberLiteral', value: ctx.getText(), rawText: rawText, loc: getLoc(ctx) };
+    }
+    visitRat(ctx: RatContext): ast.NumberLiteralNode { return { kind: 'NumberLiteral', value: ctx.getText(), rawText: ctx.getText(), loc: getLoc(ctx) }; }
+    visitFloat(ctx: FloatContext): ast.NumberLiteralNode { return { kind: 'NumberLiteral', value: parseFloat(ctx.getText()), rawText: ctx.getText(), loc: getLoc(ctx) }; }
+    visitVId(ctx: VIdContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.VAR_ID()!); }
+    visitV2Id(ctx: V2IdContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.VAR_2()!); }
+    visitBef(ctx: BefContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.BEFORE()!); }
+    visitBefN(ctx: BefNContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.BEFORE_N()!); }
+    // visitFunc(ctx: FuncContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.qualifiedIdentifier()!); }
+    visitAtFunc(ctx: AtFuncContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.ATFUNC()!); }
+    visitChFunc(ctx: ChFuncContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.NOSTRING()!); }
     visitListExpr(ctx: ListExprContext): ast.ListLiteralNode {
-        const elements: ast.ExpressionNode[] = [];
-        for (const exprCtx of ctx.expr()) {
-            elements.push(this.visit(exprCtx) as ast.ExpressionNode);
+        let elements: ast.ExpressionNode[] = [];
+        if (ctx.exprlist()) {
+            const elemNode = this.visitAndCheck<ast.ExpressionListNode>(ctx.exprlist()!);
+            elements = elemNode.expressions;
         }
-        return {
-            kind: 'ListLiteral',
-            elements: elements,
-            loc: getLoc(ctx)
-        };
-    }
 
-    // Distributed Polynomial Literals #DpLiteral
-    visitDpLiteral(ctx: DpLiteralContext): ast.DistributedPolynomialLiteralNode {
-        return this.visit(ctx.dpoly()!) as ast.DistributedPolynomialLiteralNode;
+        return { kind: 'ListLiteral', elements: elements, loc: getLoc(ctx) };
     }
-
-    // dpoly #Dp
     visitDp(ctx: DpContext): ast.DistributedPolynomialLiteralNode {
         const allInts = ctx.INT();
-        const terms: number[] = [];
-        let modulus: number | undefined = undefined;
-
-        if (ctx.COLON()) {
-            modulus = parseInt(allInts[allInts.length - 1].getText(), 10);
-            for (let i = 0; i < allInts.length - 1; i++) {
-                terms.push(parseInt(allInts[i].getText(), 10));
-            }
-        } else {
-            for (const intToken of allInts) {
-                terms.push(parseInt(intToken.getText(), 10));
-            }
-        }
-
-        return {
-            kind: 'DistributedPolynomialLiteral',
-            terms: terms,
-            modulus: modulus,
-            loc: getLoc(ctx)
-        };
+        const terms = allInts.slice(0, ctx.COLON() ? -1 : undefined).map(t => parseInt(t.getText(), 10));
+        const modulus = ctx.COLON() ? parseInt(allInts[allInts.length - 1].getText(), 10) : undefined;
+        return { kind: 'DistributedPolynomialLiteral', terms, modulus, loc: getLoc(ctx) };
     }
 
-    // functionDefinition #Def
+    // --- Control Flow and Definitions ---
+
     visitDef(ctx: DefContext): ast.DefinitionStatementNode {
-        const name = this.createIdentifierNode(ctx.FUNC_ID()!);
-        const parameters: ast.IdentifierNode[] = [];
-        if (ctx.VAR_ID()) {
-            for (const varIdCtx of ctx.VAR_ID()) {
-                parameters.push(this.createIdentifierNode(varIdCtx));
-            }
-        }
-        const body = this.visit(ctx.block()!) as ast.StatementNode;
+        const nameNode = this.visitAndCheck<ast.IdentifierNode>(ctx.indeterminate());
+        const paramNodes = (ctx.VAR_ID() || []).map(v => this.createIdentifierNode(v));
+        const bodyNode = this.visitAndCheck<ast.StatementNode>(ctx.block());
         return {
             kind: 'FunctionDefinition',
-            name: name,
-            parameters: parameters,
-            body: body,
+            name: nameNode,
+            parameters: paramNodes,
+            body: bodyNode,
             loc: getLoc(ctx)
         };
     }
 
-    // functionWhile #While
-    visitWhile(ctx: WhileContext): ast.WhileStatementNode {
-        const conditions: ast.ExpressionNode[] = [];
-        if (ctx.expr()) {
-            for (const exprCtx of ctx.expr()) {
-                conditions.push(this.visit(exprCtx) as ast.ExpressionNode);
-            }
+    visitIf(ctx: IfContext): ast.IfStatementNode {
+        const conditionNode = this.visitAndCheck<ast.ExpressionNode>(ctx._condition);
+        const thenNode = this.visitAndCheck<ast.StatementNode>(ctx._thenBlock);
+        let elseNode: ast.StatementNode | undefined = undefined;
+        if (ctx._elseBlock) {
+            elseNode = this.visitAndCheck<ast.StatementNode>(ctx._elseBlock);
         }
-        const body = this.visit(ctx.block()!) as ast.StatementNode;
+        return {
+            kind: 'IfStatement',
+            condition: conditionNode,
+            thenStatement: thenNode,
+            elseStatement: elseNode,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitFor(ctx: ForContext): ast.ForStatementNode {
+        let initializers: ast.ExpressionNode[] = [];
+        let conditions: ast.ExpressionNode[] = [];
+        let updaters: ast.ExpressionNode[] = [];
+
+        if (ctx._init) {
+            const initNode = this.visitAndCheck<ast.ExpressionListNode>(ctx._init);
+            initializers = initNode.expressions;
+        }
+        if (ctx._cond) {
+            const condNode = this.visitAndCheck<ast.ExpressionListNode>(ctx._cond);
+            conditions = condNode.expressions;
+        }
+        if (ctx._update) {
+            const updateNode = this.visitAndCheck<ast.ExpressionListNode>(ctx._update);
+            updaters = updateNode.expressions;
+        }
+        const bodyNode = this.visitAndCheck<ast.StatementNode>(ctx.block()!);
+
+        return {
+            kind: 'ForStatement',
+            initializers: initializers,
+            conditions: conditions,
+            updaters: updaters,
+            body: bodyNode,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitWhile(ctx: WhileContext): ast.WhileStatementNode {
+        let conditions: ast.ExpressionNode[] = [];
+        if (ctx.exprlist()) {
+            const condNode = this.visitAndCheck<ast.ExpressionListNode>(ctx.exprlist()!);
+            conditions = condNode.expressions;
+        }
+
         return {
             kind: 'WhileStatement',
             conditions: conditions,
-            body: body,
+            body: this.visitAndCheck<ast.StatementNode>(ctx.block()!),
             loc: getLoc(ctx)
         };
     }
 
-    // functionDo #Do
     visitDo(ctx: DoContext): ast.DoWhileStatementNode {
-        const body = this.visit(ctx.block()!) as ast.StatementNode;
-        const conditions: ast.ExpressionNode[] = [];
-        if (ctx.expr()) {
-            for (const exprCtx of ctx.expr()) {
-                conditions.push(this.visit(exprCtx) as ast.ExpressionNode);
-            }
+        let conditions: ast.ExpressionNode[] = [];
+        if (ctx.exprlist()) {
+            const condNode = this.visitAndCheck<ast.ExpressionListNode>(ctx.exprlist()!);
+            conditions = condNode.expressions;
         }
+
         return {
             kind: 'DoWhileStatement',
-            body: body,
+            body: this.visitAndCheck<ast.StatementNode>(ctx.block()!),
             conditions: conditions,
             loc: getLoc(ctx)
         };
     }
 
-    // functionReturn #Return
     visitReturn(ctx: ReturnContext): ast.ReturnStatementNode {
-        const value = ctx.expr() ? this.visit(ctx.expr()!) as ast.ExpressionNode : undefined;
-        return {
-            kind: 'ReturnStatement',
-            value: value,
-            loc: getLoc(ctx)
-        };
+        const exprCtx = ctx.expr();
+        return { kind: 'ReturnStatement', value: exprCtx ? this.visitAndCheck<ast.ExpressionNode>(exprCtx) : undefined, loc: getLoc(ctx) };
     }
 
-    // functionBreak #Break
-    visitBreak(ctx: BreakContext): ast.BreakStatementNode {
-        return {
-            kind: 'BreakStatement',
-            loc: getLoc(ctx)
-        };
-    }
+    visitBreak(ctx: BreakContext): ast.BreakStatementNode { return { kind: 'BreakStatement', loc: getLoc(ctx) }; }
+    visitContinue(ctx: ContinueContext): ast.ContinueStatementNode { return { kind: 'ContinueStatement', loc: getLoc(ctx) }; }
 
-    // functionContinue #Continue
-    visitContinue(ctx: ContinueContext): ast.ContinueStatementNode {
-        return {
-            kind: 'ContinueStatement',
-            loc: getLoc(ctx)
-        };
-    }
-
-    // functionStruct #Strct
-    visitStrct(ctx: StrctContext): ast.StructStatementNode {
-        const nameCtx = ctx.FUNC_ID(0) || ctx.VAR_ID(0);
-        if (!nameCtx) throw new ASTBuilderError("Struct name not found", ctx);
-        const name = this.createIdentifierNode(nameCtx as TerminalNode);
-        const members: ast.IdentifierNode[] = [];
-        const memberIdCtxs = [...(ctx.FUNC_ID() || []), ...(ctx.VAR_ID() || [])];
-        for (let i = 1; i < memberIdCtxs.length; i++) {
-            const memberNode = this.createIdentifierNode(memberIdCtxs[i] as TerminalNode);
-            if (memberNode) {
-                members.push(memberNode as ast.IdentifierNode);
-            }
-        }
+    visitStrct(ctx: StructContext): ast.StructStatementNode {
+        const nameNode = this.visitAndCheck<ast.IdentifierNode>(ctx._name);
+        const memberNodes = ctx._members.map(memberCtx =>
+            this.visitAndCheck<ast.IdentifierNode>(memberCtx)
+        );
         return {
             kind: 'StructStatement',
-            name: name,
-            members: members,
+            name: nameNode,
+            members: memberNodes,
+            loc: getLoc(ctx) 
+        };
+    }
+
+    visitFcall(ctx: FcallContext): ast.FunctionCallNode {
+        const callee = this.visitAndCheck<ast.QualifiedIdentifierNode>(ctx._name);
+        const isGlobal = !!ctx._is_global;
+
+        let args: ast.ExpressionNode[] = [];
+        if (ctx._args) {
+            const argsNode = this.visitAndCheck<ast.ExpressionListNode>(ctx._args);
+            args = argsNode.expressions;
+        }
+        let options: ast.OptionPairNode[] = [];
+        if(ctx._options && ctx._options.length > 0) {
+            options = ctx._options.map(o => this.visitAndCheck<ast.OptionPairNode>(o));
+        }
+
+        return {
+            kind: 'FunctionCall',
+            callee: callee,
+            isGlobal: isGlobal,
+            args: args,
+            options: options,
             loc: getLoc(ctx)
         };
     }
 
-    // ModuleStatement 関連
+    // --- Module-related ---
+
     visitModuleAssign(ctx: ModuleAssignContext): ast.ModuleVariableDeclarationNode {
-        const scopeToken = ctx.EXTERN() || ctx.STATIC() || ctx.GLOBAL() || ctx.LOCAL();
-        const variables: ast.IdentifierNode[] = [];
-        for (const varIdCtx of ctx.VAR_ID()) {
-            variables.push(this.createIdentifierNode(varIdCtx));
-        }
+        const scope = (ctx.EXTERN() || ctx.STATIC() || ctx.GLOBAL() || ctx.LOCAL())!.getText() as ast.ModuleVariableDeclarationNode['scope'];
         return {
             kind: 'ModuleVariableDeclaration',
-            scope: scopeToken!.getText() as any,
-            variables: variables,
+            scope: scope,
+            variables: ctx.VAR_ID().map(v => this.createIdentifierNode(v)),
             loc: getLoc(ctx)
         };
     }
 
     visitModuleFunction(ctx: ModuleFunctionContext): ast.LocalFunctionDeclarationNode {
-        const functions: ast.IdentifierNode[] = [];
-        for (const funcIdCtx of ctx.FUNC_ID()) {
-            functions.push(this.createIdentifierNode(funcIdCtx));
-        }
         return {
             kind: 'LocalFunctionDeclaration',
-            functions: functions,
+            functions: ctx.FUNC_ID().map(f => this.createIdentifierNode(f)),
             loc: getLoc(ctx)
         };
     }
 
     visitModuleStart(ctx: ModuleStartContext): ast.ModuleDeclarationNode {
-        return {
-            kind: 'ModuleDeclaration',
-            name: this.createIdentifierNode(ctx.FUNC_ID()!),
-            loc: getLoc(ctx)
-        };
+        return { kind: 'ModuleDeclaration', name: this.createIdentifierNode(ctx.FUNC_ID()!), loc: getLoc(ctx) };
     }
 
     visitModuleEnd(ctx: ModuleEndContext): ast.EndModuleNode {
+        return { kind: 'EndModule', loc: getLoc(ctx) };
+    }
+
+    // --- Blocks ---
+
+    visitSentence(ctx: SentenceContext): ast.BlockNode {
+        return { kind: 'Block', statements: ctx.statement().map(s => this.visitAndCheck<ast.StatementNode>(s)), loc: getLoc(ctx) };
+    }
+
+    visitSentence1(ctx: Sentence1Context): ast.BlockNode {
+        return { kind: 'Block', statements: [this.visitAndCheck<ast.StatementNode>(ctx.statement()!)], loc: getLoc(ctx) };
+    }
+
+    // --- others ---
+    visitExprlist(ctx: ExprlistContext): ast.ExpressionListNode {
+        const expressions = ctx.expr().map(e => this.visitAndCheck<ast.ExpressionNode>(e));
         return {
-            kind: 'EndModule',
+            kind: 'ExpressionList',
+            expressions: expressions,
             loc: getLoc(ctx)
         };
     }
 
-    // 二項演算子 (Compare, And, Or, QECompare, QEand, QEor)
-    private visitBinaryOp(ctx: ParserRuleContext, operandGetter: (i: number) => ParserRuleContext | null): ast.ExpressionNode {
-        let left = this.visit(operandGetter(0)!) as ast.ExpressionNode;
-        for (let i = 1; ; i++) {
-            const operand = operandGetter(i);
-            if (!operand) break;
-            const operator = ctx.getChild(2 * i - 1) as TerminalNode;
-            const right = this.visit(operand)! as ast.ExpressionNode;
-            left = {
-                kind: 'BinaryOperation',
-                operator: operator.getText()!,
-                left: left,
-                right: right,
-                loc: getLoc(operator)
-            };
-        }
-        return left;
+    visitOptionPair(ctx: OptionPairContext): ast.OptionPairNode {
+        const keyNode = this.visitAndCheck<ast.QualifiedIdentifierNode>(ctx._key);
+        const valueNode = this.visitAndCheck<ast.ExpressionNode>(ctx._value);
+
+        return {
+            kind: 'OptionPair',
+            key: keyNode,
+            value: valueNode,
+            loc: getLoc(ctx)
+        };
     }
 
-    visitQEor(ctx: QEorContext): ast.ExpressionNode {
-        return this.visitBinaryOp(ctx, (i) => ctx.qeAndExpr(i));
-    }
-
-    visitQEand(ctx: QEandContext): ast.ExpressionNode {
-        return this.visitBinaryOp(ctx, (i) => ctx.qeCompareExpr(i));
-    }
-
-    visitQECompare(ctx: QECompareContext): ast.ExpressionNode {
-        return this.visitBinaryOp(ctx, (i) => ctx.orExpr(i));
-    }
-
-    visitOr(ctx: OrContext): ast.ExpressionNode {
-        return this.visitBinaryOp(ctx, (i) => ctx.andExpr(i));
-    }
-
-    visitAnd(ctx: AndContext): ast.ExpressionNode {
-        return this.visitBinaryOp(ctx, (i) => ctx.compareExpr(i));
-    }
-
-    visitCompare(ctx: CompareContext): ast.ExpressionNode {
-        return this.visitBinaryOp(ctx, (i) => ctx.addSubExpr(i));
+    visitQualifiedIdentifier(ctx: QualifiedIdentifierContext): ast.QualifiedIdentifierNode {
+        const pathNode = ctx.FUNC_ID().map(i => this.createIdentifierNode(i));
+        return {
+            kind: 'QualifiedIdentifier',
+            path: pathNode,
+            loc: getLoc(ctx)
+        };
     }
 }

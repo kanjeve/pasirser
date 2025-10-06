@@ -6,7 +6,7 @@ import * as ast from './testAst.js';
  * @param arg 位置情報を取得する対象のコンテキストまたはノード
  * @returns ASTNode['loc'] 形式の位置情報オブジェクト
  */
-export function getLoc(arg: ParserRuleContext | TerminalNode): ast.ASTNode['loc'] {
+export function getLoc(arg: ParserRuleContext | TerminalNode | Token): ast.ASTNode['loc'] {
     if (arg instanceof ParserRuleContext) {
         const ctx = arg as ParserRuleContext;
         const startToken: Token | null = ctx.start;
@@ -23,7 +23,7 @@ export function getLoc(arg: ParserRuleContext | TerminalNode): ast.ASTNode['loc'
             endLine: stopToken?.line ?? startToken.line,
             endColumn: stopToken ? stopToken.column + (stopToken.text?.length ?? 0) : startToken.column + (startToken.text?.length ?? 0),
         };
-    } else {
+    } else if (arg instanceof TerminalNode) {
         const terminalNode = arg as TerminalNode;
         const token: Token | null = terminalNode.symbol;
 
@@ -31,6 +31,14 @@ export function getLoc(arg: ParserRuleContext | TerminalNode): ast.ASTNode['loc'
             return { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 };
         }
 
+        return {
+            startLine: token.line,
+            startColumn: token.column,
+            endLine: token.line,
+            endColumn: token.column + (token.text?.length ?? 0),
+        };
+    } else {
+        const token = arg as Token;
         return {
             startLine: token.line,
             startColumn: token.column,

@@ -1,3 +1,5 @@
+import { Identifier } from "acorn";
+
 // 1. ASTノードの共通ベースインターフェース
 export interface ASTNode {
     kind: string;
@@ -10,12 +12,23 @@ export interface ASTNode {
     };
 }
 
+// --- 式ノードの共通基底とL-Valueの定義 ---
+
+// 式が評価された後の型情報を格納するための基底インターフェース
+export interface TypedExpressionNode extends ASTNode {
+    resolvedType?: AsirType; // 意味解析フェーズで解決される
+}
+
+// 代入の左辺に来れるノード (L-Value)
+export type LValueNode = IdentifierNode | IndexAccessNode;
+
 // 2. 式を表すノードのユニオン型
 export type ExpressionNode =
     | NumberLiteralNode
     | StringLiteralNode
     | CharLiteralNode
     | IdentifierNode
+    | QualifiedIdentifierNode
     | BinaryOperationNode
     | UnaryOperationNode
     | TernaryOperationNode
@@ -23,13 +36,11 @@ export type ExpressionNode =
     | IndexAccessNode
     | FunctionCallNode
     | ParenExpressionNode
-    | SpecialNumberNode
     | ListLiteralNode
     | DistributedPolynomialLiteralNode
-    | AssignmentExpressionNode 
+    | AssignmentExpressionNode
     | StructMemberAssignmentNode
-    | ListDestructuringAssignmentNode
-    ;
+    | ListDestructuringAssignmentNode;
 
 // 3. 文を表すノードのユニオン型
 export type StatementNode =
@@ -45,21 +56,23 @@ export type StatementNode =
     | ContinueStatementNode
     | StructStatementNode
     | ModuleStatementNode
-    | BlockNode
-    ;
-
+    | PreprocessorNode
+    | BlockNode;
 
 //  モジュール関連の文ノードのユニオン型
 export type ModuleStatementNode =
     | ModuleVariableDeclarationNode
     | LocalFunctionDeclarationNode
     | ModuleDeclarationNode
-    | EndModuleNode
-    ;
+    | EndModuleNode;
+
+// プリプロセッサ関連ノードのユニオン型
+export type PreprocessorNode =
+    | PreprocessorDefineNode
+    | PreprocessorIfNode
+    | PreprocessorIncludeNode;
 
 // 4. 具体的なASTノードのインターフェース定義
-
-
 
 // プログラムのルートノード
 export interface ProgramNode extends ASTNode {
@@ -70,137 +83,145 @@ export interface ProgramNode extends ASTNode {
 // --- リテラルノード ---
 
 // 数値
-export interface NumberLiteralNode extends ASTNode {
+export interface NumberLiteralNode extends TypedExpressionNode {
     kind: 'NumberLiteral';
     value: number | string;
     rawText?: string;
 }
 
 // 文字列("")
-export interface StringLiteralNode extends ASTNode {
+export interface StringLiteralNode extends TypedExpressionNode {
     kind: 'StringLiteral';
     value: string;
     rawText?: string;
 }
 
 // 文字列('')
-export interface CharLiteralNode extends ASTNode {
+export interface CharLiteralNode extends TypedExpressionNode {
     kind: 'CharLiteral';
     value: string;
     rawText?: string;
 }
 
 // 分散表現多項式リテラル (e.g., <<1,2,3:4>>)
-export interface DistributedPolynomialLiteralNode extends ASTNode {
+export interface DistributedPolynomialLiteralNode extends TypedExpressionNode {
     kind: 'DistributedPolynomialLiteral';
     terms: number[];
     modulus?: number;
 }
 
-
 // --- 識別子ノード ---
 
-export interface IdentifierNode extends ASTNode {
+export interface IdentifierNode extends TypedExpressionNode {
     kind: 'Identifier';
     name: string;
-    qualifier?: IdentifierNode;
+    // qualifier?: IdentifierNode;
     isVar: boolean;
     isSpecialVar: boolean;
+    resolvedSymbol?: Symbol; // 意味解析で解決
 }
 
-export interface SpecialNumberNode extends ASTNode {
-    kind: 'SpecialNumber';
-    name: string;
+export interface QualifiedIdentifierNode extends TypedExpressionNode {
+    kind: 'QualifiedIdentifier';
+    path: IdentifierNode[];
 }
 
 // --- 演算子ノード ---
 
-// 二項演算 (例: +, -, *, /, %, ==, !=, &&, ||, @==, @&& など)
-export interface BinaryOperationNode extends ASTNode {
+// 二項演算
+export interface BinaryOperationNode extends TypedExpressionNode {
     kind: 'BinaryOperation';
     operator: string;
     left: ExpressionNode;
     right: ExpressionNode;
 }
 
-// 単項演算 (例: -, !, ++, --)
-export interface UnaryOperationNode extends ASTNode {
+// 単項演算
+export interface UnaryOperationNode extends TypedExpressionNode {
     kind: 'UnaryOperation';
     operator: string;
     operand: ExpressionNode;
-    isPostfix?: boolean; // For ++ and --
+    isPostfix?: boolean;
 }
 
 // べき乗演算
-export interface PowerOperationNode extends ASTNode {
+export interface PowerOperationNode extends TypedExpressionNode {
     kind: 'PowerOperation';
     base: ExpressionNode;
     exponent: ExpressionNode;
 }
 
 // 三項演算子
-export interface TernaryOperationNode extends ASTNode {
+export interface TernaryOperationNode extends TypedExpressionNode {
     kind: 'TernaryOperation';
     condition: ExpressionNode;
-    consequence: ExpressionNode; // 真の場合の式
-    alternative: ExpressionNode; // 偽の場合の式
+    consequence: ExpressionNode;
+    alternative: ExpressionNode;
 }
 
 // --- アクセスノード ---
 
-// 添字アクセス (例: A[0], B[i][j])
-export interface IndexAccessNode extends ASTNode {
+// 添字アクセス
+export interface IndexAccessNode extends TypedExpressionNode {
     kind: 'IndexAccess';
     base: ExpressionNode;
     indices: ExpressionNode[];
 }
 
 // 関数呼び出し
-export interface FunctionCallNode extends ASTNode {
+export interface FunctionCallNode extends TypedExpressionNode {
     kind: 'FunctionCall';
-    callee: IdentifierNode;  // ::や.はここで対応
+    callee: QualifiedIdentifierNode;
+    isGlobal: boolean;
     args: ExpressionNode[];
+    options: OptionPairNode[];
+}
+
+// オプション
+export interface OptionPairNode extends ASTNode {
+    kind: 'OptionPair';
+    key: QualifiedIdentifierNode;
+    value: ExpressionNode;
 }
 
 // 括弧で囲まれた式
-export interface ParenExpressionNode extends ASTNode {
+export interface ParenExpressionNode extends TypedExpressionNode {
     kind: 'ParenExpression';
     expression: ExpressionNode;
 }
 
 // --- コレクションリテラルノード ---
-export interface ListLiteralNode extends ASTNode {
+export interface ListLiteralNode extends TypedExpressionNode {
     kind: 'ListLiteral';
     elements: ExpressionNode[];
 }
 
-// --- 式ノード (代入など) ---
+// --- 式ノード (代入) ---
 
-// 代入式
-export interface AssignmentExpressionNode extends ASTNode {
-    kind: 'AssignmentExpression';
-    left: ExpressionNode; // 代入される左辺
-    operator: string;
-    right: ExpressionNode; // 代入する右辺
-}
-
-// 構造体メンバーへの代入
-export interface StructMemberAssignmentNode extends ASTNode {
-    kind: 'StructMemberAssignment';
-    base: IdentifierNode; // 構造体変数名
-    members: IdentifierNode[]; // a->bのa,b
+// 代入式の共通基底
+export interface BaseAssignmentNode extends TypedExpressionNode {
     operator: string;
     right: ExpressionNode;
 }
 
-// リスト要素一括代入
-export interface ListDestructuringAssignmentNode extends ASTNode {
-    kind: 'ListDestructuringAssignment';
-    targets: IdentifierNode[]; // 代入対象の変数リスト
-    operator: string;
-    right: ExpressionNode; // 代入する右辺
+// 通常の代入式
+export interface AssignmentExpressionNode extends BaseAssignmentNode {
+    kind: 'AssignmentExpression';
+    left: LValueNode;
 }
 
+// 構造体メンバーへの代入
+export interface StructMemberAssignmentNode extends BaseAssignmentNode {
+    kind: 'StructMemberAssignment';
+    base: IdentifierNode;
+    members: IdentifierNode[];
+}
+
+// リスト要素一括代入
+export interface ListDestructuringAssignmentNode extends BaseAssignmentNode {
+    kind: 'ListDestructuringAssignment';
+    targets: IdentifierNode[];
+}
 
 // --- 文ノード ---
 
@@ -218,26 +239,26 @@ export interface EmptyStatementNode extends ASTNode {
 // def文
 export interface DefinitionStatementNode extends ASTNode {
     kind: 'FunctionDefinition';
-    name: IdentifierNode; // 関数名
-    parameters: IdentifierNode[]; // 仮引数のリスト
-    body: StatementNode; // 関数本体のブロック
+    name: IdentifierNode;
+    parameters: IdentifierNode[];
+    body: StatementNode;
 }
 
 // If文
 export interface IfStatementNode extends ASTNode {
     kind: 'IfStatement';
     condition: ExpressionNode;
-    consequence: StatementNode;
-    alternative?: StatementNode;
+    thenStatement: StatementNode;
+    elseStatement?: StatementNode;
 }
 
 // For文
 export interface ForStatementNode extends ASTNode {
     kind: 'ForStatement';
-    initializers: ExpressionNode[]; // 初期化ステートメントのリスト
-    conditions: ExpressionNode[]; // 条件式のリスト
-    updaters: ExpressionNode[]; // 更新式のリスト
-    body: StatementNode; // ループ本体のブロック
+    initializers: ExpressionNode[];
+    conditions: ExpressionNode[];
+    updaters: ExpressionNode[];
+    body: StatementNode;
 }
 
 // While文
@@ -273,10 +294,9 @@ export interface ContinueStatementNode extends ASTNode {
 // 構造体定義
 export interface StructStatementNode extends ASTNode {
     kind: 'StructStatement';
-    name: IdentifierNode; // 構造体名
-    members: IdentifierNode[]; // メンバー名のリスト
+    name: IdentifierNode;
+    members: IdentifierNode[];
 }
-
 
 // --- モジュール関連の文ノード ---
 
@@ -304,4 +324,52 @@ export interface EndModuleNode extends ASTNode {
 export interface BlockNode extends ASTNode {
     kind: 'Block';
     statements: StatementNode[];
+}
+
+// --- プリプロセッサ関連ノード ---
+
+export interface PreprocessorDefineNode extends ASTNode {
+    kind: 'PreprocessorDefine';
+    name: QualifiedIdentifierNode;
+    parameters: IdentifierNode[];
+    body: ExpressionNode;
+}
+
+export interface PreprocessorIfNode extends ASTNode {
+    kind: 'PreprocessorIf';
+    directive: 'if' | 'ifdef' | 'ifndef';
+    condition: ExpressionNode;
+    thenStatements: StatementNode[];
+    elifClauses: PreprocessorElifNode[];
+    elseStatements?: StatementNode[];
+}
+
+export interface PreprocessorElifNode extends ASTNode {
+    kind: 'PreprocessorElif';
+    condition: ExpressionNode;
+    statements: StatementNode[];
+}
+
+export interface PreprocessorIncludeNode extends ASTNode {
+    kind: 'PreprocessorIncludeNode';
+    pathtype: 'system' | 'local';
+    path: string;
+}
+
+// --- その他補助的なもの ---
+
+// 式のリストを表す中間ノード
+export interface ExpressionListNode extends ASTNode {
+    kind: 'ExpressionList';
+    expressions: ExpressionNode[];
+}
+
+// --- 意味解析で使われる型 ---
+// (仮の定義、必要に応じて拡張)
+export type AsirType = 'number' | 'polynomial' | 'list' | 'string' | 'function' | 'struct' | 'module' | 'any' | 'unknown';
+
+export interface Symbol {
+    name: string;
+    type: AsirType;
+    definedAt: { line: number; column: number };
 }

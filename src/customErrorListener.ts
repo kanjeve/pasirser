@@ -12,17 +12,17 @@ export interface SyntaxErrorInfo {
 
 // 曖昧性に関する情報
 export interface AmbiguityInfo {
-    line: number;
-    column: number;
-    message: string;
+  line: number;
+  column: number;
+  message: string;
 }
 
 // その他の診断情報
 export interface DiagnosticInfo {
-    type: 'FullContext' | 'ContextSensitivity';
-    line: number;
-    column: number;
-    message: string;
+  type: 'FullContext' | 'ContextSensitivity';
+  line: number;
+  column: number;
+  message: string;
 }
 
 // ANTLRErrorListenerを実装したカスタムクラス
@@ -113,6 +113,35 @@ export class CustomErrorListener implements ANTLRErrorListener {
         column: token.column,
         message: `Context sensitivity issue at: '${token.text}'`
     });
+  }
+
+  /**
+   * 典型的なエラーメッセージを日本語で表示
+   */
+  public formatErrorMessage(recognizer: Recognizer<any>, msg: string): string {
+    let match = msg.match(/mismatched input '(.*)' expecting (.*)/);
+    if (match) {
+      const actual = match[1];
+      const expected = this.formatExpectedTokens(recognizer, match[2]);
+      return `予期しないトークン '${actual}' が見つかりました。 ${expected} が必要です。`;
+    }
+    match = msg.match(/extraneous input '(.*)' expecting (.*)/);
+    if (match) {
+      const extra = match[1];
+      return `余分なトークン '${extra}' があります。`;
+    }
+    if (msg.startsWith('no viable alternative')) {
+      return "構文が正しくありません。記述を確認してください。";
+    }
+    return msg;
+  }
+
+  private formatExpectedTokens(recognizer: Recognizer<any>, expected: string) {
+    if (expected.startsWith('{')) {
+      const tokens = expected.replace(/\{|\}/g, '').split(', ').map(t => { return t.replace(/'/g, ''); });
+      return tokens.join('、 ');
+    }
+    return expected;
   }
 
   // --- ヘルパーメソッド ---

@@ -12,6 +12,12 @@ import { BreakStatementContext } from "./testParser.js";
 import { ContinueStatementContext } from "./testParser.js";
 import { StructStatementContext } from "./testParser.js";
 import { ModuleStatementContext } from "./testParser.js";
+import { PreproStatementContext } from "./testParser.js";
+import { PreChrContext } from "./testParser.js";
+import { PreChrPlusContext } from "./testParser.js";
+import { PDefContext } from "./testParser.js";
+import { PIfContext } from "./testParser.js";
+import { PIncContext } from "./testParser.js";
 import { DefContext } from "./testParser.js";
 import { IfContext } from "./testParser.js";
 import { ForContext } from "./testParser.js";
@@ -20,7 +26,7 @@ import { DoContext } from "./testParser.js";
 import { ReturnContext } from "./testParser.js";
 import { ContinueContext } from "./testParser.js";
 import { BreakContext } from "./testParser.js";
-import { StrctContext } from "./testParser.js";
+import { StructContext } from "./testParser.js";
 import { FcallContext } from "./testParser.js";
 import { ModuleAssignContext } from "./testParser.js";
 import { ModuleFunctionContext } from "./testParser.js";
@@ -32,6 +38,8 @@ import { AssignContext } from "./testParser.js";
 import { StructAssignContext } from "./testParser.js";
 import { ListAssignContext } from "./testParser.js";
 import { TernaryContext } from "./testParser.js";
+import { QuoteContext } from "./testParser.js";
+import { QEnotContext } from "./testParser.js";
 import { QEorContext } from "./testParser.js";
 import { QEandContext } from "./testParser.js";
 import { QECompareContext } from "./testParser.js";
@@ -42,38 +50,45 @@ import { AddSubContext } from "./testParser.js";
 import { MulDivSurContext } from "./testParser.js";
 import { UnaryMinusContext } from "./testParser.js";
 import { NotExprContext } from "./testParser.js";
-import { PreIncrementContext } from "./testParser.js";
-import { PreDecrementContext } from "./testParser.js";
-import { PostFixExprContext } from "./testParser.js";
 import { PowExprContext } from "./testParser.js";
+import { PowExContext } from "./testParser.js";
+import { FactrialExprContext } from "./testParser.js";
+import { PreFixContext } from "./testParser.js";
 import { PostFixContext } from "./testParser.js";
-import { PowerContext } from "./testParser.js";
 import { IndexAccessContext } from "./testParser.js";
+import { IndExprContext } from "./testParser.js";
 import { RealContext } from "./testParser.js";
 import { IdExprContext } from "./testParser.js";
 import { FCallExprContext } from "./testParser.js";
 import { ParenContext } from "./testParser.js";
-import { SpecNumContext } from "./testParser.js";
 import { StringLiteralContext } from "./testParser.js";
-import { CharLiteralContext } from "./testParser.js";
 import { ListLiteralContext } from "./testParser.js";
 import { DpLiteralContext } from "./testParser.js";
+import { PreChrExprContext } from "./testParser.js";
 import { DpContext } from "./testParser.js";
 import { RatContext } from "./testParser.js";
 import { FloatContext } from "./testParser.js";
+import { HexNumContext } from "./testParser.js";
+import { BitNumContext } from "./testParser.js";
 import { RatNumContext } from "./testParser.js";
 import { DecNumContext } from "./testParser.js";
+import { ImaNumContext } from "./testParser.js";
 import { VIdContext } from "./testParser.js";
-import { FIdContext } from "./testParser.js";
-import { V2IdContext } from "./testParser.js";
-import { ImaContext } from "./testParser.js";
-import { PiContext } from "./testParser.js";
-import { NapContext } from "./testParser.js";
 import { BefContext } from "./testParser.js";
 import { BefNContext } from "./testParser.js";
+import { V2IdContext } from "./testParser.js";
+import { FuncContext } from "./testParser.js";
+import { AtFuncContext } from "./testParser.js";
+import { ChFuncContext } from "./testParser.js";
 import { ListExprContext } from "./testParser.js";
 import { SentenceContext } from "./testParser.js";
 import { Sentence1Context } from "./testParser.js";
+import { ExprlistContext } from "./testParser.js";
+import { TerminatorContext } from "./testParser.js";
+import { MemberNameContext } from "./testParser.js";
+import { SystemPathContext } from "./testParser.js";
+import { OptionPairContext } from "./testParser.js";
+import { QualifiedIdentifierContext } from "./testParser.js";
 /**
  * This interface defines a complete listener for a parse tree produced by
  * `testParser`.
@@ -234,6 +249,78 @@ export declare class testListener implements ParseTreeListener {
      */
     exitModuleStatement?: (ctx: ModuleStatementContext) => void;
     /**
+     * Enter a parse tree produced by the `PreproStatement`
+     * labeled alternative in `testParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterPreproStatement?: (ctx: PreproStatementContext) => void;
+    /**
+     * Exit a parse tree produced by the `PreproStatement`
+     * labeled alternative in `testParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitPreproStatement?: (ctx: PreproStatementContext) => void;
+    /**
+     * Enter a parse tree produced by the `PreChr`
+     * labeled alternative in `testParser.prechar`.
+     * @param ctx the parse tree
+     */
+    enterPreChr?: (ctx: PreChrContext) => void;
+    /**
+     * Exit a parse tree produced by the `PreChr`
+     * labeled alternative in `testParser.prechar`.
+     * @param ctx the parse tree
+     */
+    exitPreChr?: (ctx: PreChrContext) => void;
+    /**
+     * Enter a parse tree produced by the `PreChrPlus`
+     * labeled alternative in `testParser.prechar`.
+     * @param ctx the parse tree
+     */
+    enterPreChrPlus?: (ctx: PreChrPlusContext) => void;
+    /**
+     * Exit a parse tree produced by the `PreChrPlus`
+     * labeled alternative in `testParser.prechar`.
+     * @param ctx the parse tree
+     */
+    exitPreChrPlus?: (ctx: PreChrPlusContext) => void;
+    /**
+     * Enter a parse tree produced by the `PDef`
+     * labeled alternative in `testParser.preprocessor`.
+     * @param ctx the parse tree
+     */
+    enterPDef?: (ctx: PDefContext) => void;
+    /**
+     * Exit a parse tree produced by the `PDef`
+     * labeled alternative in `testParser.preprocessor`.
+     * @param ctx the parse tree
+     */
+    exitPDef?: (ctx: PDefContext) => void;
+    /**
+     * Enter a parse tree produced by the `PIf`
+     * labeled alternative in `testParser.preprocessor`.
+     * @param ctx the parse tree
+     */
+    enterPIf?: (ctx: PIfContext) => void;
+    /**
+     * Exit a parse tree produced by the `PIf`
+     * labeled alternative in `testParser.preprocessor`.
+     * @param ctx the parse tree
+     */
+    exitPIf?: (ctx: PIfContext) => void;
+    /**
+     * Enter a parse tree produced by the `PInc`
+     * labeled alternative in `testParser.preprocessor`.
+     * @param ctx the parse tree
+     */
+    enterPInc?: (ctx: PIncContext) => void;
+    /**
+     * Exit a parse tree produced by the `PInc`
+     * labeled alternative in `testParser.preprocessor`.
+     * @param ctx the parse tree
+     */
+    exitPInc?: (ctx: PIncContext) => void;
+    /**
      * Enter a parse tree produced by the `Def`
      * labeled alternative in `testParser.functionDefinition`.
      * @param ctx the parse tree
@@ -330,17 +417,17 @@ export declare class testListener implements ParseTreeListener {
      */
     exitBreak?: (ctx: BreakContext) => void;
     /**
-     * Enter a parse tree produced by the `Strct`
+     * Enter a parse tree produced by the `Struct`
      * labeled alternative in `testParser.functionStruct`.
      * @param ctx the parse tree
      */
-    enterStrct?: (ctx: StrctContext) => void;
+    enterStruct?: (ctx: StructContext) => void;
     /**
-     * Exit a parse tree produced by the `Strct`
+     * Exit a parse tree produced by the `Struct`
      * labeled alternative in `testParser.functionStruct`.
      * @param ctx the parse tree
      */
-    exitStrct?: (ctx: StrctContext) => void;
+    exitStruct?: (ctx: StructContext) => void;
     /**
      * Enter a parse tree produced by the `Fcall`
      * labeled alternative in `testParser.functionCall`.
@@ -474,6 +561,30 @@ export declare class testListener implements ParseTreeListener {
      */
     exitTernary?: (ctx: TernaryContext) => void;
     /**
+     * Enter a parse tree produced by the `Quote`
+     * labeled alternative in `testParser.quoteExpr`.
+     * @param ctx the parse tree
+     */
+    enterQuote?: (ctx: QuoteContext) => void;
+    /**
+     * Exit a parse tree produced by the `Quote`
+     * labeled alternative in `testParser.quoteExpr`.
+     * @param ctx the parse tree
+     */
+    exitQuote?: (ctx: QuoteContext) => void;
+    /**
+     * Enter a parse tree produced by the `QEnot`
+     * labeled alternative in `testParser.qeNotExpr`.
+     * @param ctx the parse tree
+     */
+    enterQEnot?: (ctx: QEnotContext) => void;
+    /**
+     * Exit a parse tree produced by the `QEnot`
+     * labeled alternative in `testParser.qeNotExpr`.
+     * @param ctx the parse tree
+     */
+    exitQEnot?: (ctx: QEnotContext) => void;
+    /**
      * Enter a parse tree produced by the `QEor`
      * labeled alternative in `testParser.qeOrExpr`.
      * @param ctx the parse tree
@@ -594,42 +705,6 @@ export declare class testListener implements ParseTreeListener {
      */
     exitNotExpr?: (ctx: NotExprContext) => void;
     /**
-     * Enter a parse tree produced by the `PreIncrement`
-     * labeled alternative in `testParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterPreIncrement?: (ctx: PreIncrementContext) => void;
-    /**
-     * Exit a parse tree produced by the `PreIncrement`
-     * labeled alternative in `testParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitPreIncrement?: (ctx: PreIncrementContext) => void;
-    /**
-     * Enter a parse tree produced by the `PreDecrement`
-     * labeled alternative in `testParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterPreDecrement?: (ctx: PreDecrementContext) => void;
-    /**
-     * Exit a parse tree produced by the `PreDecrement`
-     * labeled alternative in `testParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitPreDecrement?: (ctx: PreDecrementContext) => void;
-    /**
-     * Enter a parse tree produced by the `PostFixExpr`
-     * labeled alternative in `testParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterPostFixExpr?: (ctx: PostFixExprContext) => void;
-    /**
-     * Exit a parse tree produced by the `PostFixExpr`
-     * labeled alternative in `testParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitPostFixExpr?: (ctx: PostFixExprContext) => void;
-    /**
      * Enter a parse tree produced by the `PowExpr`
      * labeled alternative in `testParser.unaryExpr`.
      * @param ctx the parse tree
@@ -641,6 +716,42 @@ export declare class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitPowExpr?: (ctx: PowExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `PowEx`
+     * labeled alternative in `testParser.powerExpr`.
+     * @param ctx the parse tree
+     */
+    enterPowEx?: (ctx: PowExContext) => void;
+    /**
+     * Exit a parse tree produced by the `PowEx`
+     * labeled alternative in `testParser.powerExpr`.
+     * @param ctx the parse tree
+     */
+    exitPowEx?: (ctx: PowExContext) => void;
+    /**
+     * Enter a parse tree produced by the `FactrialExpr`
+     * labeled alternative in `testParser.factExpr`.
+     * @param ctx the parse tree
+     */
+    enterFactrialExpr?: (ctx: FactrialExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `FactrialExpr`
+     * labeled alternative in `testParser.factExpr`.
+     * @param ctx the parse tree
+     */
+    exitFactrialExpr?: (ctx: FactrialExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `PreFix`
+     * labeled alternative in `testParser.prefixExpr`.
+     * @param ctx the parse tree
+     */
+    enterPreFix?: (ctx: PreFixContext) => void;
+    /**
+     * Exit a parse tree produced by the `PreFix`
+     * labeled alternative in `testParser.prefixExpr`.
+     * @param ctx the parse tree
+     */
+    exitPreFix?: (ctx: PreFixContext) => void;
     /**
      * Enter a parse tree produced by the `PostFix`
      * labeled alternative in `testParser.postfixExpr`.
@@ -654,18 +765,6 @@ export declare class testListener implements ParseTreeListener {
      */
     exitPostFix?: (ctx: PostFixContext) => void;
     /**
-     * Enter a parse tree produced by the `Power`
-     * labeled alternative in `testParser.powerExpr`.
-     * @param ctx the parse tree
-     */
-    enterPower?: (ctx: PowerContext) => void;
-    /**
-     * Exit a parse tree produced by the `Power`
-     * labeled alternative in `testParser.powerExpr`.
-     * @param ctx the parse tree
-     */
-    exitPower?: (ctx: PowerContext) => void;
-    /**
      * Enter a parse tree produced by the `IndexAccess`
      * labeled alternative in `testParser.indexAccessExpr`.
      * @param ctx the parse tree
@@ -677,6 +776,18 @@ export declare class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitIndexAccess?: (ctx: IndexAccessContext) => void;
+    /**
+     * Enter a parse tree produced by the `IndExpr`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     */
+    enterIndExpr?: (ctx: IndExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `IndExpr`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     */
+    exitIndExpr?: (ctx: IndExprContext) => void;
     /**
      * Enter a parse tree produced by the `Real`
      * labeled alternative in `testParser.primaryExpr`.
@@ -726,18 +837,6 @@ export declare class testListener implements ParseTreeListener {
      */
     exitParen?: (ctx: ParenContext) => void;
     /**
-     * Enter a parse tree produced by the `SpecNum`
-     * labeled alternative in `testParser.primaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterSpecNum?: (ctx: SpecNumContext) => void;
-    /**
-     * Exit a parse tree produced by the `SpecNum`
-     * labeled alternative in `testParser.primaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitSpecNum?: (ctx: SpecNumContext) => void;
-    /**
      * Enter a parse tree produced by the `StringLiteral`
      * labeled alternative in `testParser.primaryExpr`.
      * @param ctx the parse tree
@@ -749,18 +848,6 @@ export declare class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitStringLiteral?: (ctx: StringLiteralContext) => void;
-    /**
-     * Enter a parse tree produced by the `CharLiteral`
-     * labeled alternative in `testParser.primaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterCharLiteral?: (ctx: CharLiteralContext) => void;
-    /**
-     * Exit a parse tree produced by the `CharLiteral`
-     * labeled alternative in `testParser.primaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitCharLiteral?: (ctx: CharLiteralContext) => void;
     /**
      * Enter a parse tree produced by the `ListLiteral`
      * labeled alternative in `testParser.primaryExpr`.
@@ -785,6 +872,18 @@ export declare class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitDpLiteral?: (ctx: DpLiteralContext) => void;
+    /**
+     * Enter a parse tree produced by the `PreChrExpr`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     */
+    enterPreChrExpr?: (ctx: PreChrExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `PreChrExpr`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     */
+    exitPreChrExpr?: (ctx: PreChrExprContext) => void;
     /**
      * Enter a parse tree produced by the `Dp`
      * labeled alternative in `testParser.dpoly`.
@@ -822,6 +921,30 @@ export declare class testListener implements ParseTreeListener {
      */
     exitFloat?: (ctx: FloatContext) => void;
     /**
+     * Enter a parse tree produced by the `HexNum`
+     * labeled alternative in `testParser.num`.
+     * @param ctx the parse tree
+     */
+    enterHexNum?: (ctx: HexNumContext) => void;
+    /**
+     * Exit a parse tree produced by the `HexNum`
+     * labeled alternative in `testParser.num`.
+     * @param ctx the parse tree
+     */
+    exitHexNum?: (ctx: HexNumContext) => void;
+    /**
+     * Enter a parse tree produced by the `BitNum`
+     * labeled alternative in `testParser.num`.
+     * @param ctx the parse tree
+     */
+    enterBitNum?: (ctx: BitNumContext) => void;
+    /**
+     * Exit a parse tree produced by the `BitNum`
+     * labeled alternative in `testParser.num`.
+     * @param ctx the parse tree
+     */
+    exitBitNum?: (ctx: BitNumContext) => void;
+    /**
      * Enter a parse tree produced by the `RatNum`
      * labeled alternative in `testParser.num`.
      * @param ctx the parse tree
@@ -846,6 +969,18 @@ export declare class testListener implements ParseTreeListener {
      */
     exitDecNum?: (ctx: DecNumContext) => void;
     /**
+     * Enter a parse tree produced by the `ImaNum`
+     * labeled alternative in `testParser.num`.
+     * @param ctx the parse tree
+     */
+    enterImaNum?: (ctx: ImaNumContext) => void;
+    /**
+     * Exit a parse tree produced by the `ImaNum`
+     * labeled alternative in `testParser.num`.
+     * @param ctx the parse tree
+     */
+    exitImaNum?: (ctx: ImaNumContext) => void;
+    /**
      * Enter a parse tree produced by the `VId`
      * labeled alternative in `testParser.id`.
      * @param ctx the parse tree
@@ -858,17 +993,29 @@ export declare class testListener implements ParseTreeListener {
      */
     exitVId?: (ctx: VIdContext) => void;
     /**
-     * Enter a parse tree produced by the `FId`
+     * Enter a parse tree produced by the `Bef`
      * labeled alternative in `testParser.id`.
      * @param ctx the parse tree
      */
-    enterFId?: (ctx: FIdContext) => void;
+    enterBef?: (ctx: BefContext) => void;
     /**
-     * Exit a parse tree produced by the `FId`
+     * Exit a parse tree produced by the `Bef`
      * labeled alternative in `testParser.id`.
      * @param ctx the parse tree
      */
-    exitFId?: (ctx: FIdContext) => void;
+    exitBef?: (ctx: BefContext) => void;
+    /**
+     * Enter a parse tree produced by the `BefN`
+     * labeled alternative in `testParser.id`.
+     * @param ctx the parse tree
+     */
+    enterBefN?: (ctx: BefNContext) => void;
+    /**
+     * Exit a parse tree produced by the `BefN`
+     * labeled alternative in `testParser.id`.
+     * @param ctx the parse tree
+     */
+    exitBefN?: (ctx: BefNContext) => void;
     /**
      * Enter a parse tree produced by the `V2Id`
      * labeled alternative in `testParser.id`.
@@ -882,65 +1029,41 @@ export declare class testListener implements ParseTreeListener {
      */
     exitV2Id?: (ctx: V2IdContext) => void;
     /**
-     * Enter a parse tree produced by the `Ima`
-     * labeled alternative in `testParser.specialnum`.
+     * Enter a parse tree produced by the `Func`
+     * labeled alternative in `testParser.indeterminate`.
      * @param ctx the parse tree
      */
-    enterIma?: (ctx: ImaContext) => void;
+    enterFunc?: (ctx: FuncContext) => void;
     /**
-     * Exit a parse tree produced by the `Ima`
-     * labeled alternative in `testParser.specialnum`.
+     * Exit a parse tree produced by the `Func`
+     * labeled alternative in `testParser.indeterminate`.
      * @param ctx the parse tree
      */
-    exitIma?: (ctx: ImaContext) => void;
+    exitFunc?: (ctx: FuncContext) => void;
     /**
-     * Enter a parse tree produced by the `Pi`
-     * labeled alternative in `testParser.specialnum`.
+     * Enter a parse tree produced by the `AtFunc`
+     * labeled alternative in `testParser.indeterminate`.
      * @param ctx the parse tree
      */
-    enterPi?: (ctx: PiContext) => void;
+    enterAtFunc?: (ctx: AtFuncContext) => void;
     /**
-     * Exit a parse tree produced by the `Pi`
-     * labeled alternative in `testParser.specialnum`.
+     * Exit a parse tree produced by the `AtFunc`
+     * labeled alternative in `testParser.indeterminate`.
      * @param ctx the parse tree
      */
-    exitPi?: (ctx: PiContext) => void;
+    exitAtFunc?: (ctx: AtFuncContext) => void;
     /**
-     * Enter a parse tree produced by the `Nap`
-     * labeled alternative in `testParser.specialnum`.
+     * Enter a parse tree produced by the `ChFunc`
+     * labeled alternative in `testParser.indeterminate`.
      * @param ctx the parse tree
      */
-    enterNap?: (ctx: NapContext) => void;
+    enterChFunc?: (ctx: ChFuncContext) => void;
     /**
-     * Exit a parse tree produced by the `Nap`
-     * labeled alternative in `testParser.specialnum`.
+     * Exit a parse tree produced by the `ChFunc`
+     * labeled alternative in `testParser.indeterminate`.
      * @param ctx the parse tree
      */
-    exitNap?: (ctx: NapContext) => void;
-    /**
-     * Enter a parse tree produced by the `Bef`
-     * labeled alternative in `testParser.specialnum`.
-     * @param ctx the parse tree
-     */
-    enterBef?: (ctx: BefContext) => void;
-    /**
-     * Exit a parse tree produced by the `Bef`
-     * labeled alternative in `testParser.specialnum`.
-     * @param ctx the parse tree
-     */
-    exitBef?: (ctx: BefContext) => void;
-    /**
-     * Enter a parse tree produced by the `BefN`
-     * labeled alternative in `testParser.specialnum`.
-     * @param ctx the parse tree
-     */
-    enterBefN?: (ctx: BefNContext) => void;
-    /**
-     * Exit a parse tree produced by the `BefN`
-     * labeled alternative in `testParser.specialnum`.
-     * @param ctx the parse tree
-     */
-    exitBefN?: (ctx: BefNContext) => void;
+    exitChFunc?: (ctx: ChFuncContext) => void;
     /**
      * Enter a parse tree produced by the `ListExpr`
      * labeled alternative in `testParser.list`.
@@ -977,6 +1100,66 @@ export declare class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitSentence1?: (ctx: Sentence1Context) => void;
+    /**
+     * Enter a parse tree produced by `testParser.exprlist`.
+     * @param ctx the parse tree
+     */
+    enterExprlist?: (ctx: ExprlistContext) => void;
+    /**
+     * Exit a parse tree produced by `testParser.exprlist`.
+     * @param ctx the parse tree
+     */
+    exitExprlist?: (ctx: ExprlistContext) => void;
+    /**
+     * Enter a parse tree produced by `testParser.terminator`.
+     * @param ctx the parse tree
+     */
+    enterTerminator?: (ctx: TerminatorContext) => void;
+    /**
+     * Exit a parse tree produced by `testParser.terminator`.
+     * @param ctx the parse tree
+     */
+    exitTerminator?: (ctx: TerminatorContext) => void;
+    /**
+     * Enter a parse tree produced by `testParser.memberName`.
+     * @param ctx the parse tree
+     */
+    enterMemberName?: (ctx: MemberNameContext) => void;
+    /**
+     * Exit a parse tree produced by `testParser.memberName`.
+     * @param ctx the parse tree
+     */
+    exitMemberName?: (ctx: MemberNameContext) => void;
+    /**
+     * Enter a parse tree produced by `testParser.systemPath`.
+     * @param ctx the parse tree
+     */
+    enterSystemPath?: (ctx: SystemPathContext) => void;
+    /**
+     * Exit a parse tree produced by `testParser.systemPath`.
+     * @param ctx the parse tree
+     */
+    exitSystemPath?: (ctx: SystemPathContext) => void;
+    /**
+     * Enter a parse tree produced by `testParser.optionPair`.
+     * @param ctx the parse tree
+     */
+    enterOptionPair?: (ctx: OptionPairContext) => void;
+    /**
+     * Exit a parse tree produced by `testParser.optionPair`.
+     * @param ctx the parse tree
+     */
+    exitOptionPair?: (ctx: OptionPairContext) => void;
+    /**
+     * Enter a parse tree produced by `testParser.qualifiedIdentifier`.
+     * @param ctx the parse tree
+     */
+    enterQualifiedIdentifier?: (ctx: QualifiedIdentifierContext) => void;
+    /**
+     * Exit a parse tree produced by `testParser.qualifiedIdentifier`.
+     * @param ctx the parse tree
+     */
+    exitQualifiedIdentifier?: (ctx: QualifiedIdentifierContext) => void;
     visitTerminal(node: TerminalNode): void;
     visitErrorNode(node: ErrorNode): void;
     enterEveryRule(node: ParserRuleContext): void;

@@ -34,6 +34,11 @@ export declare class CustomErrorListener implements ANTLRErrorListener {
      * コンテキストに依存する構文を検出したことを報告する
      */
     reportContextSensitivity(recognizer: Parser, dfa: DFA, startIndex: number, stopIndex: number, prediction: number, configs: any): void;
+    /**
+     * 典型的なエラーメッセージを日本語で表示
+     */
+    formatErrorMessage(recognizer: Recognizer<any>, msg: string): string;
+    private formatExpectedTokens;
     getErrors(): SyntaxErrorInfo[];
     getAmbiguities(): AmbiguityInfo[];
     getDiagnostics(): DiagnosticInfo[];

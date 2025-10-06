@@ -3,34 +3,63 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AsirASTBuilder = void 0;
 const antlr4ng_1 = require("antlr4ng");
 const errors_js_1 = require("./errors.js");
-const testParser_js_1 = require("./.antlr/testParser.js"); // Add this line
-// コンテキストクラスの型をインポート
-const testParser_js_2 = require("./.antlr/testParser.js");
-// カスタム Visitor クラス
+const testParser_js_1 = require("./.antlr/testParser.js");
+// Custom Visitor Class
 class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
-    createIdentifierNode(token) {
+    // --- Helper Methods ---
+    createIdentifierNode(tokenOrNode) {
+        const token = (tokenOrNode instanceof antlr4ng_1.TerminalNode) ? tokenOrNode.symbol : tokenOrNode;
         return {
             kind: 'Identifier',
-            name: token.getText(),
-            isVar: token.symbol.type === testParser_js_1.testParser.VAR_ID,
-            isSpecialVar: token.symbol.type === testParser_js_1.testParser.VAR_2,
-            loc: (0, errors_js_1.getLoc)(token)
+            name: token.text,
+            isVar: token.type === testParser_js_1.testParser.VAR_ID,
+            isSpecialVar: token.type === testParser_js_1.testParser.VAR_2,
+            loc: (0, errors_js_1.getLoc)(tokenOrNode)
         };
     }
-    // visit メソッドが何も返さなかった場合のデフォルト値
+    visitAndCheck(ctx, expectedKind) {
+        if (!ctx) {
+            throw new Error("Internal Error: Attempted to visit an undefined context.");
+        }
+        const node = this.visit(ctx);
+        if (!node) {
+            throw new errors_js_1.ASTBuilderError(`Visiting context '${ctx.getText()}' returned undefined.`, ctx);
+        }
+        if (expectedKind && node.kind !== expectedKind) {
+            throw new errors_js_1.ASTBuilderError(`Expected node of kind '${expectedKind}' but got '${node.kind}'.`, ctx);
+        }
+        return node;
+    }
+    visitBinaryOp(ctx, operandGetter) {
+        let left = this.visitAndCheck(operandGetter(0));
+        for (let i = 1;; i++) {
+            const operandCtx = operandGetter(i);
+            if (!operandCtx)
+                break;
+            const operator = ctx.getChild(i * 2 - 1);
+            const right = this.visitAndCheck(operandCtx);
+            left = {
+                kind: 'BinaryOperation',
+                operator: operator.getText(),
+                left: left,
+                right: right,
+                loc: (0, errors_js_1.getLoc)(ctx)
+            };
+        }
+        return left;
+    }
     defaultResult() {
         return undefined;
     }
-    // 子ノードの訪問結果を結合する方法
     aggregateResult(aggregate, nextResult) {
         return nextResult !== undefined ? nextResult : aggregate;
     }
-    // --- プログラムのルートノード ---
+    // --- Program Entry --- 
     visitProg(ctx) {
         const statements = [];
         for (const stmtCtx of ctx.statement()) {
-            const stmtNode = this.visit(stmtCtx); // statementルールを訪問
-            if (stmtNode && stmtNode.kind) { // kindプロパティでStatementNodeか確認
+            const stmtNode = this.visit(stmtCtx);
+            if (stmtNode) {
                 statements.push(stmtNode);
             }
         }
@@ -40,83 +69,202 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // --- 文 (Statement) の訪問 ---
-    // expr (SEMI | DOLLAR) #ExprStatement
+    // --- Statements ---
     visitExprStatement(ctx) {
-        const expression = this.visit(ctx.expr());
         return {
             kind: 'ExpressionStatement',
-            expression: expression,
+            expression: this.visitAndCheck(ctx.expr()),
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // (SEMI | DOLLAR) #EmptyLineStatement
     visitEmptyStatement(ctx) {
         return {
             kind: 'EmptyStatement',
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // assignmentExprの #Assign (VAR_ID ... ASSIGN assignmentExpr)
-    visitAssign(ctx) {
-        const varIdNode = this.createIdentifierNode(ctx.VAR_ID());
-        let left = varIdNode;
-        // 添字アクセスがある場合
-        if (ctx.LBRACKET().length > 0) {
-            const indices = [];
-            // The right-most expression is the assignment's RHS, so we exclude it.
-            for (const exprCtx of ctx.expr()) {
-                indices.push(this.visit(exprCtx));
+    visitDefinitionStatement(ctx) {
+        return this.visitAndCheck(ctx.functionDefinition());
+    }
+    visitIfStatement(ctx) {
+        return this.visitAndCheck(ctx.functionIf());
+    }
+    visitForStatement(ctx) {
+        return this.visitAndCheck(ctx.functionFor());
+    }
+    visitWhileStatement(ctx) {
+        return this.visitAndCheck(ctx.functionWhile());
+    }
+    visitDoStatement(ctx) {
+        const doNode = this.visitAndCheck(ctx.functionDo());
+        // The semicolon is consumed as a separate statement, so we need to handle it here.
+        // This is a workaround for the grammar ambiguity.
+        return doNode;
+    }
+    visitReturnStatement(ctx) {
+        return this.visitAndCheck(ctx.functionReturn());
+    }
+    visitBreakStatement(ctx) {
+        return this.visitAndCheck(ctx.functionBreak());
+    }
+    visitContinueStatement(ctx) {
+        return this.visitAndCheck(ctx.functionContinue());
+    }
+    visitStructStatement(ctx) {
+        return this.visitAndCheck(ctx.functionStruct());
+    }
+    visitModuleStatement(ctx) {
+        return this.visitAndCheck(ctx.functionModule());
+    }
+    visitPreproStatement(ctx) {
+        return this.visitAndCheck(ctx.preprocessor());
+    }
+    // --- Preprocessor ---
+    visitPreChr(ctx) {
+        return {
+            kind: 'UnaryOperation',
+            operator: '#',
+            operand: this.visitAndCheck(ctx.memberName()),
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
+    visitPreChrPlus(ctx) {
+        const leftNode = this.visitAndCheck(ctx.memberName(0));
+        const rightNode = this.visitAndCheck(ctx.memberName(1));
+        return {
+            kind: 'BinaryOperation',
+            operator: '##',
+            left: leftNode,
+            right: rightNode,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
+    visitPDef(ctx) {
+        const nameNode = this.visitAndCheck(ctx._name);
+        const parmNodes = (ctx._params || []).map(p => this.visitAndCheck(p));
+        const bodyNode = this.visitAndCheck(ctx._body);
+        return {
+            kind: 'PreprocessorDefine',
+            name: nameNode,
+            parameters: parmNodes,
+            body: bodyNode,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
+    visitPInc(ctx) {
+        let pathType;
+        let path;
+        if (ctx._path_sys) {
+            pathType = 'system';
+            const rawPath = ctx._path_sys.getText();
+            path = rawPath.substring(1, rawPath.length - 1);
+        }
+        else {
+            pathType = 'local';
+            const rawPath = ctx._path_loc.text;
+            path = rawPath.substring(1, rawPath.length - 1);
+        }
+        return {
+            kind: 'PreprocessorIncludeNode',
+            pathtype: pathType,
+            path: path,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
+    visitPIf(ctx) {
+        const directive = (ctx.PIF() || ctx.PIFDEF() || ctx.PIFNDEF()).getText();
+        const mainCondition = this.visitAndCheck(ctx.expr(0));
+        const thenStatements = [];
+        const elifClauses = [];
+        let elseStatements = undefined;
+        let currentStatements = thenStatements;
+        let currentElif = null;
+        if (ctx.children) {
+            for (const child of ctx.children) {
+                if (child instanceof antlr4ng_1.TerminalNode) {
+                    if (child.symbol.type === testParser_js_1.testParser.PELIF) {
+                        if (currentElif) {
+                            elifClauses.push(currentElif);
+                        }
+                        currentElif = {
+                            kind: 'PreprocessorElif',
+                            condition: null,
+                            statements: [],
+                            loc: (0, errors_js_1.getLoc)(child)
+                        };
+                    }
+                    else if (child.symbol.type === testParser_js_1.testParser.PELSE) {
+                        if (currentElif) {
+                            elifClauses.push(currentElif);
+                            currentElif = null;
+                        }
+                        elseStatements = [];
+                        currentStatements = elseStatements;
+                    }
+                }
+                else if (child instanceof antlr4ng_1.ParserRuleContext) {
+                    if (child.ruleIndex === testParser_js_1.testParser.RULE_expr) {
+                        if (currentElif && !currentElif.condition) {
+                            currentElif.condition = this.visitAndCheck(child);
+                        }
+                    }
+                    else if (child.ruleIndex === testParser_js_1.testParser.RULE_statement) {
+                        currentStatements.push(this.visitAndCheck(child));
+                    }
+                }
             }
-            left = {
+        }
+        if (currentElif) {
+            elifClauses.push(currentElif);
+        }
+        return {
+            kind: 'PreprocessorIf',
+            directive: directive,
+            condition: mainCondition,
+            thenStatements: thenStatements,
+            elifClauses: elifClauses,
+            elseStatements: elseStatements,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
+    // --- Expressions (Entry) ---
+    visitMain(ctx) {
+        return this.visitAndCheck(ctx.assignmentExpr());
+    }
+    // --- Assignment Expressions ---
+    visitNoAssignment(ctx) {
+        return this.visitAndCheck(ctx.ternaryExpr());
+    }
+    visitAssign(ctx) {
+        const targetNode = this.createIdentifierNode(ctx._left);
+        let leftNode = targetNode;
+        if (ctx._indices && ctx._indices.length > 0) {
+            const indices = ctx._indices.map(e => this.visitAndCheck(e));
+            leftNode = {
                 kind: 'IndexAccess',
-                base: varIdNode,
+                base: targetNode,
                 indices: indices,
                 loc: (0, errors_js_1.getLoc)(ctx)
             };
         }
-        const operatorText = ctx.PLUSEQ()?.getText() ||
-            ctx.MINUSEQ()?.getText() ||
-            ctx.MULTEQ()?.getText() ||
-            ctx.DIVEQ()?.getText() ||
-            ctx.SUREQ()?.getText() ||
-            ctx.POWEREQ()?.getText() ||
-            ctx.ASSIGN()?.getText();
-        if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Assignment operator text not found.", ctx);
+        else {
+            leftNode = targetNode;
         }
-        // The right-hand side is now an assignmentExpr
-        const right = this.visit(ctx.assignmentExpr());
+        const operatorText = ctx._op.text;
+        const rightNode = this.visitAndCheck(ctx._right);
         return {
             kind: 'AssignmentExpression',
-            left: left,
+            left: leftNode,
             operator: operatorText,
-            right: right,
+            right: rightNode,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // assignmentExprの #StructAssign (VAR_ID -> ... ASSIGN assignmentExpr)
     visitStructAssign(ctx) {
-        const base = this.createIdentifierNode(ctx.VAR_ID(0));
-        const members = [];
-        for (let i = 0; i < ctx.ARROW().length; i++) {
-            const nextMemberCtx = ctx.VAR_ID(i + 1) || ctx.FUNC_ID(i);
-            if (nextMemberCtx) {
-                members.push(this.createIdentifierNode(nextMemberCtx));
-            }
-            else {
-                throw new errors_js_1.ASTBuilderError(`Member identifier not found after ARROW at index ${i}`, ctx);
-            }
-        }
-        const operatorToken = ctx.ASSIGN();
-        if (!operatorToken)
-            throw new errors_js_1.ASTBuilderError("Assignment operator not found for struct", ctx);
-        // The right-hand side is now an assignmentExpr
-        const right = this.visit(ctx.assignmentExpr());
-        const operatorText = operatorToken.getText();
-        if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Operator text is undefined for struct assignment.", ctx);
-        }
+        const base = this.createIdentifierNode(ctx.VAR_ID());
+        const members = ctx.memberName().map(m => this.visitAndCheck(m));
+        const operatorText = (ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN()).getText();
+        const right = this.visitAndCheck(ctx.assignmentExpr());
         return {
             kind: 'StructMemberAssignment',
             base: base,
@@ -126,210 +274,22 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // assignmentExprの #ListAssign ([VAR_ID, ...] = assignmentExpr)
     visitListAssign(ctx) {
-        const targets = [];
-        for (const varIdCtx of ctx.VAR_ID()) {
-            targets.push(this.createIdentifierNode(varIdCtx));
-        }
-        const operatorToken = ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN();
-        if (!operatorToken)
-            throw new errors_js_1.ASTBuilderError("Assignment operator not found for list assign", ctx);
-        // The right-hand side is now an assignmentExpr
-        const right = this.visit(ctx.assignmentExpr());
-        const operatorText = operatorToken.getText();
-        if (operatorText === undefined) {
-            throw new errors_js_1.ASTBuilderError("Operator text is undefined for list assignment.", ctx);
-        }
+        const operatorText = (ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN()).getText();
         return {
             kind: 'ListDestructuringAssignment',
-            targets: targets,
+            targets: ctx.VAR_ID().map(v => this.createIdentifierNode(v)),
             operator: operatorText,
-            right: right,
+            right: this.visitAndCheck(ctx.assignmentExpr()),
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // New: Handles the #NoAssignment case, which is just a ternary expression
-    visitNoAssignment(ctx) {
-        return this.visit(ctx.ternaryExpr());
-    }
-    visitDefinitionStatement(ctx) {
-        return this.visit(ctx.functionDefinition());
-    }
-    // ifstatement
-    visitIfStatement(ctx) {
-        return this.visit(ctx.functionIf());
-    }
-    // functionIf #If
-    visitIf(ctx) {
-        const condition = this.visit(ctx.expr());
-        const consequence = this.visit(ctx.block(0)); // 最初のblock
-        let alternative;
-        if (ctx.ELSE()) {
-            if (ctx.block(1)) { // else block
-                alternative = this.visit(ctx.block(1));
-            }
-            else if (ctx.functionIf()) {
-                alternative = this.visit(ctx.functionIf());
-            }
-        }
-        return {
-            kind: 'IfStatement',
-            condition: condition,
-            consequence: consequence,
-            alternative: alternative,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // forstatement
-    visitForStatement(ctx) {
-        return this.visit(ctx.functionFor());
-    }
-    // functionFor #For
-    visitFor(ctx) {
-        const initializers = [];
-        const conditions = [];
-        const updaters = [];
-        let semiCount = 0;
-        if (ctx.children) {
-            for (const child of ctx.children) {
-                if (child instanceof antlr4ng_1.TerminalNode && child.symbol.type === testParser_js_1.testParser.SEMI) {
-                    semiCount++;
-                }
-                else if (child instanceof testParser_js_2.MainContext || child instanceof testParser_js_2.NoAssignmentContext) {
-                    const exprNode = this.visit(child);
-                    if (semiCount === 0) {
-                        initializers.push(exprNode);
-                    }
-                    else if (semiCount === 1) {
-                        conditions.push(exprNode);
-                    }
-                    else if (semiCount === 2) {
-                        updaters.push(exprNode);
-                    }
-                }
-            }
-        }
-        const body = this.visit(ctx.block());
-        if (!body) {
-            throw new errors_js_1.ASTBuilderError("For loop body cannot be empty", ctx);
-        }
-        return {
-            kind: 'ForStatement',
-            initializers: initializers,
-            conditions: conditions,
-            updaters: updaters,
-            body: body,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // Pre-increment (e.g., ++I)
-    visitPreIncrement(ctx) {
-        const operand = this.createIdentifierNode(ctx.VAR_ID());
-        return {
-            kind: 'UnaryOperation',
-            operator: '++',
-            operand: operand,
-            loc: (0, errors_js_1.getLoc)(ctx),
-            isPostfix: false
-        };
-    }
-    // Pre-decrement (e.g., --I)
-    visitPreDecrement(ctx) {
-        const operand = this.createIdentifierNode(ctx.VAR_ID());
-        return {
-            kind: 'UnaryOperation',
-            operator: '--',
-            operand: operand,
-            loc: (0, errors_js_1.getLoc)(ctx),
-            isPostfix: false
-        };
-    }
-    // Postfix Increment/Decrement (e.g., I++, J[0]--)
-    visitPostFix(ctx) {
-        const operand = this.visit(ctx.powerExpr());
-        if (ctx.INC()) {
-            return {
-                kind: 'UnaryOperation',
-                operator: '++',
-                operand: operand,
-                loc: (0, errors_js_1.getLoc)(ctx),
-                isPostfix: true
-            };
-        }
-        else if (ctx.DEC()) {
-            return {
-                kind: 'UnaryOperation',
-                operator: '--',
-                operand: operand,
-                loc: (0, errors_js_1.getLoc)(ctx),
-                isPostfix: true
-            };
-        }
-        throw new errors_js_1.ASTBuilderError("Postfix operator not found. This should not happen with a valid parse tree.", ctx);
-    }
-    // New: Handles postfix expressions (#PostFixExpr)
-    visitPostFixExpr(ctx) {
-        return this.visit(ctx.postfixExpr());
-    }
-    // New: Handles power expressions (#PowExpr)
-    visitPowExpr(ctx) {
-        return this.visit(ctx.powerExpr());
-    }
-    visitWhileStatement(ctx) {
-        return this.visit(ctx.functionWhile());
-    }
-    visitDoStatement(ctx) {
-        return this.visit(ctx.functionDo());
-    }
-    visitReturnStatement(ctx) {
-        return this.visit(ctx.functionReturn());
-    }
-    visitBreakStatement(ctx) {
-        return this.visit(ctx.functionBreak());
-    }
-    visitContinueStatement(ctx) {
-        return {
-            kind: 'ContinueStatement',
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    visitStructStatement(ctx) {
-        return this.visit(ctx.functionStruct());
-    }
-    visitModuleStatement(ctx) {
-        return this.visit(ctx.functionModule());
-    }
-    // block #Sentence と #Sentence1
-    visitSentence(ctx) {
-        const statements = [];
-        for (const stmtCtx of ctx.statement()) {
-            const stmtNode = this.visit(stmtCtx);
-            if (stmtNode) {
-                statements.push(stmtNode);
-            }
-        }
-        return { kind: 'Block', statements: statements, loc: (0, errors_js_1.getLoc)(ctx) };
-    }
-    visitSentence1(ctx) {
-        const stmtNode = this.visit(ctx.statement());
-        if (stmtNode) {
-            return { kind: 'Block', statements: [stmtNode], loc: (0, errors_js_1.getLoc)(ctx) };
-        }
-        return { kind: 'Block', statements: [], loc: (0, errors_js_1.getLoc)(ctx) };
-    }
-    // --- 式 (Expression) の訪問 ---
-    visitMain(ctx) {
-        // The entry point for an expression is now assignmentExpr
-        return this.visit(ctx.assignmentExpr());
-    }
-    // Ternary #Ternary
+    // --- Conditional and Binary Operations ---
     visitTernary(ctx) {
-        const condition = this.visit(ctx.qeOrExpr());
-        if (ctx.QUESTION()) { // 三項演算子の部分が存在する場合
-            // expr が2つあるので、1つ目が consequence, 2つ目が alternative
-            const consequence = this.visit(ctx.expr(0));
-            const alternative = this.visit(ctx.expr(1));
+        const condition = this.visitAndCheck(ctx._condition);
+        if (ctx._consequence) {
+            const consequence = this.visitAndCheck(ctx._consequence);
+            const alternative = this.visitAndCheck(ctx._alternative);
             return {
                 kind: 'TernaryOperation',
                 condition: condition,
@@ -338,432 +298,310 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
                 loc: (0, errors_js_1.getLoc)(ctx)
             };
         }
-        return condition; // 三項演算子がない場合は、qeOrExprの結果をそのまま返す
+        return condition;
     }
-    // Binary Operation (AddSub, MulDivSur, Compare, And, Or, QECompare, QEand, QEor)
-    visitAddSub(ctx) {
-        let left = this.visit(ctx.mulDivSurExpr(0));
-        for (let i = 1; i < ctx.mulDivSurExpr().length; i++) {
-            const right = this.visit(ctx.mulDivSurExpr(i));
-            const operator = ctx.getChild(2 * i - 1);
-            left = {
-                kind: 'BinaryOperation',
-                operator: operator.getText(),
-                left: left,
-                right: right,
-                loc: (0, errors_js_1.getLoc)(ctx)
-            };
-        }
-        return left;
+    visitQuote(ctx) {
+        return { kind: 'UnaryOperation', operator: '`', operand: this.visitAndCheck(ctx.qeNotExpr()), loc: (0, errors_js_1.getLoc)(ctx) };
     }
-    visitMulDivSur(ctx) {
-        let left = this.visit(ctx.unaryExpr(0));
-        for (let i = 1; i < ctx.unaryExpr().length; i++) {
-            const right = this.visit(ctx.unaryExpr(i));
-            const operator = ctx.getChild(2 * i - 1);
-            left = {
-                kind: 'BinaryOperation',
-                operator: operator.getText(),
-                left: left,
-                right: right,
-                loc: (0, errors_js_1.getLoc)(ctx)
-            };
-        }
-        return left;
-    }
-    // Unary Operations (Minus, Not)
+    visitQEnot(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.qeOrExpr(i)); }
+    visitQEor(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.qeAndExpr(i)); }
+    visitQEand(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.qeCompareExpr(i)); }
+    visitQECompare(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.orExpr(i)); }
+    visitOr(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.andExpr(i)); }
+    visitAnd(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.compareExpr(i)); }
+    visitCompare(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.addSubExpr(i)); }
+    visitAddSub(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.mulDivSurExpr(i)); }
+    visitMulDivSur(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.unaryExpr(i)); }
+    // --- Unary Operations ---
     visitUnaryMinus(ctx) {
-        const operand = this.visit(ctx.unaryExpr());
-        return {
-            kind: 'UnaryOperation',
-            operator: '-',
-            operand: operand,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
+        return { kind: 'UnaryOperation', operator: '-', operand: this.visitAndCheck(ctx.unaryExpr()), loc: (0, errors_js_1.getLoc)(ctx) };
     }
     visitNotExpr(ctx) {
-        const operand = this.visit(ctx.unaryExpr());
-        return {
-            kind: 'UnaryOperation',
-            operator: '!',
-            operand: operand,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
+        return { kind: 'UnaryOperation', operator: '!', operand: this.visitAndCheck(ctx.unaryExpr()), loc: (0, errors_js_1.getLoc)(ctx) };
     }
-    // Power
+    visitPowExpr(ctx) { return this.visitAndCheck(ctx.powerExpr()); }
+    // --- Power, Pre/PostFix, and Access Expressions ---
     visitPower(ctx) {
-        const base = this.visit(ctx.indexAccessExpr());
+        const base = this.visitAndCheck(ctx._base);
         if (ctx.POWER()) {
-            const exponent = this.visit(ctx.powerExpr());
             return {
                 kind: 'PowerOperation',
                 base: base,
-                exponent: exponent,
+                exponent: this.visitAndCheck(ctx._exponent),
                 loc: (0, errors_js_1.getLoc)(ctx)
             };
         }
         return base;
     }
-    // IndexAccess (添字アクセス)
+    visitFactrialExpr(ctx) {
+        const baseExpr = this.visit(ctx.postfixExpr() || ctx.prefixExpr() || ctx.indexAccessExpr());
+        if (ctx.NOT()) {
+            return {
+                kind: 'UnaryOperation',
+                operator: '!',
+                operand: baseExpr,
+                isPostfix: true,
+                loc: (0, errors_js_1.getLoc)(ctx)
+            };
+        }
+        return baseExpr;
+    }
+    visitPreFix(ctx) {
+        return {
+            kind: 'UnaryOperation',
+            operator: ctx.INC() ? '++' : '--',
+            operand: this.visitAndCheck(ctx.indexAccessExpr()),
+            loc: (0, errors_js_1.getLoc)(ctx),
+            isPostfix: false
+        };
+    }
+    visitPostFix(ctx) {
+        return {
+            kind: 'UnaryOperation',
+            operator: ctx.INC() ? '++' : '--',
+            operand: this.visitAndCheck(ctx.indexAccessExpr()),
+            loc: (0, errors_js_1.getLoc)(ctx),
+            isPostfix: true
+        };
+    }
     visitIndexAccess(ctx) {
-        const base = this.visit(ctx.primaryExpr());
-        if (ctx.LBRACKET().length === 0) {
-            return base;
+        const base = this.visitAndCheck(ctx.primaryExpr());
+        if (ctx.LBRACKET().length > 0) {
+            return {
+                kind: 'IndexAccess',
+                base: base,
+                indices: ctx.expr().map(e => this.visitAndCheck(e)),
+                loc: (0, errors_js_1.getLoc)(ctx)
+            };
         }
-        const indices = [];
-        for (const exprCtx of ctx.expr()) {
-            indices.push(this.visit(exprCtx));
+        return base;
+    }
+    // --- Primary Expressions ---
+    visitIndExpr(ctx) { return this.visitAndCheck(ctx.indeterminate()); }
+    visitReal(ctx) { return this.visitAndCheck(ctx.num()); }
+    visitIdExpr(ctx) { return this.visitAndCheck(ctx.id()); }
+    visitFCallExpr(ctx) { return this.visitAndCheck(ctx.functionCall()); }
+    visitParen(ctx) {
+        return { kind: 'ParenExpression', expression: this.visitAndCheck(ctx.expr()), loc: (0, errors_js_1.getLoc)(ctx) };
+    }
+    visitStringLiteral(ctx) {
+        const rawText = ctx.STRING().getText();
+        return { kind: 'StringLiteral', value: rawText.substring(1, rawText.length - 1), rawText: rawText, loc: (0, errors_js_1.getLoc)(ctx) };
+    }
+    visitListLiteral(ctx) { return this.visitAndCheck(ctx.list()); }
+    visitDpLiteral(ctx) { return this.visitAndCheck(ctx.dpoly()); }
+    visitPreChrExpr(ctx) { return this.visitAndCheck(ctx.prechar()); }
+    // --- Literals and Identifiers ---
+    visitHexNum(ctx) {
+        const rawText = ctx.HEX().getText();
+        return { kind: 'NumberLiteral', value: ctx.getText(), rawText: rawText, loc: (0, errors_js_1.getLoc)(ctx) };
+    }
+    visitBitNum(ctx) {
+        const rawText = ctx.BIT().getText();
+        return { kind: 'NumberLiteral', value: ctx.getText(), rawText: rawText, loc: (0, errors_js_1.getLoc)(ctx) };
+    }
+    visitRatNum(ctx) { return this.visitAndCheck(ctx.rational()); }
+    visitDecNum(ctx) { return this.visitAndCheck(ctx.decimal()); }
+    visitImaNum(ctx) {
+        const rawText = ctx.IMAGINARY().getText();
+        return { kind: 'NumberLiteral', value: ctx.getText(), rawText: rawText, loc: (0, errors_js_1.getLoc)(ctx) };
+    }
+    visitRat(ctx) { return { kind: 'NumberLiteral', value: ctx.getText(), rawText: ctx.getText(), loc: (0, errors_js_1.getLoc)(ctx) }; }
+    visitFloat(ctx) { return { kind: 'NumberLiteral', value: parseFloat(ctx.getText()), rawText: ctx.getText(), loc: (0, errors_js_1.getLoc)(ctx) }; }
+    visitVId(ctx) { return this.createIdentifierNode(ctx.VAR_ID()); }
+    visitV2Id(ctx) { return this.createIdentifierNode(ctx.VAR_2()); }
+    visitBef(ctx) { return this.createIdentifierNode(ctx.BEFORE()); }
+    visitBefN(ctx) { return this.createIdentifierNode(ctx.BEFORE_N()); }
+    // visitFunc(ctx: FuncContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.qualifiedIdentifier()!); }
+    visitAtFunc(ctx) { return this.createIdentifierNode(ctx.ATFUNC()); }
+    visitChFunc(ctx) { return this.createIdentifierNode(ctx.NOSTRING()); }
+    visitListExpr(ctx) {
+        let elements = [];
+        if (ctx.exprlist()) {
+            const elemNode = this.visitAndCheck(ctx.exprlist());
+            elements = elemNode.expressions;
         }
+        return { kind: 'ListLiteral', elements: elements, loc: (0, errors_js_1.getLoc)(ctx) };
+    }
+    visitDp(ctx) {
+        const allInts = ctx.INT();
+        const terms = allInts.slice(0, ctx.COLON() ? -1 : undefined).map(t => parseInt(t.getText(), 10));
+        const modulus = ctx.COLON() ? parseInt(allInts[allInts.length - 1].getText(), 10) : undefined;
+        return { kind: 'DistributedPolynomialLiteral', terms, modulus, loc: (0, errors_js_1.getLoc)(ctx) };
+    }
+    // --- Control Flow and Definitions ---
+    visitDef(ctx) {
+        const nameNode = this.visitAndCheck(ctx.indeterminate());
+        const paramNodes = (ctx.VAR_ID() || []).map(v => this.createIdentifierNode(v));
+        const bodyNode = this.visitAndCheck(ctx.block());
         return {
-            kind: 'IndexAccess',
-            base: base,
-            indices: indices,
+            kind: 'FunctionDefinition',
+            name: nameNode,
+            parameters: paramNodes,
+            body: bodyNode,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // Number Literals (RatNum, DecNum, Real)
-    visitReal(ctx) {
-        const numNode = this.visit(ctx.num());
-        if (numNode && numNode.kind === 'NumberLiteral') {
-            return numNode;
+    visitIf(ctx) {
+        const conditionNode = this.visitAndCheck(ctx._condition);
+        const thenNode = this.visitAndCheck(ctx._thenBlock);
+        let elseNode = undefined;
+        if (ctx._elseBlock) {
+            elseNode = this.visitAndCheck(ctx._elseBlock);
         }
-        throw new errors_js_1.ASTBuilderError('Expected NumberLiteralNode from num', ctx);
-    }
-    visitRatNum(ctx) {
-        return this.visit(ctx.rational());
-    }
-    visitDecNum(ctx) {
-        return this.visit(ctx.decimal());
-    }
-    visitRat(ctx) {
-        const value = ctx.getText();
         return {
-            kind: 'NumberLiteral',
-            value: value,
-            rawText: value,
+            kind: 'IfStatement',
+            condition: conditionNode,
+            thenStatement: thenNode,
+            elseStatement: elseNode,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    visitFloat(ctx) {
-        const value = ctx.getText();
+    visitFor(ctx) {
+        let initializers = [];
+        let conditions = [];
+        let updaters = [];
+        if (ctx._init) {
+            const initNode = this.visitAndCheck(ctx._init);
+            initializers = initNode.expressions;
+        }
+        if (ctx._cond) {
+            const condNode = this.visitAndCheck(ctx._cond);
+            conditions = condNode.expressions;
+        }
+        if (ctx._update) {
+            const updateNode = this.visitAndCheck(ctx._update);
+            updaters = updateNode.expressions;
+        }
+        const bodyNode = this.visitAndCheck(ctx.block());
         return {
-            kind: 'NumberLiteral',
-            value: parseFloat(value),
-            rawText: value,
+            kind: 'ForStatement',
+            initializers: initializers,
+            conditions: conditions,
+            updaters: updaters,
+            body: bodyNode,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // Identifier (VId, FId, V2Id)
-    visitIdExpr(ctx) {
-        const idNode = this.visit(ctx.id());
-        if (idNode && idNode.kind === 'Identifier') {
-            return idNode;
+    visitWhile(ctx) {
+        let conditions = [];
+        if (ctx.exprlist()) {
+            const condNode = this.visitAndCheck(ctx.exprlist());
+            conditions = condNode.expressions;
         }
-        throw new errors_js_1.ASTBuilderError('Expected IdentifierNode from idExpr', ctx);
+        return {
+            kind: 'WhileStatement',
+            conditions: conditions,
+            body: this.visitAndCheck(ctx.block()),
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
     }
-    visitVId(ctx) {
-        return this.createIdentifierNode(ctx.VAR_ID());
-    }
-    visitFId(ctx) {
-        const nameNode = this.createIdentifierNode(ctx.FUNC_ID(ctx.FUNC_ID().length - 1));
-        if (ctx.POINT()) {
-            const qualifierNode = this.createIdentifierNode(ctx.FUNC_ID(0));
-            nameNode.qualifier = qualifierNode;
+    visitDo(ctx) {
+        let conditions = [];
+        if (ctx.exprlist()) {
+            const condNode = this.visitAndCheck(ctx.exprlist());
+            conditions = condNode.expressions;
         }
-        return nameNode;
+        return {
+            kind: 'DoWhileStatement',
+            body: this.visitAndCheck(ctx.block()),
+            conditions: conditions,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
     }
-    visitV2Id(ctx) {
-        return this.createIdentifierNode(ctx.VAR_2());
+    visitReturn(ctx) {
+        const exprCtx = ctx.expr();
+        return { kind: 'ReturnStatement', value: exprCtx ? this.visitAndCheck(exprCtx) : undefined, loc: (0, errors_js_1.getLoc)(ctx) };
     }
-    // FunctionCall #Fcall
+    visitBreak(ctx) { return { kind: 'BreakStatement', loc: (0, errors_js_1.getLoc)(ctx) }; }
+    visitContinue(ctx) { return { kind: 'ContinueStatement', loc: (0, errors_js_1.getLoc)(ctx) }; }
+    visitStrct(ctx) {
+        const nameNode = this.visitAndCheck(ctx._name);
+        const memberNodes = ctx._members.map(memberCtx => this.visitAndCheck(memberCtx));
+        return {
+            kind: 'StructStatement',
+            name: nameNode,
+            members: memberNodes,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
     visitFcall(ctx) {
-        const calleeNameCtx = ctx.FUNC_ID(ctx.FUNC_ID().length - 1);
-        const callee = this.createIdentifierNode(calleeNameCtx);
-        if (ctx.COLON2()) {
-            callee.name = ctx.COLON2().getText() + callee.name;
+        const callee = this.visitAndCheck(ctx._name);
+        const isGlobal = !!ctx._is_global;
+        let args = [];
+        if (ctx._args) {
+            const argsNode = this.visitAndCheck(ctx._args);
+            args = argsNode.expressions;
         }
-        if (ctx.POINT()) {
-            const moduleNameNode = this.createIdentifierNode(ctx.FUNC_ID(0));
-            callee.qualifier = moduleNameNode;
-        }
-        const args = [];
-        if (ctx.expr()) {
-            for (const argCtx of ctx.expr()) {
-                args.push(this.visit(argCtx));
-            }
+        let options = [];
+        if (ctx._options && ctx._options.length > 0) {
+            options = ctx._options.map(o => this.visitAndCheck(o));
         }
         return {
             kind: 'FunctionCall',
             callee: callee,
+            isGlobal: isGlobal,
             args: args,
+            options: options,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // Paren #Paren
-    visitParen(ctx) {
-        const expression = this.visit(ctx.expr());
-        return {
-            kind: 'ParenExpression',
-            expression: expression,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // Special Numbers
-    visitSpecNum(ctx) {
-        if (ctx instanceof testParser_js_2.ImaContext) {
-            return this.visitIma(ctx);
-        }
-        else if (ctx instanceof testParser_js_2.PiContext) {
-            return this.visitPi(ctx);
-        }
-        else if (ctx instanceof testParser_js_2.NapContext) {
-            return this.visitNap(ctx);
-        }
-        else if (ctx instanceof testParser_js_2.BefContext) {
-            return this.visitBef(ctx);
-        }
-        else if (ctx instanceof testParser_js_2.BefNContext) {
-            return this.visitBefN(ctx);
-        }
-        return {
-            kind: 'SpecialNumber',
-            name: ctx.getText(),
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    visitIma(ctx) {
-        return { kind: 'SpecialNumber', name: ctx.IMAGINARY().getText(), loc: (0, errors_js_1.getLoc)(ctx) };
-    }
-    visitPi(ctx) {
-        return { kind: 'SpecialNumber', name: ctx.PI().getText(), loc: (0, errors_js_1.getLoc)(ctx) };
-    }
-    visitNap(ctx) {
-        return { kind: 'SpecialNumber', name: ctx.NAPIER().getText(), loc: (0, errors_js_1.getLoc)(ctx) };
-    }
-    visitBef(ctx) {
-        return { kind: 'SpecialNumber', name: ctx.BEFORE().getText(), loc: (0, errors_js_1.getLoc)(ctx) };
-    }
-    visitBefN(ctx) {
-        return { kind: 'SpecialNumber', name: ctx.BEFORE_N().getText(), loc: (0, errors_js_1.getLoc)(ctx) };
-    }
-    // String Literals #StringLiteral, #CharLiteral
-    visitStringLiteral(ctx) {
-        const rawText = ctx.STRING2().getText();
-        const value = rawText.substring(1, rawText.length - 1); // クォートを除去
-        return { kind: 'StringLiteral', value: value, rawText: rawText, loc: (0, errors_js_1.getLoc)(ctx) };
-    }
-    visitCharLiteral(ctx) {
-        const rawText = ctx.STRING1().getText();
-        const value = rawText.substring(1, rawText.length - 1); // クォートを除去
-        return { kind: 'CharLiteral', value: value, rawText: rawText, loc: (0, errors_js_1.getLoc)(ctx) };
-    }
-    // List Literals #List (ListContext)
-    visitListExpr(ctx) {
-        const elements = [];
-        for (const exprCtx of ctx.expr()) {
-            elements.push(this.visit(exprCtx));
-        }
-        return {
-            kind: 'ListLiteral',
-            elements: elements,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // Distributed Polynomial Literals #DpLiteral
-    visitDpLiteral(ctx) {
-        return this.visit(ctx.dpoly());
-    }
-    // dpoly #Dp
-    visitDp(ctx) {
-        const allInts = ctx.INT();
-        const terms = [];
-        let modulus = undefined;
-        if (ctx.COLON()) {
-            modulus = parseInt(allInts[allInts.length - 1].getText(), 10);
-            for (let i = 0; i < allInts.length - 1; i++) {
-                terms.push(parseInt(allInts[i].getText(), 10));
-            }
-        }
-        else {
-            for (const intToken of allInts) {
-                terms.push(parseInt(intToken.getText(), 10));
-            }
-        }
-        return {
-            kind: 'DistributedPolynomialLiteral',
-            terms: terms,
-            modulus: modulus,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // functionDefinition #Def
-    visitDef(ctx) {
-        const name = this.createIdentifierNode(ctx.FUNC_ID());
-        const parameters = [];
-        if (ctx.VAR_ID()) {
-            for (const varIdCtx of ctx.VAR_ID()) {
-                parameters.push(this.createIdentifierNode(varIdCtx));
-            }
-        }
-        const body = this.visit(ctx.block());
-        return {
-            kind: 'FunctionDefinition',
-            name: name,
-            parameters: parameters,
-            body: body,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // functionWhile #While
-    visitWhile(ctx) {
-        const conditions = [];
-        if (ctx.expr()) {
-            for (const exprCtx of ctx.expr()) {
-                conditions.push(this.visit(exprCtx));
-            }
-        }
-        const body = this.visit(ctx.block());
-        return {
-            kind: 'WhileStatement',
-            conditions: conditions,
-            body: body,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // functionDo #Do
-    visitDo(ctx) {
-        const body = this.visit(ctx.block());
-        const conditions = [];
-        if (ctx.expr()) {
-            for (const exprCtx of ctx.expr()) {
-                conditions.push(this.visit(exprCtx));
-            }
-        }
-        return {
-            kind: 'DoWhileStatement',
-            body: body,
-            conditions: conditions,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // functionReturn #Return
-    visitReturn(ctx) {
-        const value = ctx.expr() ? this.visit(ctx.expr()) : undefined;
-        return {
-            kind: 'ReturnStatement',
-            value: value,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // functionBreak #Break
-    visitBreak(ctx) {
-        return {
-            kind: 'BreakStatement',
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // functionContinue #Continue
-    visitContinue(ctx) {
-        return {
-            kind: 'ContinueStatement',
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // functionStruct #Strct
-    visitStrct(ctx) {
-        const nameCtx = ctx.FUNC_ID(0) || ctx.VAR_ID(0);
-        if (!nameCtx)
-            throw new errors_js_1.ASTBuilderError("Struct name not found", ctx);
-        const name = this.createIdentifierNode(nameCtx);
-        const members = [];
-        const memberIdCtxs = [...(ctx.FUNC_ID() || []), ...(ctx.VAR_ID() || [])];
-        for (let i = 1; i < memberIdCtxs.length; i++) {
-            const memberNode = this.createIdentifierNode(memberIdCtxs[i]);
-            if (memberNode) {
-                members.push(memberNode);
-            }
-        }
-        return {
-            kind: 'StructStatement',
-            name: name,
-            members: members,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    // ModuleStatement 関連
+    // --- Module-related ---
     visitModuleAssign(ctx) {
-        const scopeToken = ctx.EXTERN() || ctx.STATIC() || ctx.GLOBAL() || ctx.LOCAL();
-        const variables = [];
-        for (const varIdCtx of ctx.VAR_ID()) {
-            variables.push(this.createIdentifierNode(varIdCtx));
-        }
+        const scope = (ctx.EXTERN() || ctx.STATIC() || ctx.GLOBAL() || ctx.LOCAL()).getText();
         return {
             kind: 'ModuleVariableDeclaration',
-            scope: scopeToken.getText(),
-            variables: variables,
+            scope: scope,
+            variables: ctx.VAR_ID().map(v => this.createIdentifierNode(v)),
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
     visitModuleFunction(ctx) {
-        const functions = [];
-        for (const funcIdCtx of ctx.FUNC_ID()) {
-            functions.push(this.createIdentifierNode(funcIdCtx));
-        }
         return {
             kind: 'LocalFunctionDeclaration',
-            functions: functions,
+            functions: ctx.FUNC_ID().map(f => this.createIdentifierNode(f)),
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
     visitModuleStart(ctx) {
-        return {
-            kind: 'ModuleDeclaration',
-            name: this.createIdentifierNode(ctx.FUNC_ID()),
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
+        return { kind: 'ModuleDeclaration', name: this.createIdentifierNode(ctx.FUNC_ID()), loc: (0, errors_js_1.getLoc)(ctx) };
     }
     visitModuleEnd(ctx) {
+        return { kind: 'EndModule', loc: (0, errors_js_1.getLoc)(ctx) };
+    }
+    // --- Blocks ---
+    visitSentence(ctx) {
+        return { kind: 'Block', statements: ctx.statement().map(s => this.visitAndCheck(s)), loc: (0, errors_js_1.getLoc)(ctx) };
+    }
+    visitSentence1(ctx) {
+        return { kind: 'Block', statements: [this.visitAndCheck(ctx.statement())], loc: (0, errors_js_1.getLoc)(ctx) };
+    }
+    // --- others ---
+    visitExprlist(ctx) {
+        const expressions = ctx.expr().map(e => this.visitAndCheck(e));
         return {
-            kind: 'EndModule',
+            kind: 'ExpressionList',
+            expressions: expressions,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    // 二項演算子 (Compare, And, Or, QECompare, QEand, QEor)
-    visitBinaryOp(ctx, operandGetter) {
-        let left = this.visit(operandGetter(0));
-        for (let i = 1;; i++) {
-            const operand = operandGetter(i);
-            if (!operand)
-                break;
-            const operator = ctx.getChild(2 * i - 1);
-            const right = this.visit(operand);
-            left = {
-                kind: 'BinaryOperation',
-                operator: operator.getText(),
-                left: left,
-                right: right,
-                loc: (0, errors_js_1.getLoc)(operator)
-            };
-        }
-        return left;
+    visitOptionPair(ctx) {
+        const keyNode = this.visitAndCheck(ctx._key);
+        const valueNode = this.visitAndCheck(ctx._value);
+        return {
+            kind: 'OptionPair',
+            key: keyNode,
+            value: valueNode,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
     }
-    visitQEor(ctx) {
-        return this.visitBinaryOp(ctx, (i) => ctx.qeAndExpr(i));
-    }
-    visitQEand(ctx) {
-        return this.visitBinaryOp(ctx, (i) => ctx.qeCompareExpr(i));
-    }
-    visitQECompare(ctx) {
-        return this.visitBinaryOp(ctx, (i) => ctx.orExpr(i));
-    }
-    visitOr(ctx) {
-        return this.visitBinaryOp(ctx, (i) => ctx.andExpr(i));
-    }
-    visitAnd(ctx) {
-        return this.visitBinaryOp(ctx, (i) => ctx.compareExpr(i));
-    }
-    visitCompare(ctx) {
-        return this.visitBinaryOp(ctx, (i) => ctx.addSubExpr(i));
+    visitQualifiedIdentifier(ctx) {
+        const pathNode = ctx.FUNC_ID().map(i => this.createIdentifierNode(i));
+        return {
+            kind: 'QualifiedIdentifier',
+            path: pathNode,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
     }
 }
 exports.AsirASTBuilder = AsirASTBuilder;
