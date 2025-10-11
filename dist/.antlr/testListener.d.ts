@@ -29,7 +29,6 @@ import { BreakContext } from "./testParser.js";
 import { StructContext } from "./testParser.js";
 import { FcallContext } from "./testParser.js";
 import { ModuleAssignContext } from "./testParser.js";
-import { ModuleFunctionContext } from "./testParser.js";
 import { ModuleStartContext } from "./testParser.js";
 import { ModuleEndContext } from "./testParser.js";
 import { MainContext } from "./testParser.js";
@@ -73,7 +72,6 @@ import { BitNumContext } from "./testParser.js";
 import { RatNumContext } from "./testParser.js";
 import { DecNumContext } from "./testParser.js";
 import { ImaNumContext } from "./testParser.js";
-import { VIdContext } from "./testParser.js";
 import { BefContext } from "./testParser.js";
 import { BefNContext } from "./testParser.js";
 import { V2IdContext } from "./testParser.js";
@@ -85,10 +83,8 @@ import { SentenceContext } from "./testParser.js";
 import { Sentence1Context } from "./testParser.js";
 import { ExprlistContext } from "./testParser.js";
 import { TerminatorContext } from "./testParser.js";
-import { MemberNameContext } from "./testParser.js";
 import { SystemPathContext } from "./testParser.js";
 import { OptionPairContext } from "./testParser.js";
-import { QualifiedIdentifierContext } from "./testParser.js";
 /**
  * This interface defines a complete listener for a parse tree produced by
  * `testParser`.
@@ -452,18 +448,6 @@ export declare class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitModuleAssign?: (ctx: ModuleAssignContext) => void;
-    /**
-     * Enter a parse tree produced by the `ModuleFunction`
-     * labeled alternative in `testParser.functionModule`.
-     * @param ctx the parse tree
-     */
-    enterModuleFunction?: (ctx: ModuleFunctionContext) => void;
-    /**
-     * Exit a parse tree produced by the `ModuleFunction`
-     * labeled alternative in `testParser.functionModule`.
-     * @param ctx the parse tree
-     */
-    exitModuleFunction?: (ctx: ModuleFunctionContext) => void;
     /**
      * Enter a parse tree produced by the `ModuleStart`
      * labeled alternative in `testParser.functionModule`.
@@ -981,18 +965,6 @@ export declare class testListener implements ParseTreeListener {
      */
     exitImaNum?: (ctx: ImaNumContext) => void;
     /**
-     * Enter a parse tree produced by the `VId`
-     * labeled alternative in `testParser.id`.
-     * @param ctx the parse tree
-     */
-    enterVId?: (ctx: VIdContext) => void;
-    /**
-     * Exit a parse tree produced by the `VId`
-     * labeled alternative in `testParser.id`.
-     * @param ctx the parse tree
-     */
-    exitVId?: (ctx: VIdContext) => void;
-    /**
      * Enter a parse tree produced by the `Bef`
      * labeled alternative in `testParser.id`.
      * @param ctx the parse tree
@@ -1121,16 +1093,6 @@ export declare class testListener implements ParseTreeListener {
      */
     exitTerminator?: (ctx: TerminatorContext) => void;
     /**
-     * Enter a parse tree produced by `testParser.memberName`.
-     * @param ctx the parse tree
-     */
-    enterMemberName?: (ctx: MemberNameContext) => void;
-    /**
-     * Exit a parse tree produced by `testParser.memberName`.
-     * @param ctx the parse tree
-     */
-    exitMemberName?: (ctx: MemberNameContext) => void;
-    /**
      * Enter a parse tree produced by `testParser.systemPath`.
      * @param ctx the parse tree
      */
@@ -1150,16 +1112,6 @@ export declare class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitOptionPair?: (ctx: OptionPairContext) => void;
-    /**
-     * Enter a parse tree produced by `testParser.qualifiedIdentifier`.
-     * @param ctx the parse tree
-     */
-    enterQualifiedIdentifier?: (ctx: QualifiedIdentifierContext) => void;
-    /**
-     * Exit a parse tree produced by `testParser.qualifiedIdentifier`.
-     * @param ctx the parse tree
-     */
-    exitQualifiedIdentifier?: (ctx: QualifiedIdentifierContext) => void;
     visitTerminal(node: TerminalNode): void;
     visitErrorNode(node: ErrorNode): void;
     enterEveryRule(node: ParserRuleContext): void;

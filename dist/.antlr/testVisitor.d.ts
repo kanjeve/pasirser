@@ -29,7 +29,6 @@ import { BreakContext } from "./testParser.js";
 import { StructContext } from "./testParser.js";
 import { FcallContext } from "./testParser.js";
 import { ModuleAssignContext } from "./testParser.js";
-import { ModuleFunctionContext } from "./testParser.js";
 import { ModuleStartContext } from "./testParser.js";
 import { ModuleEndContext } from "./testParser.js";
 import { MainContext } from "./testParser.js";
@@ -73,7 +72,6 @@ import { BitNumContext } from "./testParser.js";
 import { RatNumContext } from "./testParser.js";
 import { DecNumContext } from "./testParser.js";
 import { ImaNumContext } from "./testParser.js";
-import { VIdContext } from "./testParser.js";
 import { BefContext } from "./testParser.js";
 import { BefNContext } from "./testParser.js";
 import { V2IdContext } from "./testParser.js";
@@ -85,10 +83,8 @@ import { SentenceContext } from "./testParser.js";
 import { Sentence1Context } from "./testParser.js";
 import { ExprlistContext } from "./testParser.js";
 import { TerminatorContext } from "./testParser.js";
-import { MemberNameContext } from "./testParser.js";
 import { SystemPathContext } from "./testParser.js";
 import { OptionPairContext } from "./testParser.js";
-import { QualifiedIdentifierContext } from "./testParser.js";
 /**
  * This interface defines a complete generic visitor for a parse tree produced
  * by `testParser`.
@@ -306,13 +302,6 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      * @return the visitor result
      */
     visitModuleAssign?: (ctx: ModuleAssignContext) => Result;
-    /**
-     * Visit a parse tree produced by the `ModuleFunction`
-     * labeled alternative in `testParser.functionModule`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitModuleFunction?: (ctx: ModuleFunctionContext) => Result;
     /**
      * Visit a parse tree produced by the `ModuleStart`
      * labeled alternative in `testParser.functionModule`.
@@ -615,13 +604,6 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      */
     visitImaNum?: (ctx: ImaNumContext) => Result;
     /**
-     * Visit a parse tree produced by the `VId`
-     * labeled alternative in `testParser.id`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitVId?: (ctx: VIdContext) => Result;
-    /**
      * Visit a parse tree produced by the `Bef`
      * labeled alternative in `testParser.id`.
      * @param ctx the parse tree
@@ -697,12 +679,6 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      */
     visitTerminator?: (ctx: TerminatorContext) => Result;
     /**
-     * Visit a parse tree produced by `testParser.memberName`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitMemberName?: (ctx: MemberNameContext) => Result;
-    /**
      * Visit a parse tree produced by `testParser.systemPath`.
      * @param ctx the parse tree
      * @return the visitor result
@@ -714,10 +690,4 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      * @return the visitor result
      */
     visitOptionPair?: (ctx: OptionPairContext) => Result;
-    /**
-     * Visit a parse tree produced by `testParser.qualifiedIdentifier`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitQualifiedIdentifier?: (ctx: QualifiedIdentifierContext) => Result;
 }

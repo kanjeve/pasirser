@@ -1,20 +1,1664 @@
-def quad(A,B,C) {
-    if (A!=0) {
-        D = B^2-4*A*C$
-        if (D>=0){
-            DQ = deval(D^(1/2));
-            return([-B/(2*A)+DQ/(2*A),-B/(2*A)-DQ/(2*A)])$
-        } else {
-            DQ = deval((-D)^(1/2));
-            return([-B/(2*A)+@i*DQ/(2*A),-B/(2*A)-@i*DQ/(2*A)])$
-        }
-    } else {
-        B!=0? deval(-C/B) : "x don't exist.";
-    }
+
+/* $OpenXM: OpenXM/src/asir-contrib/packages/src/names.rr,v 1.168 2022/02/01 00:36:22 takayama Exp $ */
+/* $Revision$ */
+#define NOT_YET   print("It has not yet been implemented.")
+import("oxrfc100.rr")$
+
+def asir_contrib_copyright() {
+  S=
+  "OpenXM/Risa/Asir-Contrib $Revision$ (20250117), Copyright 2000-2025, OpenXM.org committers\n"+
+  "helph(); [html help], ox_help(0); ox_help("+asciitostr([34])+"keyword"+asciitostr([34])+
+ "); ox_grep("+asciitostr([34])+"keyword"+asciitostr([34])+");\n"+
+  "     for help messages (unix version only).\n";
+  return S;
 }
 
-quad(1,2,1);
-quad(1.0,2.0,1.0);
-quad(5.0,3.0,2.0);
-quad(0,4.0,3.0);
-quad(0,0,1);
+def asir_contrib_document_url() {
+  return "http://www.math.kobe-u.ac.jp/OpenXM/Current/doc/index-doc.html";
+}
+ 
+if (!ctrl("quiet_mode")) {
+  print(asir_contrib_copyright(),0)$
+  print(asir_contrib_document_url())$
+}else{ }$
+
+def asir_contrib_revision() {
+  S="$Revision$";
+  T=strtoascii(S);
+  for (I=0; I<10;I++) T=cdr(T);
+  T=cdr(reverse(T)); T=reverse(T);
+  return(asciitostr(T));
+}
+
+/* Include data type declaration. */
+import("datatype.rr")$
+#include "tags.h"
+/* Include a standard library. It should be included
+   in a different place in a future. */
+import("sm1.rr")$
+import("gnuplot.rr")$
+import("tigers.rr")$
+import("phc.rr")$
+import("quote.rr")$  
+import("tk_misc.rr")$ 
+import("tex_symbols.rr")$
+import("xml_basic_symbols.rr")$
+import("taka_print_cmo100.rr")$
+import("taka_util.rr")$
+import("taka_pfp.rr")$
+import("taka_weyl.rr")$
+import("plucker.rr")$
+import("oxshell.rr")$
+import("taka_ahg.rr")$
+import("mt_graph.rr")$
+/* import("oh_number.rr")$*/
+import("os_num.rr")$
+import("nn_ndbf.rr")$
+import("nk_gfan_4ti2/nk_4ti2.rr")$
+import("nk_toric.rr")$
+import("noro_pd.rr")$
+import("tk_polymake.rr")$
+import("tk_matrix.rr")$
+import("tk_c_form.rr")$
+import("taka_diffop.rr")$
+import("tk_asir_contrib_update.rr")$
+if ((version() >=20160401) && (sysinfo()[0] == "windows"))  {
+  import("oxpari-win.rr")$
+}else{;}
+if ((version() >=20160401) && (sysinfo()[0] == "windows"))  {
+  ctrl("oxpari_start",oxpari.start_win)$
+}else{;}
+
+/* should use load_exec() for demand loading. */
+def ox_loadfile(Tag,FileName) {
+/*  if (!Tag) Result=load(FileName); else return(1); */
+  if (!Tag) Result=load_exec(FileName); else return(1);
+  if (Result == 0) error("File "+FileName+" was not found.");
+  return(1);
+}
+#define ox_loadfile_(A,B) import(B)
+ox_loadfile_(Loaded_taka_base,"taka_base.rr")$
+ox_loadfile_(Loaded_noro_print,"noro_print.rr")$
+ox_loadfile_(Loaded_noro_print_default,"noro_print_default.rr")$
+ox_loadfile_(Loaded_om,"om.rr")$
+ox_loadfile_(Loaded_ok_matrix,"ok_matrix.rr")$
+ox_loadfile_(Loaded_taka_base,"taka_base.rr")$
+ox_loadfile_(Loaded_taka_poly,"taka_poly.rr")$
+ox_loadfile_(Loaded_glib,"glib")$
+ox_loadfile_(Loaded_tk_c_form,"tk_c_form.rr")$
+/* This file and logname give a list of canonical names of functions.
+   Names are classified in categories such as number, matrix, and so on.
+   If you implement one of the functions listed below, 
+   please call your functions from here.
+   Example:
+     if your number_chop is implemented by the name
+          hoge_chop,
+     you should write here as
+     def number_chop(Exp,Dx) {  return(hoge_chop(Exp,Dx)); }
+*/
+
+#define OX_LOADFILE(A,B)   /* Do nothing. */
+
+
+Print_tex_form_fraction_format="auto"$  /* "frac" or "auto" or "/" */
+Print_tex_form_no_automatic_subscript=0$ /* 0 or 1 */
+
+/* Base module */
+/*&usage begin: base_cancel(S)
+ It simplifies {S} by canceling the common factors of 
+ denominators and numerators.
+ example: base_cancel([(x-1)/(x^2-1), (x-1)/(x^3-1)]); 
+end: */
+def base_cancel(S) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_cancel(S);
+}
+/*&usage begin: base_choose(L,M)
+ It returns the list of the order {M} subsets of L.
+ example: base_choose([1,2,3],2);
+ example_description:
+@tex
+It outputs all the order $2$ subsets of the set $\{ 1, 2, 3\}$
+@end tex
+end: */
+def base_choose(L,M) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_choose(L,M);
+}
+/*&usage begin: base_flatten(S)
+ It flattens a nested list {S}.
+ example: base_flatten([[1,2,3],4]);
+end: */
+def base_flatten(S) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_flatten(S);
+}
+/*&usage begin: base_intersection(A,B)
+ It returns the intersection of {A} and {B} as a set.
+ example: base_intersection([1,2,3],[2,3,5,[6,5]]);
+end: */
+def base_intersection(A,B) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_intersection(A,B);
+}
+
+/*&usage begin: base_ith(A,I)
+  It returns A[I].
+  example: R=[[x,10],[y,20]]; map(base_ith,R,0);
+end: */
+def base_ith(A,I) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_ith(A,I);
+}
+
+/*&usage begin: base_makelist(Obj,K,B,T)
+ base_makelist generate a list from Obj where K runs in [B,T].
+ Options are qt=1 (keep quote data), step (step size).
+ When B is a list, T is ignored and K runs in B.
+ example: base_makelist(k^2,k,1,10);
+ example: map(print_input_form,base_makelist(quote(x^2),x,1,10 | qt=1, step=0.5))
+ example: base_makelist(quote("the "+k),k,["cat","dog"],0); 
+end: */
+def base_makelist(Obj,K,B,T) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_makelist(Obj,K,B,T | option_list=getopt());
+}
+
+/*&usage begin: base_memberq(A,S)
+ It returns 1 if {A} is a member of the set {S} else returns 0.
+ example: base_memberq(2,[1,2,3]);
+end: */
+def base_memberq(A,S) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_memberq(A,S);
+}
+/*&usage begin: base_permutation(L)
+ It outputs all permutations of {L}.  BUG; it uses a slow algorithm.
+ example: base_permutation([1,2,3,4]);
+end: */
+def base_permutation(L) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_permutation(L);
+}
+/*&usage begin: base_position(A,S)
+ It returns the position of {A} in {S}.
+ example: base_position("cat",["dog","cat","monkey"]);
+end: */
+def base_position(A,S) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_position(A,S);
+}
+
+/*&usage begin: base_product(Obj,K,B,T)
+ base_product returns the product of Obj where K runs in [B,T].
+ Options are qt=1 (keep quote data), step (step size).
+ When B is a list, K runs in B and T is ignored.
+ example: base_product(k^2,k,1,10);
+ example: base_product(quote(x^2),x,1,10 | qt=1, step=0.5);
+ example: base_product(quote(x^2),x,[a,b,c],0 | qt=1);
+end: */
+def base_product(Obj,K,B,T) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_product(Obj,K,B,T | option_list=getopt());
+}
+
+/* change prompt. Not implemented. */
+def base_prompt(P) {
+  return(0);
+}
+
+/*&usage begin: base_prune(A,S)
+ It returns a list in which {A} is removed from {S}.
+ example: base_prune("cat",["dog","cat","monkey"]);
+end: */
+def base_prune(A,S) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_prune(A,S);
+}
+/*&usage begin: base_range(Start,End | step=Step)
+ It returns a list numbers [Start, Start+Step, Start+2*Step, ..., Start+n*Step]
+ where Start+n*Step < End <= Start+(n+1)*Step
+ Default value of step is 1.
+ example: base_range(0,10);
+end: */
+def base_range(Start,End) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_range(Start,End | option_list=getopt());
+}
+/*&usage begin: base_rebuild_opt(Opt)
+ It rebuilt the option list  {Opt}
+ example: base_rebuild_opt([[key1,1],[key2,3]] | remove_keys=["key2"]);
+ example_description: it returns [[key1,1]]
+end: */
+def base_rebuild_opt(Opt) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_rebuild_opt(Opt | option_list=getopt());
+}
+
+/*&usage begin: base_replace(S,Rule)
+ It rewrites {S} by using the rule {Rule}
+ example: base_replace(x^2+y^2,[[x,a+1],[y,b]]);
+ example_description: x is replaced by a+1 and y is replaced by b in
+ x^2+y^2.
+end: */
+def base_replace(S,Rule) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_replace(S,Rule);
+}
+/*&usage begin: base_replace_n(S,Rule)
+ It rewrites {S} by using the rule {Rule}.
+ It is used only for specializing variables to numbers and faster than base_replace.
+ example: base_replace_n(x^2+y^2,[[x,1/2],[y,2.0+3*@i]]);
+ example_description: x is replaced by 1/2 and y is replaced by 2.0+3*@i in
+ x^2+y^2.
+end: */
+def base_replace_n(S,Rule) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_replace_n(S,Rule);
+}
+/*&usage begin: base_rest(L)
+  It returns cdr(L).
+  example: R=[[x,10,30],[y,20,40]]; map(base_rest,R);
+end: */
+def base_rest(L) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_rest(L);
+}
+
+/*&usage begin: base_preplace(S,Rule)
+ It rewrites {S} by using the rule {Rule}. psubst is used instead of subst. 
+ The replacement is not performed for function arguments.
+ example: base_preplace(exp(x)+x^2,[[x,a+1],[exp(x),b]]);
+ example_description: x is replaced by a+1 and exp(x) is replaced by b in
+ exp(x)+x^2.
+end: */
+def base_preplace(S,Rule) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_preplace(S,Rule);
+}
+/*&usage begin: base_set_minus(A,B)
+@tex
+$A \setminus B$
+@end tex
+ example: base_set_minus([1,2,3],[3,4,5]);
+end: */
+def base_set_minus(A,B) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_set_minus(A,B | option_list=getopt());
+}
+/*&usage begin: base_set_intersection(A,B)
+@tex
+$A \cap B$
+@end tex
+ example: base_set_intersection([1,2,3],[3,4,5]);
+end: */
+def base_set_intersection(A,B) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_set_intersection(A,B | option_list=getopt());
+}
+/*&usage begin: base_set_union(A,B)
+@tex
+$A \cup B$
+@end tex
+ example: base_set_union([1,2,3],[3,4,5]);
+end: */
+def base_set_union(A,B) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_set_union(A,B | option_list=getopt());
+}
+/*&usage begin: base_subsetq(A,B)
+@tex
+if $A \subseteq B$, then it returns 1 else 0.
+@end tex
+ example: base_subsetq([1,2],[1,2,3,4,5]);
+end: */
+def base_subsetq(A,B) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_subsetq(A,B);
+}
+/*&usage begin: base_subsets_of_size(K,S)
+ It outputs all subsets of {S} of the size {K}.
+ BUG; it uses a slow algorithm. Do not input a large {S}.
+ example: base_subsets_of_size(2,[3,5,3,2]);
+end: */
+def base_subsets_of_size(K,S) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_subsets_of_size(K,S);
+}
+/*&usage begin: base_subsequenceq(A,B)
+if A is a subsequence B, then it returns 1 else 0.
+ example: base_subsequence([3,2,5],[1,2,3,4,5]);
+end: */
+def base_subsequenceq(A,B) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_subsequenceq(A,B);
+}
+
+
+/*&usage begin: base_sum(Obj,K,B,T)
+ base_sum returns the sum of Obj where K runs in [B,T].
+ Options are qt=1 (keep quote data), step (step size).
+ When B is a list, K runs in B and T is ignored.
+ When K is 0, then Obj is assumed to be a list or vector and Obj[B]+...+Obj[T] is returned.
+ example: base_sum(k^2,k,1,10);
+ example: base_sum(quote(x^2),x,1,10 | qt=1, step=0.5);
+ example: base_sum(quote(x^2),x,[a,b,c],0 | qt=1);
+end: */
+def base_sum(Obj,K,B,T) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_sum(Obj,K,B,T | option_list=getopt());
+}
+
+/*&usage begin: base_var_list(Name,B,T)
+ base_var_list generate a list of variables Name+Index where Index runs on [B,T].
+ example: base_var_list(x,0,10);
+ example: base_var_list(x,1,4 | d = 1);
+ Options are d=1 (add d before the name).
+end: */
+def base_var_list(Name,B,T) {
+  OX_LOADFILE(Loaded_taka_base,"taka_base.rr");
+  return taka_base_var_list(Name,B,T | option_list=getopt());
+}
+
+/*&usage begin: base_is_asir2018()
+  returns 1 if the system is asir2018.
+end: */
+def base_is_asir2018() {
+  V=version(0);
+  if (type(V)==4) {
+    if ((length(V)>=3) && (V[2])) return(1);
+  }
+  return(0);
+}
+/*&usage begin: base_is_equal(L1,L2)
+  returns 1 if the objects L1 and L2 are equal else return 0
+end: */
+def base_is_equal(L1,L2) {
+  return(L1==L2);
+/*  return taka_base_is_equal(L1,L2); */
+}
+/*&usage begin: base_f_definedp(Func)
+  returns 1 if the function Func is defined.
+end: */
+def base_f_definedp(Func) {
+  return taka_base_f_definedp(Func);
+}
+
+/* Canonical function names for numbers. cf. Mathematica/Numbers */
+/*&usage begin: number_abs(X) example: number_abs(-3); end: */
+def number_abs(X)  { 
+  if (version() < 20150000) return(pari(abs,X)); 
+  else {
+    return taka_base_number_abs(X);
+  }
+}
+def number_base_form(X,B) { NOT_YET; }
+def number_binomial(P,Q) { NOT_YET; }
+/*&usage begin: number_ceiling(X) example: number_abs(1.5); end: */
+def number_ceiling(X) { return(pari(ceil,X)); }
+def number_chop(Exp,Dx) {  NOT_YET; }
+/*&usage begin: number_factor(X)  It factors the given integer {X}.
+  example: number_factor(20); end: */
+/*&usage begin: number_eval(X) example: number_eval([1/10^10,@pi,exp(1)]); end: */
+def number_eval(X) { return(taka_base_number_eval(X)); }
+def number_factor(X) { return(pari(factorint,X)); }
+/*&usage begin: number_float_to_rational(X) 
+    example: number_float_to_rational(1.5234); 
+             number_setprec(30); //About 30 digits after the decimal point.  It also set setprec
+end: */
+def number_float_to_rational(X) { 
+/*  if (type(X)>3) return map(number_float_to_rational,X | option_list=getopt()); // bug, option cannot be passed by map */
+  return os_num.float_to_rational(X | option_list=getopt());
+}
+/*&usage begin: number_floor(X) example: number_floor(1.5); end: */
+def number_floor(X) { if ((type(X) <= 1) && (ntype(X) < 4)) return(pari(floor,X)); else {printf("Warning: number_floor(%a[invalid argument]) returns 0\n",X); return 0;}}
+
+/*&usage begin: number_imaginary_part(X) example: number_imaginary_part(1+2*@@i); end: */
+def number_imaginary_part(X) { return(taka_base_imaginary_part(X)); }
+/*&usage begin: number_is_integer(X) example: number_is_integer(2/3); end: */
+def number_is_integer(X) { return(taka_base_is_integer(X)); }
+def number_max(X)  { NOT_YET; }
+def number_min(X)  { NOT_YET; }
+def number_n(Exp)  { NOT_YET; }  /* N [ ], numerical evaluator. */
+def number_round(X) { NOT_YET; }
+/*&usage begin: number_real_part(X) example: number_real_part(1+2*@@i); end: */
+def number_real_part(X) { return(taka_base_real_part(X)); }
+/*&usage begin: number_setprec(X)
+  When X is 0, it returns the current value of precision.
+  example:  number_setprec(30); 
+   number_float_to_rational(F) returns 
+   an approximation of F by a rational number with the accuracy
+   about 30 digits after the decimal point.  
+   It also calls setprec(30);
+ end:
+*/
+def number_setprec(Prec) {
+  return os_num.set_prec(Prec);
+}
+def number_sign(X) { NOT_YET; }
+
+/* See longname for basic_ and poly_. Here are some added functions */
+
+/*&usage begin: poly_dact(Op,F,XL)
+ Act the differential operator Op to F. XL is a list of x variables.
+ example: poly_dact( x*dx+y*dy+a, x^(-3)*y^(-2), [x,y]);
+end: */
+def poly_dact(Op,F,XL) {
+  return tk_diff.dact(Op,F,XL | option_list=getopt());
+}
+/*&usage begin: poly_diff2euler(Op,XL)
+ Express the differential operator Op by the euler operators. XL is a list of x variables.
+ When XL=[x,y], dx,dy are differential operators and tx,ty are Euler operators
+ (tx=x*dx, ty=y*dy). t stands for theta. When the return value is R, R[0]*R[1]=Op.  
+ example: poly_diff2euler(dx^2-a*x,[x]);
+end: */
+/*&usage begin: poly_decompose_by_weight(F,V,W)
+  decompose F into homogeneous components with respect to the variable V with the weight W.
+  The return value is [[Max_ord,Min_ord],[component of Max_ord, ..., component of Min_ord]];
+ example: poly_decompose_by_weight(x^2*dx^2-x*(x*dx+y*dy+a),[x,y,dx,dy],[-1,-1,1,1]);
+end: */
+def poly_decompose_by_weight(F,V,W) {
+  return taka_poly_decompose_by_weight(F,V,W | option_list=getopt());
+}
+def poly_diff2euler(F,XL) {
+  if (type(getopt(t))>0) TL=poly_dvar(XL | d=getopt(t));
+  else TL=poly_dvar(XL | d=t);
+  return tk_diff.diff2euler(F,XL,TL | option_list=getopt());
+}
+/*&usage begin: poly_dmul(Op1,Op2,XL)
+ Multiply Op1 and Op2 in the Weyl algebra (the ring of differential operators).
+ XL is a list of x variables.
+ example: poly_dmul( x*dx+y*dy+a*x, x*y*dx*dy, [x,y]);
+end: */
+def poly_dmul(F,G,XL) {
+  return tk_diff.dmul(F,G,XL | option_list=getopt());
+}
+/*&usage begin: poly_euler2diff(Op,XL)
+ Translate the differential operator Op expressed in terms of euler operators into the operators in terms of d. XL is a list of x variables.
+ When XL=[x,y], dx,dy are differential operators and tx,ty are Euler operators
+ (tx=x*dx, ty=y*dy). t stands for theta. 
+ example: poly_euler2diff(tx^2-x*(tx+1/2)^2,[x]);
+end: */
+def poly_euler2diff(F,XL) {
+  if (type(getopt(t))>0) TL=poly_dvar(XL | d=getopt(t));
+  else TL=poly_dvar(XL | d=t);
+  return tk_diff.euler2diff(F,XL,TL | option_list=getopt());
+}
+/*&usage begin: poly_dvar(V)
+ Add d to the variable name {V}.
+ example: poly_dvar([x1,x2,x3]);
+          poly_dvar([x1,x2,x3] | d=t);
+end: */
+def poly_dvar(V) { return(taka_poly_dvar(V | option_list=getopt())); }
+/*&usage begin: poly_factor(F)
+ It factorizes the polynomial {F}.
+ example: poly_factor(x^10-y^10);
+end: */
+def poly_factor(A) { return(taka_poly_factor(A)); }
+/*&usage begin: poly_gcd(F,G)
+ It computes the polynomial GCD of {F} and {G}.
+ example: poly_gcd(x^10-y^10,x^25-y^25);
+end: */
+def poly_gcd(A,B)  { return(gcd(A,B)); }
+
+/*&usage begin: poly_elimination_ideal(I,VV|grobner_basis,gb,v,homo,grace,strategy)
+ It computes the intersection of the ideal {I} and the subring K[{VV}].
+ description:
+ If grobner_basis is "yes" or gb=1, I is assumed to be a Grobner basis.
+ The optional variable v is a list of variables which defines the ring 
+ of polynomials.
+ example: poly_elimination_ideal([x^2+y^2-4,x*y-1],[x]);
+ example: A = poly_grobner_basis([x^2+y^2-4,x*y-1]|order=2,v=[y,x]);
+          poly_elimination_ideal(A,[x]|grobner_basis="yes");
+ When strategy=1(default), 
+   nd_gr is used when trace=0(defauult),
+   nd_gr_trace is used when trace=1.
+ ref: gr, hgr, gr_mod, dp_*
+end: */
+def poly_elimination_ideal(I,VV) { 
+  OX_LOADFILE(Loaded_taka_base,"taka_poly.rr");
+  return taka_poly_elimination_ideal(I,VV|option_list=getopt());
+}
+
+/*&usage begin: poly_expand(F)
+  This is an alias of poly_sort.
+  ref: poly_sort
+end: */
+def poly_expand(F) {
+  Opt = getopt();
+  return poly_sort(F | option_list=Opt);
+}
+
+/*&usage begin: poly_grobner_basis(I|order,v)
+ It returns the Grobner basis of {I}.
+ description:
+ The optional variable v is a list of variables which defines the ring 
+ of polynomials.
+ Other Options; p (characteristic), homo, method (nd_gr_trace(default), nd_gr, nd_weyl_gr, nd_weyl_gr_trace, nd_f4, nd_f4_trace), order_matrix, order. See also  asir manual.
+ alias; poly_groebner_basis
+ example: A = poly_grobner_basis([x^2+y^2-4,x*y-1]|order=2,v=[y,x],str=1);
+          A->Generators;
+          A->Ring->Variables;
+          A->Ring->Order;
+          B = poly_grobner_basis([x^2+y^2-4,x*y-1]|order=[[10,1]],v=[y,x]);
+          C = poly_grobner_basis([x^2+y^2-4,x*y-1]|order=[block,[0,1],[0,1]],v=[y,x]);
+end: */
+def poly_grobner_basis(I) {
+  Opt = getopt();
+  OX_LOADFILE(Loaded_taka_base,"taka_poly.rr");
+  return taka_poly_grobner_basis(I|option_list=Opt);
+}
+def poly_groebner_basis(I) {
+  return poly_grobner_basis(I|option_list=getopt());
+}
+/*&usage begin: poly_hilbert_polynomial(I|s,v,sm1)
+ It returns the Hilbert polynomial of the poly_init(I).
+ description:
+ The optional variable v is a list of variables. sm1=1 forces to call sm1.
+ [sum(H(k),{k,0,h}), H(h)] where H(h) is the number of degree h monomials when h>>0.
+ On asir2018, it returns [sum(H(k),{k,0,h}), H(h),[H[0],H[1],...],F,d] where F/(1-h)^d is the Poincare series.
+ example: poly_hilbert_polynomial([x1*y1,x1*y2,x2*y1,x2*y2]|s=k,v=[x1,x2,y1,y2]);
+end: */
+def poly_hilbert_polynomial(I)  { 
+  OX_LOADFILE(Loaded_taka_base,"taka_poly.rr");
+  return taka_poly_hilbert_polynomial(I|option_list=getopt());
+}
+
+/*&usage begin: poly_is_linear(F,V)
+ example: poly_is_linear([x+t*y-1],[x,y]);
+end: */
+def poly_is_linear(F,V) {
+  OX_LOADFILE(Loaded_taka_base,"taka_poly.rr");
+  return taka_poly_is_linear(F,V | option_list=getopt());
+}
+
+/*&usage begin: poly_in(I|order,v)
+ It is an alias of poly_initial().
+ example: poly_in([x^2+y^2-4,x*y-1]|order=0,v=[x,y]);
+          poly_in([x^2+y^2-4,x*y-1]|order=[1,0],v=[x,y]);
+end: */
+def poly_in(I) {
+  OX_LOADFILE(Loaded_taka_base,"taka_poly.rr");
+  return taka_poly_initial(I|option_list=getopt());
+}
+
+/*&usage begin: poly_initial(I|order,v)
+ It returns the initial ideal of {I} with respect to the given order.
+ description:
+ The optional variable v is a list of variables. This function computes 
+@tex
+${\rm in}_\prec (I)$
+@end tex
+ example: poly_initial([x^2+y^2-4,x*y-1]|order=0,v=[x,y]);
+    poly_initial([x^2+y^2-4,x*y-1]|order=0,v=[x,y],gb=1);
+    poly_in([x^2+y^2-4,x*y-1]|order=[1,0],v=[x,y]);
+end: */
+def poly_initial(I) {
+  OX_LOADFILE(Loaded_taka_base,"taka_poly.rr");
+  return taka_poly_initial(I|option_list=getopt());
+}
+
+/*&usage begin: poly_initial_coefficients(I|order,v)
+ It computes the coefficients of the initial ideal of {I} with respect to the given order.
+ description:
+ The optional variable v is a list of variables. The order is specified by the
+ optional variable order
+ example: poly_initial_coefficients([x^2+y^2-4,x*y-1]|order=0,v=[x,y]);
+end: */
+def poly_initial_coefficients(I) {
+  OX_LOADFILE(Loaded_taka_base,"taka_poly.rr");
+  return taka_poly_initial_coefficients(I | option_list=getopt());
+}
+
+/*&usage begin: poly_initial_term(F|weight,order,v)
+ It returns the initial term of a polynomial {F} 
+ with respect to the given weight vector.
+ description:
+ The weight is given by the optional variable weight w.
+ It returns
+@tex
+${\rm in}_w (F)$
+@end tex
+ example: poly_initial_term( x^2+y^2-4 |weight=[100,1],v=[x,y]);
+end: */
+def poly_initial_term(F) {
+  Or = getopt(order);
+  V = getopt(v);
+  Weight = getopt(weight);
+  OL = [["order",Or],["v",V],["weight",Weight]];
+  OX_LOADFILE(Loaded_taka_base,"taka_poly.rr");
+  return taka_poly_initial_term(F | option_list=OL);
+}
+
+/*&usage begin: poly_degree(F|weight,v)
+ It returns the degree of {F} with respect to the given weight vector.
+ description:
+ The weight is given by the optional variable weight w.
+ It returns
+@tex
+${\rm ord}_w (F)$
+@end tex
+ example: poly_degree(x^2+y^2-4 |weight=[100,1],v=[x,y]);
+end: */
+def poly_degree(I) {
+  Or = getopt(weight);
+  V = getopt(v);
+  OL = [["weight",Or],["v",V]];
+  OX_LOADFILE(Loaded_taka_base,"taka_poly.rr");
+  return taka_poly_degree(I | option_list=OL);
+}
+
+/*&usage begin: poly_gr_w(F,V,W)
+ It returns the Grobner basis of F for the weight vector W.
+ It is the second interface for poly_grobner_basis.
+ example: poly_gr_w([x^2+y^2-1,x*y-1],[x,y],[1,0]);
+ ref: poly_in_w, poly_grobner_basis
+end: */
+def poly_gr_w(F,V,W) { 
+  Opt = getopt();
+  return taka_poly_gr_w(F,V,W | option_list=Opt);
+}
+
+/*&usage begin: poly_r_omatrix(N)
+ It gives a weight matrix, which is used to compute
+ a Grobner basis in K(x)<dx>, |x|=|dx|=N.
+ ref: poly_weight_to_omatrix
+ example: poly_r_omatrix(3);
+ When the option lex is given, the last lex variables are
+ compared firstly by the lexicographic order, e.g.,
+ poly_r_omatrix(4 | lex=2) is compared by the matrix
+  0 0 0 0   0 0 0 1
+  0 0 0 0   0 0 1 0
+  0 0 0 0   1 1 0 0
+  .... 
+end: */
+def poly_r_omatrix(N) { 
+  Opt = getopt();
+  return taka_poly_dblock(N | option_list=Opt);
+}
+
+/*&usage begin: poly_in_w_(F | v, weight,gb)
+ It returns the initial term or the initial ideal in_w(F)
+ for the weight vector given by order.
+ F is s single polynomial or a list of polynomials. 
+ This is a new interface of poly_in_w with shorter args.
+ example: poly_in_w_([x^2+y^2-1,x*y-x] | v=[x,y],weight=[1,0]);
+ ref: poly_weight_to_omatrix, poly_grobner_basis, poly_gr_w
+end: */
+def poly_in_w_(F) { 
+  Opt = getopt();
+  return taka_poly_in_w(F | option_list=Opt);
+}
+
+/*&usage begin: poly_in_w(F,V,W | gb)
+ It returns the initial term or the initial ideal in_w(F)
+ for the weight vector given by order.
+ F is s single polynomial or a list of polynomials. 
+ example: poly_in_w([x^2+y^2-1,x*y-x] , [x,y], [1,0]);
+ ref: poly_weight_to_omatrix, poly_grobner_basis, poly_gr_w, poly_in_w_
+end: */
+def poly_in_w(F,V,W) { 
+  Opt = getopt();
+  Opt = append(Opt,[["v",V],["weight",W]]);
+  return taka_poly_in_w(F | option_list=Opt);
+}
+
+/*&usage begin: poly_ord_w(F,V,W)
+ It returns the order with respect to W of F.
+ example: poly_ord_w(x^2+y^2-1,[x,y],[1,3]);
+ ref: poly_in_w
+end: */
+def poly_ord_w(F,V,W) { 
+  Opt = getopt();
+  return taka_poly_ord_w(F,V,W | option_list=Opt);
+}
+
+/*&usage begin:
+ poly_replace_factor(F,Rule)
+ It factorizes F and replaces factors by the Rule. 
+ example: poly_replace_factor(2*x/((x-y)^3*y), [[x-y,s]]);
+   It returns 2*x/(s^3*y).
+end: */
+def poly_replace_factor(F,Rule) {
+  Opt=getopt();
+  return tk_poly_replace_factor(F,Rule | option_list=Opt);
+}
+
+
+def poly_solve(Eqs,V) { NOT_YET; }
+
+/*&usage begin: poly_solve_linear(Eqs,V)
+ It solves the system of linear equations {Eqs} with respect to the set of
+ variables {V}. When the option p=P is given, it solves the system by mod P.
+ When the option reverse=1 is given, the lex order of reverse(V) is used.
+ example: poly_solve_linear([2*x+3*y-z-2, x+y+z-1], [x,y,z]);
+          poly_solve_linear([2*x+3*y-z-2, x+y+z-1], [x,y,z] | p=13);
+end: */
+def poly_solve_linear(Eqs,V) { 
+  OX_LOADFILE(Loaded_taka_base,"taka_poly.rr");
+  if (!poly_is_linear(Eqs,V)) error("Error: it is not a system of linear equations.");
+  return taka_poly_solve_linear(Eqs,V | option_list=getopt());
+}
+
+/*&usage begin: poly_sort(F|v,w,truncate)
+ It expands {F} with a given variables {v}=V and a given weight {w}=W.
+ It returns a quote object.
+ If {truncate} option is set, the expansion is truncated at the given degree.
+ example: poly_sort((x-y-a)^3 | v=[x,y], w=[-1,-1])  
+    returns a series expansion in terms of x and y.
+end: */
+def poly_sort(F) {
+  Opt = getopt();
+  return taka_quote_sort(F | option_list=Opt);
+}
+
+/*&usage begin: poly_subsetq(II,JJ,V)
+ If the ideal II is contained in the ideal JJ, it returns 1, else 0.
+ Options: gb=1 (if JJ is already a GB). verbose=1
+ Note that when gb=1, the order must not be changed since the GB of JJ was computed. Otherwise, this function does not give correct answer or stucks.
+ If gb=1 is not given, dp_ord(0) is executed in this function.
+ example: poly_subsetq([x^2-1,(x-1)*(y-2)],[x-1,y-2],[x,y]);
+end: */
+def poly_subsetq(II,JJ,V) {
+  return tk_poly_subsetq(II,JJ,V | option_list=getopt());
+}
+/*&usage begin: poly_weyl_subsetq(II,JJ,V)
+ If the ideal II in the Weyl algebra is contained in the ideal JJ, it returns 1, else 0.
+ Options: gb=1 (if JJ is already a GB). verbose=1.
+ Note that when gb=1, the order must not be changed since the GB of JJ was computed. Otherwise, this function does not give correct answer or stucks.
+ If gb=1 is not given, dp_ord(0) is executed in this function.
+ example: poly_weyl_subsetq([x*dx^2],[x*dx-1],[x,dx]);
+end: */
+def poly_weyl_subsetq(II,JJ,V) {
+  return tk_poly_weyl_subsetq(II,JJ,V | option_list=getopt());
+}
+
+/*&usage begin: poly_toric_ideal(A,V)
+ It returns generators of the affine toric ideal defined by the matrix(list) A.
+ V is the list of variables.
+ options: nk_toric=1 (disable 4ti2)
+ example: poly_toric_ideal([[1,1,1,1],[0,1,2,3]],base_var_list(x,0,3));
+end: */
+def poly_toric_ideal(A,V) {
+  Opt = getopt();
+  if (type(getopt(nk_toric))>0) {
+    II=nk_toric.toric_ideal(A);
+    V2=base_var_list(x,1,length(A[0]));
+    return base_replace(II,assoc(V2,V));
+  }  
+  return nk_4ti2.toric_ideal(A,V | option_list=Opt);
+}
+
+/*&usage begin: poly_weight_to_omatrix(W,V)
+ [obsoleted]
+ It translates the weight vector {W} into a matrix, which is used to set
+ the order in asir Grobner basis functions.
+ {V} is the list of variables.
+ example: M=poly_weight_to_omatrix([2,1,0],[x,y,z]);
+          nd_gr([x^3+z^3-1,x*y*z-1,y^2+z^2-1,[x,y,z],0,M);
+end: */
+def poly_weight_to_omatrix(W,V) { 
+  Opt = getopt();
+  return taka_poly_weight_vector(W,V | option_list=Opt);
+}
+
+
+/*&usage begin: poly_prime_dec(I,V)
+ It computes the prime ideal decomposition of the radical of I. 
+ {V} is a list of variables.
+ example: B=[x00*x11-x01*x10,x01*x12-x02*x11,x02*x13-x03*x12,x03*x14-x04*x13,
+          -x11*x20+x21*x10,-x21*x12+x22*x11,-x22*x13+x23*x12,-x23*x14+x24*x13];
+          V=[x00,x01,x02,x03,x04,x10,x11,x12,x13,x14,x20,x21,x22,x23,x24];
+          poly_prime_dec(B,V | radical=1);
+end: */
+def poly_prime_dec(I,V) { 
+  Opt = getopt();
+  return noro_pd.prime_dec(I,V | option_list=Opt);
+}
+	   
+/*&usage begin: poly_push_ord(Ord)
+  Save the current value of dp_ord and set dp_ord({Ord}).
+end: */
+def poly_push_ord(Ord) {
+  taka_poly_push_ord(Ord);		      
+}
+/*&usage begin: poly_pop_ord()
+  Restore the order saved by poly_push_ord.
+end: */
+def poly_pop_ord() {
+  taka_poly_pop_ord();
+}		    
+
+/*&usage begin: poly_ideal_intersection(I,J,V,Ord)
+ It computes the intersection of the ideal {I} and {J}
+ {V} is the list of variables. {Ord} is the order.
+ example:
+     A=[j*h*g*f*e*d*b,j*i*g*d*c*b,j*i*h*g*d*b,j*i*h*e*b,i*e*c*b,z]$
+     B=[a*d-j*c,b*c,d*e-f*g*h]$
+     V=[a,b,c,d,e,f,g,h,i,j,z]$
+     poly_ideal_intersection(A,B,V,0);
+end: */
+def poly_ideal_intersection(I,J,V,Ord) { 
+  Opt = getopt();
+  return noro_pd.ideal_intersection(I,J,V,Ord | option_list=Opt);
+}
+
+/*&usage begin: poly_ideal_colon(I,J,V)
+ It computes the colon ideal of {I} by {J}
+ {V} is the list of variables. 
+ example:
+  B=[(x+y+z)^50,(x-y+z)^50]$
+  V=[x,y,z]$
+  B=poly_ideal_colon(B,[(x+y+z)^49,(x-y+z)^49],V);
+end: */
+def poly_ideal_colon(I,J,V) { 
+  Opt = getopt();
+  return noro_pd.ideal_colon(I,J,V | option_list=Opt);
+}
+
+/*&usage begin: poly_ideal_saturation(I,J,V)
+ It computes the saturation ideal of I by J. 
+ {V} is the list of variables. 
+ example:
+  B=[(x+y+z)^50,(x-y+z)^50]$
+  V=[x,y,z]$
+  B=poly_ideal_saturation(B,[(x+y+z)^49,(x-y+z)^49],V);
+end: */
+def poly_ideal_saturation(I,J,V) { 
+  Opt = getopt();
+  return noro_pd.ideal_sat(I,J,V | option_list=Opt);
+}
+
+/*&usage begin: poly_coefficient(F,Deg,V)
+ It returns the coefficient of V^Deg in F.
+ F may be rational or list or vector.
+ example:
+  F=[(x+y+z)^10/z^2,(x-y+z)^10/z^3]$
+  poly_coefficient(F,10,x);
+end: */
+def poly_coefficient(F,Deg,V) {
+  Opt = getopt();
+  return taka_poly_coefficient(F,Deg,V | option_list=Opt);
+}
+
+/*&usage begin: poly_coefficients_list(F,V)
+ It returns the list of coefficients of F with respect to the variable list V.
+ F may be rational or list or vector.
+ example:
+  F=[(x+y+c*z)^2/c^2,(x-y+c*z)^2/c^3]$
+  poly_coefficients_list(F,[x,y,z]);
+end: */
+def poly_coefficients_list(F,V) {
+  Opt = getopt();
+  return taka_poly_coefficients_list(F,V | option_list=Opt);
+}
+/*&usage begin: poly_coefficients_of_monomial_list(F,VV)
+ It returns the list of coefficients of F with respect to a list of monomials VV.
+ ref: poly_construct_from_coefficients_of_monomial_list
+example:
+poly_coefficients_of_monomial_list(2+3*x+4*z,[1,x,y,z]);
+poly_coefficients_of_monomial_list((x+z)^3+5*y,[1,x,y,z,x^2*z]);
+poly_coefficients_of_monomial_list([(x+y)^3,x+y],[x,x^2,x^3,x^2*y,x*y^2,y^3]);
+end: */
+
+def poly_coefficients_of_monomial_list(F,VV) {
+  Opt = getopt();
+  return tk_poly_coefficients_of_monomial_list(F,VV | option_list=Opt);
+}
+/*&usage begin: poly_construct_from_coefficients_of_monomial_list(L,VV)
+  It returns the inner product of L and VV.
+  ref: poly_coefficients_of_monomial_list
+example:
+L=tk_poly_coefficients_of_monomial_list((x+y)^3,VV=[x,x^2,x^3,x^2*y,x*y^2,y^3]);
+poly_construct_from_coefficients_of_monomial_list(L,VV);
+end: */
+def poly_construct_from_coefficients_of_monomial_list(L,VV) {
+  Opt = getopt();
+  return tk_poly_construct_from_coefficients_of_monomial_list(L,VV | option_list=Opt);
+}
+/*&usage begin: poly_lcm(L)
+ It returns the LCM of L[0], L[1], ...
+ example:
+  poly_lcm([x^2-1,x^3-1]);
+end: */
+def poly_lcm(L) {
+  Opt = getopt();
+  return taka_poly_lcm(L | option_list=Opt);
+}
+/*&usage begin: poly_denominator(L)
+ It returns the denominator of L. L may be a list.
+ example:
+  poly_denominator([1/(x^2-1),1/(x^3-1)]);
+end: */
+def poly_denominator(L) {
+  Opt = getopt();
+  return taka_poly_denominator(L | option_list=Opt);
+}
+/*&usage begin: poly_numerator(L)
+ It returns the numerator of L. L may be a list.
+ example:
+  poly_numerator([1/(x^2-1),1/(x^3-1)]);
+end: */
+def poly_numerator(L) {
+  Opt = getopt();
+  return taka_poly_numerator(L | option_list=Opt);
+}
+
+/*&usage begin: poly_weight_to_ord_matrix(W)
+   Weight vector W is transformed to a matrix defined order for dp_ord, nd_gr, ...
+   It is a new version of poly_weight_to_omatrix(W,V) [obsoleted]
+   Options: tie_breaker=[lex,n1,n2,n3,...] defines the lexcographic order x_n1,x_n2, x_n3, ... when variables are x_*
+   example:
+     Mat=poly_weight_to_ord_matrix([1,1,1,1,0,1,1,1,1,0]);
+     Mat=poly_weight_to_ord_matrix([]|tie_breaker=[lex,0,1,2,3,5,6,7,8,4,9]);
+end: */
+def poly_weight_to_ord_matrix(W) {
+  Opt=getopt();
+  return tk_poly_weight_to_ord_matrix(W | option_list=Opt);
+}
+
+/*&usage begin: poly_w_marking(Id,V,W)
+   The monomials x^a in Id is rewritten to x^a*t_w^(<a,w>+b).
+   <a,w> is the inner product and b is an integer to avoid negative powers of t_w.
+   Return value is [w-marked polynomial, b]
+   Options: specify a name of homogenization variable by the option hvar. The default is t_w.
+   example:
+     poly_w_marking(x*dx^2+y*dy+a,[x,y,dx,dy],[-1,-1,1,1]);
+       [t_w*x*dx^2+y*dy+a,0]
+end: */
+def poly_w_marking(Id,V,W) {
+  Opt=getopt();
+  return tk_poly_w_marking(Id,V,W | option_list=Opt);
+}
+
+
+/* ---------------------hypergeometric------------------ */
+/* Canonical function names for hypergeometric functions of
+   one variables. 
+*/
+/* Experimental. cf. Xm_eval */
+def hypergeometric_2f1(A,B,C,X) { 
+  return taka_pfp_hypergeometric_2f1(A,B,C,X);
+}
+def hypergeometric_pfq(A,B,X) { 
+  return taka_pfp_hypergeometric_pfq(A,B,X);
+}
+def hypergeometric_confluent_pfq(P,Q,A,B,X) { NOT_YET; }
+def hypergeometric_airy(X) { NOT_YET; }
+def hypergeometric_bessel_y(X) { NOT_YET; }
+def hypergeometric_bessel_k(X) { NOT_YET; }
+def hypergeometric_beta(A,B) { NOT_YET; }
+def hypergeometric_gamma(A) { 
+  return taka_pfp_gamma(A);
+}
+def hypergeometric_legendre_p(N,X) { NOT_YET; }
+def hypergeometric_legendre_q(N,X) { NOT_YET; }
+/*&usage   begin:
+  hypergeometric_pochhammer(A,B,N)
+  Multi-pochhammer symbol.
+  example: hypergeometric_pochhammer([a,b],[c,1],3)
+  end:
+*/
+def hypergeometric_pochhammer(A,B,N) { 
+   return taka_pfp_poch1(A,B,N);
+}
+def hypergeometric_gkz(A,B) { return(sm1.gkz([A,B])); }
+
+/* Canonical function names from Mathematica/Calculus */
+def calculus_integrate(F,X) { NOT_YET; }
+def calculus_n_integrate(F,X) { NOT_YET; }  /* NIntegrate */
+
+/* Canonical function names for Series. cf. Mathematica/Series */
+def series_expand(F,X) { NOT_YET; }  /* Series[ ] */
+def series_inverse_series(F,X) { NOT_YET; }  
+def series_chop(F,X) { NOT_YET; }    /* Normal[ ] */
+def series_logical_expand(Eq) { NOT_YET; }
+def series_solve(Eq,A) { NOT_YET; }
+def series_limit(F,A) { NOT_YET; }
+
+/* Canonical function names for matrix. cf. Mathematica/LiearAlgebra */
+/*&usage begin: matrix_adjugate(M)
+ It generates the adjugate matrix of the matrix {M}.
+ example: matrix_adjugate(matrix_list_to_matrix([[a,b],[c,d]]));
+end: */
+def matrix_adjugate(M) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_adjugate(M);
+}
+
+/*&usage begin: matrix_clone(M)
+ It generates the clone of the matrix {M}.
+ example: matrix_clone(matrix_list_to_matrix([[1,1],[0,1]]));
+end: */
+def matrix_clone(M) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_clone(M);
+}
+
+/*&usage begin: matrix_image(M)
+ It computes the image of M.
+ Redundant vectors are removed.
+ example: matrix_image([[1,2,3],[2,4,6],[1,0,0]]);
+ ref: matrix_kernel
+end: */
+def matrix_image(M) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_image(M);
+}
+
+/*&usage begin: matrix_matrix_to_list(M)
+ It translates the matrix {M} to a list.
+ ref: matrix_list_to_matrix
+end: */
+def matrix_matrix_to_list(M) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  /* return omatrix_mtol(M); */
+  return omatrix_matrix_to_list(M);
+}
+
+/*&usage begin: matrix_list_to_matrix(M)
+ It translates the list {M} to a matrix.
+ example: print_xdvi_form(matrix_list_to_matrix([[1,1],[0,2]]));
+ ref: matrix_matrix_to_list
+end: */
+def matrix_list_to_matrix(M) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_ltom(M);
+}
+
+/*&usage begin: matrix_diagonal_matrix(L)
+ It returns the diagonal matrix with diagonal entries {L}.
+ example: matrix_diagonal_matrix([1,2,3]);
+ ref: matrix_list_to_matrix
+end: */
+def matrix_diagonal_matrix(L) { 
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_diag(L);
+}
+
+/*&usage begin: matrix_identity_matrix(N)
+ It returns the identity matrix of the size {N}.
+ example: matrix_identity_matrix(5);
+ ref: matrix_diagonal_matrix
+end: */
+def matrix_identity_matrix(N) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_1(N);
+}
+
+/*&usage begin: matrix_inner_product(A,B)
+ It returns the inner product of two vectors {A} and {B}.
+ example: matrix_inner_product([1,2],[x,y]);
+end: */
+def matrix_inner_product(A,B) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_inner_product(A,B);
+}
+
+/*&usage begin: matrix_is_zero(A)
+ If it is 0 matrix or 0 vector or list consisting of 0, then it returns 1
+ else it returns 0.
+ example: matrix_is_zero(newmat(2,3));
+end: */
+def matrix_is_zero(Mat) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_is_zero(Mat | option_list=getopt());
+}
+  
+
+/*&usage begin: matrix_transpose(M)
+ It returns the transpose of the matrix {M}.
+ ref: matrix_list_to_matrix
+end: */
+def matrix_transpose(M) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_trans(M);
+}
+def matrix_submatrix(M,R,C) { NOT_YET; } 
+def matrix_dimensions(M) { NOT_YET; }
+
+/*&usage begin: matrix_inverse(M)
+ It returns the inverse of the matrix {M}.
+ example: matrix_inverse([[1,2],[0,1]]);
+end: */
+def matrix_inverse(M) {  
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_inverse(M);
+}
+
+/*&usage begin: matrix_det(M)
+ It returns the determinant of the matrix {M}.
+ example: poly_factor(matrix_det([[1,x,x^2],[1,y,y^2],[1,z,z^2]]));
+end: */
+def matrix_det(M) { 
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_det(M);
+}
+def matrix_minors(M,K) { NOT_YET; }
+def matrix_trace(M) { NOT_YET; }
+
+/*&usage begin: matrix_solve_linear(M,X,B)
+ It solves the system of linear equations M X = B
+ example: matrix_solve_linear([[1,2],[0,1]],[x,y],[1,2]);
+end: */
+def matrix_solve_linear(M,X,B) {  
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_solve(M,X,B);
+}  /* LinearSolve[ ] */
+/*&usage begin: matrix_submatrix(M,Ind)
+ It returns the submatrix of {M} defined by the index set {Ind}.
+ example: matrix_submatrix([[0,1],[2,3],[4,5]],[1,2]);
+end: */
+def matrix_submatrix(M,Ind) {  
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_submatrix(M,Ind);
+}  
+
+/*&usage begin: matrix_kernel(M)
+ It returns the basis of the kernel of the matrix {M}.
+ example: matrix_kernel([[1,1,1,1],[0,1,3,4]]);
+end: */
+def matrix_kernel(M) {  
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_kernel(M);
+}          /* NullSpace[ ] */
+
+/*&usage begin: matrix_eigenavalues(M)
+ It returns the eigenvalues of the matrix {M}.
+ if the option num=1, it returns the numerical approximate eigenvalues.
+ example: matrix_eigenvalues([[x,1],[0,y]]);
+end: */
+def matrix_eigenvalues(M) { 
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_eigenvalues(M|option_list=getopt());
+}
+def matrix_eigenvectors(M) { NOT_YET; }
+
+/*&usage begin: matrix_rank(M)
+ It returns the rank of the matrix {M}.
+ example: matrix_rank([[1,1,1,1],[0,1,3,4]]);
+end: */
+def matrix_rank(M) { 
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_rank(M);
+}
+/*&usage
+begin: matrix_rank_ff(Mat,P) 
+  It evaluates the rank of the matrix Mat by mod P.
+  Entries may be rational numbers, and the inverse of the denominator D 
+  in F_P is properly computedd when P does not divide D,
+  but the case P divides D does not raise an error.
+end: */
+def matrix_rank_ff(Mat,P) {
+  if (P > 2^28) {
+    printf("Warning: matrix_rank_ff(Mat,P) P is too large. Use, e.g., P=pari(nextprime,2^27)\n");
+  }
+  Mat=matrix_list_to_matrix(Mat);
+  Rref=generic_gauss_elim_mod(Mat,P); // undocumented. p-openxm, 2022.01.13
+  N=size(Mat)[1];
+  return N-size(Rref[0])[1];
+}
+
+/*&usage begin: matrix_gauge_transformation(M,T,V)
+ It returns T^(-1) M T - T^(-1) dT/dV
+ example: matrix_gauge_transformation([[0,x],[1,x]],[[x,0],[0,1]],x);
+end: */
+def matrix_gauge_transformation(M,T,V) { 
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return omatrix_gauge_transformation(M,T,V);
+}
+
+/*&usage begin: matrix_ij(N,II,JJ)
+ It returns the matrix for exchanging II-th row(col) and JJ-th row(col).
+ example: matrix_ij(4,0,2);
+end: */
+def matrix_ij(N,II,JJ){
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return ok_matrix_ij(N,II,JJ);
+}
+
+/*&usage begin: matrix_inverse_singular(Mat)
+ It returns a quasi-inverse matrix of Mat when it has 0-row and 0-column.
+ example: matrix_inverse_singular(newmat(3,3,[[1,0,2],[0,0,0],[3,0,4]]));
+end: */
+def matrix_inverse_singular(Mat) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return ok_matrix_inverse_singular(Mat);
+}
+
+/*&usage begin: matrix_poly_to_matrix(Poly,Rule)
+ Replace variables in the polynomial Poly by matrices in the Rule.
+ example: matrix_poly_to_matrix(x^2-1,[[x,newmat(2,2,[[2,0],[0,3]])]]);
+end: */
+def matrix_poly_to_matrix(Poly,Rule) {
+  OX_LOADFILE(Loaded_ok_matrix,"ok_matrix.rr");
+  return ok_poly_to_matrix(Poly,Rule | option_list=getopt());
+}
+
+/*&usage begin: matrix_kronecker_product(A,B)
+ Kronecker product of the matrices A and B.
+ example: matrix_kronecker_product([[a11,a12],[a21,a22]],[[b11,b12],[b21,b22]]);
+end: */
+def matrix_kronecker_product(A,B) {
+  OX_LOADFILE(Loaded_ok_matrix,"tk_matrix.rr");
+  return tk_matrix.kronecker_product(A,B | option_list=getopt());
+}
+
+/*&usage begin: matrix_stack(A,B)
+ Stack the matrices A and B.
+ example: matrix_stack([[a11,a12],[a21,a22]],[[b11,b12],[b21,b22]]);
+end: */
+def matrix_stack(A,B) {
+  OX_LOADFILE(Loaded_ok_matrix,"tk_matrix.rr");
+  return tk_matrix.stack(A,B | option_list=getopt());
+}
+
+/*&usage begin: matrix_row_matrix(L | size=n)
+ It returns 1*n matrix [[L,L,...,L]] when L is a scalar.
+ It returns 1*length(L) matrix [L].
+ example: matrix_row_matrix(1 | size=5);
+end: */
+def matrix_row_matrix(L) {
+  OX_LOADFILE(Loaded_ok_matrix,"tk_matrix.rr");
+  return tk_matrix.row_matrix(L | option_list=getopt());
+}
+/*&usage begin: matrix_ones(N | one=m, size=[p,q])
+ It returns the vector [1 1 ... 1] of length N.
+ When one=m, it returns [m m ... m].
+ When size=[p,q] is given, N is ignored and returns p by q matrix with entries 1.
+ example: vtol(matrix_ones(3));  returns the list [1,1,1]
+end: */
+def matrix_ones(N) {
+  OX_LOADFILE(Loaded_ok_matrix,"tk_matrix.rr");
+  return tk_matrix.ones(N | option_list=getopt());
+}
+
+
+/* Canonical function names for graphic. cf. Mathematica/Graphic */
+def graphic_plot(F,R) { NOT_YET; }
+def graphic_plot_3d(F,R) { NOT_YET; }
+def graphic_parametric_plot_3d(F,R) { NOT_YET; }
+
+/* Canonical function names for printing. cf. Mathematica/Output */
+def print_cmo_xml_form(F) { NOT_YET; }
+
+/*&usage begin: print_em(S)
+ It outputs {S} by a font to emphasize it.
+ example: print_em(x^2-1);
+end: */
+def print_em(F) {
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  return taka_em(F);
+}
+/*&usage begin: print_dvi_form(S)
+ It outputs {S} to a dvi file.
+ example: print_dvi_form(x^2-1);
+ ref: print_xdvi_form, print_tex_form 
+end: */
+def print_dvi_form(F) {
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  return taka_dvi_form(F);
+}
+
+/*&usage begin: print_gif_form(S|table)
+ It outputs {S} to a file of the gif format.
+ example: print_gif_form(newmat(2,2,[[x^2,x],[y^2-1,x/(x-1)]]));
+ ref: print_tex_form
+end: */
+def print_gif_form(F) {
+  Opt = getopt();
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  return taka_gif_form(F,Opt);
+}
+def print_html_form(F) { NOT_YET; }
+
+/*&usage begin: print_input_form(S)
+ It transforms {S} to a string which can be parsed by asir.
+ example: print_input_form(quote(x^3-1));
+end: */
+def print_input_form(F) { 
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  /* Bug */
+  if (type(F) == QUOTE || type(F) == STRUCT) 
+    return taka_input_form(F);
+  else return rtostr(F);
+}
+
+/*&usage begin: print_open_math_xml_form(S)
+ It transforms {S} to a string which is compliant to OpenMath(1999).
+ example: print_open_math_xml_form(x^3-1);
+ ref: www.openmath.org
+end: */
+def print_open_math_xml_form(F) { 
+  OX_LOADFILE(Loaded_om,"om.rr");
+  return(om_xml(F)); 
+}
+
+/*&usage begin: print_ox_rfc100_xml_form(S)
+ It transforms {S} to a string which is compliant to OpenXM RFC 100. 
+ example: print_ox_rfc100_xml_form(x^3-1);
+ ref: www.openxm.org
+end: */
+def print_ox_rfc100_xml_form(F) { 
+  OX_LOADFILE(Loaded_taka_print_cmo100,"taka_print_cmo100.rr");
+  return(taka_cmo100_xml_form(F));
+}
+
+/*&usage begin: print_png_form(S)
+ It transforms {S} to a file of the format png.
+ dvipng should be installed.
+ example: print_png_form(x^3-1);
+ ref: print_tex_form
+end: */
+def print_png_form(F) {
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  return taka_png_form3(F);
+ /*   return taka_png_form(F); */
+}
+def print_png_form2(F) {
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  return taka_png_form2(F);
+}
+
+/*&usage begin: print_format(S)
+ It changes the list format of S. Options are list, sep.
+ Defaults are list=["{","}"], sep=",".
+ example: print_format([1,[x,y^2]]);
+ example: print_format([1,[x,y^2]] | list=["(",")"], sep=" ");
+ example: print_format(print_c_form([1,[x,y^2]]) );
+end: */
+def print_format(F) {  
+  OX_LOADFILE(Loaded_tk_c_form,"tk_c_form.rr");
+  return tk_c_form.format(F | option_list=getopt());
+}
+
+/*&usage begin: print_terminal_form(S)
+ It transforms {S} to the terminal form???
+end: */
+def print_terminal_form(F) {  
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  return taka_terminal_form(F);
+}
+
+/*&usage begin: print_tex_form(S|table,raw)
+ It transforms {S} to a string of the LaTeX format.
+ description:
+ The global variable Print_tex_form_fraction_format
+ takes the values "auto", "frac",  or "/".
+ The global variable Print_tex_form_no_automatic_subscript
+ takes the values 0 or 1.
+ BUG; A large input S cannot be translated.
+ example: print_tex_form(x*dx+1 | table=[["dx","\\partial_x"]]);
+ example_description:
+ The optional variable table is used to give a translation
+ table of asir symbols and tex symbols.
+ when AMSTeX = 1, "begin pmatrix" and "end pmatrix" will be used to output matrix.
+ ref: print_xdvi_form
+end: */
+def print_tex_form(F) {  
+  Argv = getopt();
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  return taka_tex_form_top(F,Argv);
+}
+
+/*&usage begin: print_xdvi_form(S)
+ It transforms {S} to a xdvi file and previews the file by xdvi.
+ example: print_xdvi_form(newmat(2,2,[[x^2,x],[y^2-1,x/(x-1)]]));
+ example: print_xdvi_form(print_tex_form(1/2) | texstr=1);
+ ref: print_tex_form, print_dvi_form
+end: */
+def print_xdvi_form(F) { 
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  return(taka_xdvi_form(F | option_list=getopt()));
+}
+
+/*&usage begin: print_pdf_form(S)
+ It transforms {S} to a pdf file and previews the file.
+ options:  nopreview=1 does not preview the PDF file. 
+ example: print_pdf_form(newmat(2,2,[[x^2,x],[y^2-1,x/(x-1)]]));
+ example: print_pdf_form(poly_factor(x^10-1));
+ ref: print_tex_form, print_xdvi_form
+end: */
+def print_pdf_form(F) { 
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  return(taka_pdf_form(F | option_list=getopt()));
+}
+
+/*&usage begin: print_xv_form(S|input,format)
+ It transforms {S} to a gif file and previews the file by xv.
+ example: print_xv_form(newmat(2,2,[[x^2,x],[y^2-1,x/(x-1)]]));
+ example: print_xv_form(x+y | format="png");
+ example_description: If the optional variable format="png" is set,
+  png format will be used to generate an input for xv.
+ ref: print_tex_form, print_gif_form
+end: */
+def print_xv_form(F) { 
+  Argv = getopt();
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  return(taka_xv_form(F,Argv));
+}
+
+/*&usage begin: print_tfb_form(S)
+ It transforms {S} to the tfb format.
+ example: print_tfb_form(x+1);
+end: */
+def print_tfb_form(F) { 
+  OX_LOADFILE(Loaded_taka_print_tfb,"taka_print_tfb.rr");
+  return(taka_tfb_form(F));
+}
+
+/*&usage begin: print_c_form(S)
+ It transforms {S} to the C format or python format string.
+ example: print_c_form(x^2+1);
+ example: print_c_form(x^2+1 | mode=python);
+ example: print_c_form(sin(x^2+1)/5 | mode=c);
+end: */
+def print_c_form(F) { 
+  OX_LOADFILE(Loaded_tk_c_form,"tk_c_form.rr");
+  return(tk_c_form.c_form(F | option_list=getopt()));
+}
+
+
+def print_terminal_form_(F) {
+  print(print_terminal_form(F),0);
+}
+def print_input_form_(F) {
+  print(print_input_form(F),0);
+}
+/*&usage begin: print_output(Obj|file, mode)
+ It outputs the object {Obj} to a file. 
+ If the optional variable {file} is set, then it outputs the {Obj} to the
+ specified file, else it outputs it to "asir_output_tmp.txt".
+ If the optional variable {mode} is set to "w", 
+ then the file is newly created.
+ If the optional variable is not set, the {Obj} is appended to the file.
+ example: print_output("Hello"|file="test.txt");
+ ref: glib_tops()
+end: */
+def print_output(Obj) { 
+  OX_LOADFILE(Loaded_taka_print,"noro_print.rr");
+  M = "a"; F = "asir_output_tmp.txt";
+  Argv = getopt();
+  for (I=0; I<length(Argv); I++) {
+    if (Argv[I][0] == "mode") {
+      M = Argv[I][1];
+    }else if (Argv[I][0] == "file") {
+      F = Argv[I][1];
+    }else{
+      error("Unknown option "+rtostr(Argv[I][0])+" in print_output");
+      return;
+    }
+  }
+  return taka_print_output(Obj,F,M);
+}
+
+set_print_function("print_input_form_")$
+
+/*&usage begin: print_open_math_tfb_form(S)
+ It transforms {S} to a tfb format of OpenMath XML. 
+ description: It is experimental. You need to load taka_print_tfb.rr 
+ to call it.
+ example: print_open_math_tfb_form(quote(f(x,1/(y+1))+2));
+end: */
+def print_open_math_tfb_form(F) { 
+  OX_LOADFILE(Loaded_taka_print_tfb,"taka_print_tfb.rr");
+  return("<tfb> "+taka_tfb_form(F)+" </tfb>" );
+}
+
+/* -----------------util---------------------- */
+/*&usage begin: util_timing(Q)
+ Show the timing data to execute {Q}.
+ example: util_timing( quote( fctr(x^50-y^50) ));
+end: */
+def util_timing(Q) { 
+  OX_LOADFILE(Loaded_taka_util,"taka_util.rr");
+  return(taka_util_timing(Q));
+}
+/*&usage begin: util_load_file_as_a_string(F)
+ It reads a file {F} as a string.
+end: */
+def util_load_file_as_a_string(F) { 
+  OX_LOADFILE(Loaded_taka_util,"taka_util.rr");
+  return(taka_util_load_file_as_a_string(F));
+}
+/*&usage begin: util_read_file_as_a_string(F)
+ It reads a file {F} as a string.
+end: */
+def util_read_file_as_a_string(F) { 
+  OX_LOADFILE(Loaded_taka_util,"taka_util.rr");
+  return(taka_util_load_file_as_a_string(F));
+}
+/*&usage begin: util_write_string_to_a_file(Fname,S)
+ It writes a string {S} to a file {Fname}.
+end: */
+def util_write_string_to_a_file(Fname,S) { 
+  OX_LOADFILE(Loaded_taka_util,"taka_util.rr");
+  return(taka_util_write_string_to_a_file(Fname,S));
+}
+/*&usage begin: util_filter(Command,Input|env)
+ It executes the filter program {Command} with the {Input}
+ and returns the output of the filter as a string.
+ example: util_filter("sort","cat\ndog\ncentipede\n");
+end: */
+def util_filter(C,Input) { 
+  OX_LOADFILE(Loaded_taka_util,"taka_util.rr");
+  Env = getopt();
+  return(taka_util_filter(C,Input,Env));
+}
+/*---------- util for strings---------------*/
+/*&usage begin: util_find_and_replace(W,S,Wnew)
+ It replaces {W} in {S} by {Wnew}.
+ Arguments must be lists of ascii codes or strings.
+end: */
+def util_find_and_replace(W,S,Snew) {
+  OX_LOADFILE(Loaded_taka_util,"taka_util.rr");
+  return(taka_util_find_and_replace(W,S,Snew));
+}
+/*&usage begin: util_find_substr(W,S)
+ It returns the position of {W} in {S}.
+ If {W} cannot be found, it returns -1.
+ Arguments must be lists of ascii codes or strings.
+end: */
+def util_find_substr(W,S) {
+  OX_LOADFILE(Loaded_taka_util,"taka_util.rr");
+  return(taka_util_find_substr(W,S));
+}
+/*&usage begin: util_part(S,P,Q)
+ It returns from {P}th element to {Q}th element of {S}.
+end: */
+def util_part(S,P,Q) {
+  OX_LOADFILE(Loaded_taka_util,"taka_util.rr");
+  return(taka_util_part(S,P,Q));
+}
+/*&usage begin: util_remove_cr(S)
+ It removes cr/lf/tabs from {S}.
+ Arguments must be a list of ascii codes.
+end: */
+def util_remove_cr(S) {
+  OX_LOADFILE(Loaded_taka_util,"taka_util.rr");
+  return(taka_util_remove_cr(S));
+}
+/* --------- util for poly --------------- */
+/*&usage begin: util_index(V)
+  It returns the name part and the index part of {V}.
+  example: util_index(x_2_3)
+  ref: util_v
+end: */
+def util_index(V) {
+  OX_LOADFILE(Loaded_taka_util,"taka_util.rr");
+  return(taka_util_index(V));
+}
+
+/*&usage begin: util_v(V,L)
+  It returns a variable indexed by {L}.
+  example: util_v("x",[1,3]);
+  ref: util_index
+end: */
+def util_v(V,L) {
+  OX_LOADFILE(Loaded_taka_util,"taka_plucker.rr");
+  return(taka_indexed_variable(V,L));
+}
+
+/*&usage begin: a_hypergeometric_bfunction(A,V,S)
+  It returns the hypergeometric b-function.
+  {A} is the defining matrix of the hypergeometric system.
+  {V} is an integer, which indicates a direction.
+  {S} is a list of variables.
+  example: a_hypergeometric_bfunction([[1,1,1],[0,1,2]],0,[s1,s2]);
+end: */
+def a_hypergeometric_bfunction(A,V,S) {
+  OX_LOADFILE(Loaded_taka_ahg,"taka_ahg.rr");
+  return( taka_ahg.bb(A,V,S) );
+}
+
+/*&usage begin: asir_contrib_update()
+  It updates the asir-contrib library and/or some other files to the HEAD branch.
+  The usage will be shown by asir_contrib_update() without the option update.
+  Options are update, clean, url, install_dir, zip_files, tmp.
+  Default values update=0, clean=0, url="http://www.math.kobe-u.ac.jp/OpenXM/Current", 
+  install_dir=%APPDATA%/OpenXM (win) or 
+  install_dir=$OpenXM_tmp/OpenXM (others)
+  zip_files=["lib-asir-contrib.zip"]
+  example: 
+   asir_contrib_update();
+   asir_contrib_update(|update=1);    update the library 
+   asir_contrib_update(|update=3);    update the library and the documents
+   asir_contrib_update(|clean=1);
+   asir_contrib_update(|zip_files=["lib-asir-contrib.zip","doc-asir2000.zip","doc-asir-contrib.zip","doc-other-docs.zip"]);
+end: */
+def asir_contrib_update() { return tk_asir_contrib_update.asir_contrib_update(|option_list=getopt()); }
+
+def util_file_exists(Fname) { return tk_util_file_exists(Fname); }
+/*&usage begin: util_file_exists(Fname)
+It returns 1 when {Fname} exists. It returns 0 when {Fname} does not exist.
+end: */
+def util_docdir() { return tk_util_docdir(); }
+/*&usage util_docdir()
+It returns the document directory for asir-contrib.  When asir_contrib_update() is used, 
+it returns the directory name where asir_contrib_update() uses.
+end:
+*/
+def util_find_start() { return tk_util_find_start(|option_list=getopt()); }
+/*&usage begin: util_find_start(|browser)
+It tries to find the gnome-open command or an installed browser in unix systems.
+It returns "open" on MacOS X and returns "start" on Windows.
+end:
+*/
+/*&usage begin:  helph(|browser)
+ It shows the html help by the default browser.
+end:
+*/
+def helph() { return tk_util_helph(|option_list=getopt()); }
+
+/*&usage begin:
+util_damepathq(S)
+When {S} is a string by the ShiftJIS code and {S} contains dame-moji with respect to  \,
+it returns [a non-zero number, the string].
+example:
+  T = [0x5c,0xe4,0x5c,0x41,0x42]$
+  T2=asciitostr(T)$
+  util_damepathq(T2);
+  end: */
+def util_damepathq(S) { return tk_util_damepathq(S|option_list=getopt()); }
+
+end$

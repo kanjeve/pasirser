@@ -2,12 +2,15 @@ import { CharStream, CommonTokenStream } from 'antlr4ng';
 import { testLexer } from './.antlr/testLexer.js';
 import { testParser } from './.antlr/testParser.js';
 import { AsirASTBuilder } from './testAsirASTBuilder.js';
-import { CustomErrorListener } from './customErrorListener.js';
+import { CustomErrorListener, SyntaxErrorInfo } from './customErrorListener.js';
 import * as fs from 'fs';
 import { ASTBuilderError } from './errors.js';
+import * as ast from './testAst.js';
+import { Validator } from './semantics/validator.js';
+import { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
+import { SymbolTable } from './semantics/symbolTable.js';
 
-export function parseAsirCodeAndBuildAST(code: string): { ast: any | null; errors: any[]; } {
-    console.log("Parser function started for code:", code);
+function parseAndBuildAST(code: string): { ast: ast.ProgramNode | null; syntaxErrors: SyntaxErrorInfo[] } {
     const chars = CharStream.fromString(code);
     const lexer = new testLexer(chars);
     const tokens = new CommonTokenStream(lexer);
@@ -19,71 +22,80 @@ export function parseAsirCodeAndBuildAST(code: string): { ast: any | null; error
 
     const tree = parser.prog();
 
-    const errors = errorListener.getErrors();
-    if (errors.length > 0) {
-        console.error("Syntax errors found:");
-        for (const error of errors) {
-            console.error(`  - Line ${error.line}:${error.column} -> Token: '${error.offendingSymbol}', Message: ${error.message}`);
-            if(error.ruleStack.length > 0) {
-                console.error(`    Rule Stack: ${error.ruleStack.join(' -> ')}`);
-            }
-        }
+    const syntaxErrors = errorListener.getErrors();
+    if (syntaxErrors.length > 0) {
+        return { ast: null, syntaxErrors };
     }
 
-    const ambiguities = errorListener.getAmbiguities();
-    if (ambiguities.length > 0) {
-        console.warn("Ambiguities detected:");
-        for (const ambiguity of ambiguities) {
-            console.warn(`  - Line ${ambiguity.line}:${ambiguity.column} -> ${ambiguity.message}`);
-        }
-    }
-
-    const diagnostics = errorListener.getDiagnostics();
-    if (diagnostics.length > 0) {
-        console.info("Diagnostic messages:");
-        for (const diagnostic of diagnostics) {
-            console.info(`  - [${diagnostic.type}] Line ${diagnostic.line}:${diagnostic.column} -> ${diagnostic.message}`);
-        }
-    }
-
-    if (errors.length > 0) {
-        console.log("\nAST construction skipped due to syntax errors.");
-        return { ast: null, errors: errors };
-    }
-
-    console.log("--- Raw Parse Tree ---");
-    console.log(tree.toStringTree(parser.ruleNames, parser));
-    console.log("----------------------");
-
-    console.log("--- AST Building ---");
     const astBuilder = new AsirASTBuilder();
-    let ast = null;
     try {
-        ast = astBuilder.visit(tree);
+        const programNode = astBuilder.visit(tree) as ast.ProgramNode;
+        return { ast: programNode, syntaxErrors: [] };
     } catch (e) {
         if (e instanceof ASTBuilderError) {
-            console.error(`\nAST Build Error: ${e.message}`);
-            // e.loc は ASTBuilderError のコンストラクタでメッセージに含まれるため、ここでは不要
+            // Convert ASTBuilderError to a SyntaxErrorInfo so it can be handled uniformly
+            const errorInfo: SyntaxErrorInfo = {
+                line: e.loc?.startLine ?? 0,
+                column: e.loc?.startColumn ?? 0,
+                message: e.message,
+                offendingSymbol: null,
+                ruleStack: [],
+            };
+            return { ast: null, syntaxErrors: [errorInfo] };
         } else {
-            console.error(`\nAn unexpected error occurred during AST building: ${e}`);
+            console.error(`[FATAL] AST構築中に予期せぬエラーが発生しました: ${e}`);
+            const errorInfo: SyntaxErrorInfo = { line: 1, column: 0, message: `致命的なエラー: ${e}`, offendingSymbol: null, ruleStack: [] };
+            return { ast: null, syntaxErrors: [errorInfo] };
         }
-        return { ast: null, errors: errors }; // AST構築失敗時もエラー情報を返す
     }
-
-    console.log("--- Constructed AST ---");
-    console.log(JSON.stringify(ast, null, 2));
-
-    return { ast: ast, errors: errors };
 }
 
-// --- Main execution ---
+export function analyze(code: string): { ast: ast.ProgramNode | null, diagnostics: Diagnostic[], symbolTable: SymbolTable | null } {
+    const { ast, syntaxErrors: SyntaxErrorInfos} = parseAndBuildAST(code);
+
+    const diagnostics: Diagnostic[] = SyntaxErrorInfos.map(e => ({
+        severity: DiagnosticSeverity.Error,
+        range: {
+            start: { line: e.line - 1, character: e.column },
+            end: { line: e.line - 1, character: e.column + (e.offendingSymbol?.length ?? 1) },
+        },
+        message: e.message,
+        source: 'Syntax',
+    }));
+
+    if (SyntaxErrorInfos.length > 0 || !ast) {
+        return { ast: null, diagnostics, symbolTable: null };
+    }
+
+    const validator = new Validator(ast);
+    const semanticErrors = validator.analyze(ast);
+
+    diagnostics.push(...semanticErrors);
+
+    return { ast, diagnostics, symbolTable: validator.symbolTable };
+}
+
+// --- Main execution for command-line testing ---
 if (require.main === module) {
     const inputFile = process.argv[2] || 'input.txt';
     console.log(`Reading from: ${inputFile}`);
 
     try {
         const code = fs.readFileSync(inputFile, 'utf-8');
-        parseAsirCodeAndBuildAST(code);
+        const { ast, diagnostics } = analyze(code);
+
+        if (diagnostics.length > 0) {
+            console.log('\n--- Diagnostics ---');
+            for (const d of diagnostics) {
+                console.log(`[${d.source}] L${d.range.start.line + 1}:C${d.range.start.character} - ${d.message} (Severity: ${d.severity})`);
+            }
+        }
+
+        if (ast) {
+            // console.log('\n--- Constructed AST ---');
+            // console.log(JSON.stringify(ast, null, 2));
+        }
+
     } catch (e) {
         console.error(`Error reading file: ${e}`);
     }

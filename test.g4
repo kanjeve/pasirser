@@ -19,16 +19,16 @@ statement : expr terminator       #ExprStatement
           ;
 
 // プリプロセッサ
-prechar : CHAR memberName #PreChr
-        | memberName CHARPLUS memberName #PreChrPlus
+prechar : CHAR ID #PreChr
+        | ID CHARPLUS ID #PreChrPlus
         ;
-preprocessor : PDEFINE name=memberName (LPAREN (params+=memberName (COMMA params+=memberName)*)? RPAREN)? body=expr #PDef
+preprocessor : PDEFINE name=ID (LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN)? body=expr #PDef
              | (PIF | PIFDEF | PIFNDEF) expr statement* (PELIF expr statement*)* (PELSE statement*)? PENDIF #PIf
              | PINCLUDE (path_sys=systemPath | path_loc=STRING) #PInc
              ;
 
 // キーワード
-functionDefinition : DEF indeterminate LPAREN (VAR_ID (COMMA VAR_ID)*)? RPAREN block #Def;
+functionDefinition : DEF name=indeterminate LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN body=block #Def;
 functionIf : IF LPAREN condition=expr RPAREN thenBlock=block (ELSE elseBlock=block)? #If;
 functionFor : FOR LPAREN init=exprlist? SEMI cond=exprlist? SEMI update=exprlist? RPAREN block #For;
 functionWhile : WHILE LPAREN exprlist? RPAREN block #While;
@@ -36,12 +36,10 @@ functionDo : DO block WHILE LPAREN exprlist? RPAREN SEMI #Do;
 functionReturn : RETURN expr? terminator #Return;
 functionContinue : CONTINUE terminator #Continue;
 functionBreak : BREAK terminator #Break;
-functionStruct : STRUCT name=memberName LBRANCE members+=memberName (COMMA members+=memberName)* RBRANCE terminator #Struct;
-functionCall : is_global=COLON2? name=qualifiedIdentifier LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN #Fcall;
+functionStruct : STRUCT name=indeterminate LBRANCE members+=indeterminate (COMMA members+=indeterminate)* RBRANCE terminator #Struct;
 
-functionModule : (EXTERN | STATIC | GLOBAL | LOCAL) VAR_ID (COMMA VAR_ID)* terminator   #ModuleAssign
-               | LOCALF FUNC_ID (COMMA FUNC_ID)* terminator                            #ModuleFunction
-               | MODULE FUNC_ID terminator                                             #ModuleStart
+functionModule : (EXTERN | STATIC | GLOBAL | LOCAL | LOCALF) indeterminate (COMMA indeterminate)* terminator   #ModuleAssign
+               | MODULE indeterminate terminator                                             #ModuleStart
                | ENDMODULE terminator                                                  #ModuleEnd
                ;
 
@@ -49,9 +47,9 @@ functionModule : (EXTERN | STATIC | GLOBAL | LOCAL) VAR_ID (COMMA VAR_ID)* termi
 expr : assignmentExpr #Main;
 
 assignmentExpr : ternaryExpr                                                                                                            #NoAssignment
-               | left=VAR_ID (LBRACKET indices+=expr RBRACKET)* op=(PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) right=assignmentExpr         #Assign
-               | VAR_ID (ARROW memberName)+ (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) assignmentExpr       #StructAssign
-               | LBRACKET VAR_ID (COMMA VAR_ID)* RBRACKET (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) assignmentExpr #ListAssign
+               | left=ID (LBRACKET indices+=expr RBRACKET)* op=(PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) right=assignmentExpr         #Assign
+               | ID (ARROW indeterminate)+ (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) assignmentExpr       #StructAssign
+               | LBRACKET ID (COMMA ID)* RBRACKET (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) assignmentExpr #ListAssign
                ;
 
 ternaryExpr : condition=quoteExpr (QUESTION consequence=expr COLON alternative=expr)? #Ternary;
@@ -94,7 +92,8 @@ indexAccessExpr : primaryExpr (LBRACKET expr RBRACKET)* #IndexAccess;
 primaryExpr : indeterminate         #IndExpr
             | num                   #Real
             | id                    #IdExpr
-            | functionCall          #FCallExpr
+            | is_global=COLON2? name=indeterminate LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN         #FCallExpr
+            | LPAREN MULT callee=expr RPAREN LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN #FunctorCallExpr
             | LPAREN expr RPAREN    #Paren
             | STRING                #StringLiteral
             | list                  #ListLiteral
@@ -116,15 +115,15 @@ num  : HEX        #HexNum
      | rational   #RatNum
      | decimal    #DecNum
      | IMAGINARY  #ImaNum
+     | AEGEN      #GenNum
      ;
 
-id   : VAR_ID  #VId
-     | BEFORE  #Bef
+id   : BEFORE  #Bef
      | BEFORE_N#BefN
      | VAR_2   #V2Id
      ;
 
-indeterminate : qualifiedIdentifier #Func
+indeterminate : ID                  #Func
               | ATFUNC              #AtFunc
               | NOSTRING            #ChFunc
               ;
@@ -141,13 +140,9 @@ exprlist : expr (COMMA expr)* ;
 
 terminator : SEMI | DOLLAR;
 
-memberName : indeterminate | VAR_ID;
+systemPath : LT ID GT;
 
-systemPath : LT qualifiedIdentifier GT;
-
-optionPair : key=qualifiedIdentifier ASSIGN value=expr;
-
-qualifiedIdentifier : FUNC_ID (POINT FUNC_ID)*;
+optionPair : key=indeterminate ASSIGN value=expr;
 
 // --- Lexer Rules ---
 LTLT     : '<<';
@@ -198,6 +193,7 @@ EXP      : [Ee][+\-]?[0-9]*;
 INT      : [0-9]+;
 POINT    : '.';
 IMAGINARY: '@i';
+AEGEN    : '@s';
 BEFORE   : '@@';
 BEFORE_N : '@'[0-9]+;
 QE_1     : '@>=';
@@ -231,11 +227,11 @@ LOCAL    : 'local';
 LOCALF   : 'localf';
 ATFUNC   : '@'([a-zA-Z])+;
 VAR_2    : '@';
-FUNC_ID  : [_]?[a-z_]([a-zA-Z0-9_.])*; 
-VAR_ID   : [_]?[A-Z]([a-zA-Z0-9_])*; 
+ID       : [_]?[a-zA-Z_]([a-zA-Z0-9_.])*; 
 NEWLINE  : '\n' -> skip;
 WS       : [ \t]+ -> skip;
 COMMENT  : '/*' .*? '*/' -> skip;
+LCOMMENT : '//' ~[\r\n]* -> skip;
 PCOMMENT : '#if 0' .*? '#endif' -> skip;
 PIFDEF   : '#ifdef';
 PIFNDEF  : '#ifndef';

@@ -1,5 +1,3 @@
-import { Identifier } from "acorn";
-
 // 1. ASTノードの共通ベースインターフェース
 export interface ASTNode {
     kind: string;
@@ -26,15 +24,15 @@ export type LValueNode = IdentifierNode | IndexAccessNode;
 export type ExpressionNode =
     | NumberLiteralNode
     | StringLiteralNode
-    | CharLiteralNode
     | IdentifierNode
-    | QualifiedIdentifierNode
+    | IndeterminateNode
     | BinaryOperationNode
     | UnaryOperationNode
     | TernaryOperationNode
     | PowerOperationNode
     | IndexAccessNode
     | FunctionCallNode
+    | FunctorCallNode
     | ParenExpressionNode
     | ListLiteralNode
     | DistributedPolynomialLiteralNode
@@ -115,15 +113,12 @@ export interface DistributedPolynomialLiteralNode extends TypedExpressionNode {
 export interface IdentifierNode extends TypedExpressionNode {
     kind: 'Identifier';
     name: string;
-    // qualifier?: IdentifierNode;
-    isVar: boolean;
-    isSpecialVar: boolean;
-    resolvedSymbol?: Symbol; // 意味解析で解決
+    resolvedSymbol?: Symbol;
 }
 
-export interface QualifiedIdentifierNode extends TypedExpressionNode {
-    kind: 'QualifiedIdentifier';
-    path: IdentifierNode[];
+export interface IndeterminateNode extends TypedExpressionNode {
+    kind: 'Indterminate';
+    name: string;
 }
 
 // --- 演算子ノード ---
@@ -171,8 +166,15 @@ export interface IndexAccessNode extends TypedExpressionNode {
 // 関数呼び出し
 export interface FunctionCallNode extends TypedExpressionNode {
     kind: 'FunctionCall';
-    callee: QualifiedIdentifierNode;
+    callee: IdentifierNode;
     isGlobal: boolean;
+    args: ExpressionNode[];
+    options: OptionPairNode[];
+}
+
+export interface FunctorCallNode extends TypedExpressionNode {
+    kind: 'FunctorCall';
+    callee: ExpressionNode;
     args: ExpressionNode[];
     options: OptionPairNode[];
 }
@@ -180,7 +182,7 @@ export interface FunctionCallNode extends TypedExpressionNode {
 // オプション
 export interface OptionPairNode extends ASTNode {
     kind: 'OptionPair';
-    key: QualifiedIdentifierNode;
+    key: IdentifierNode;
     value: ExpressionNode;
 }
 
@@ -330,7 +332,7 @@ export interface BlockNode extends ASTNode {
 
 export interface PreprocessorDefineNode extends ASTNode {
     kind: 'PreprocessorDefine';
-    name: QualifiedIdentifierNode;
+    name: IdentifierNode;
     parameters: IdentifierNode[];
     body: ExpressionNode;
 }

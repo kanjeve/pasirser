@@ -9,7 +9,7 @@
     "skipLibCheck": true,       /* 宣言ファイルの型チェックをスキップ (ビルド高速化のため) */
     "forceConsistentCasingInFileNames": true, /* ファイル名の大文字小文字の区別を強制 */
     "resolveJsonModule": true,  /* JSON モジュールのインポートを許可 */
-    "declaration": true,       /* .d.ts ファイルの生成を無効化 (antlr4ng が生成する .ts に型情報があるので不要) */
+    "declaration": true,       /* .d.ts ファイルの生成を有効化（無生成ではなぜかできなかった） */
     "sourceMap": true,           /* ソースマップを生成 (デバッグ用) */
   },
   "include": [

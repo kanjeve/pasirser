@@ -1,3 +1,4 @@
+
 /* $OpenXM: OpenXM/src/asir-contrib/packages/src/names.rr,v 1.168 2022/02/01 00:36:22 takayama Exp $ */
 /* $Revision$ */
 #define NOT_YET   print("It has not yet been implemented.")

@@ -81,11 +81,11 @@ export declare class testLexer extends antlr.Lexer {
     static readonly LOCALF = 79;
     static readonly ATFUNC = 80;
     static readonly VAR_2 = 81;
-    static readonly FUNC_ID = 82;
-    static readonly VAR_ID = 83;
-    static readonly NEWLINE = 84;
-    static readonly WS = 85;
-    static readonly COMMENT = 86;
+    static readonly ID = 82;
+    static readonly NEWLINE = 83;
+    static readonly WS = 84;
+    static readonly COMMENT = 85;
+    static readonly LCOMMENT = 86;
     static readonly PCOMMENT = 87;
     static readonly PIFDEF = 88;
     static readonly PIFNDEF = 89;

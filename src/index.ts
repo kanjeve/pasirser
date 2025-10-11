@@ -1,6 +1,5 @@
-
 // 公開する主要な関数
-export { parseAsirCodeAndBuildAST } from './run.js';
+export { analyze } from './run.js';
 
 // ASTの型定義
 export * from './testAst.js';
@@ -12,3 +11,8 @@ export { AsirASTBuilder } from './testAsirASTBuilder.js';
 export { CustomErrorListener } from './customErrorListener.js';
 export type { SyntaxErrorInfo, AmbiguityInfo, DiagnosticInfo } from './customErrorListener.js';
 export { ASTBuilderError } from './errors.js';
+
+// importしたやつ
+export { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
+export { SymbolTable } from './semantics/symbolTable.js';
+export { Symbol, AsirType, Scope } from './semantics/types.js'

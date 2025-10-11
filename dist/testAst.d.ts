@@ -11,7 +11,7 @@ export interface TypedExpressionNode extends ASTNode {
     resolvedType?: AsirType;
 }
 export type LValueNode = IdentifierNode | IndexAccessNode;
-export type ExpressionNode = NumberLiteralNode | StringLiteralNode | CharLiteralNode | IdentifierNode | QualifiedIdentifierNode | BinaryOperationNode | UnaryOperationNode | TernaryOperationNode | PowerOperationNode | IndexAccessNode | FunctionCallNode | ParenExpressionNode | ListLiteralNode | DistributedPolynomialLiteralNode | AssignmentExpressionNode | StructMemberAssignmentNode | ListDestructuringAssignmentNode;
+export type ExpressionNode = NumberLiteralNode | StringLiteralNode | CharLiteralNode | IdentifierNode | BinaryOperationNode | UnaryOperationNode | TernaryOperationNode | PowerOperationNode | IndexAccessNode | FunctionCallNode | ParenExpressionNode | ListLiteralNode | DistributedPolynomialLiteralNode | AssignmentExpressionNode | StructMemberAssignmentNode | ListDestructuringAssignmentNode;
 export type StatementNode = ExpressionStatementNode | EmptyStatementNode | DefinitionStatementNode | IfStatementNode | ForStatementNode | WhileStatementNode | DoWhileStatementNode | ReturnStatementNode | BreakStatementNode | ContinueStatementNode | StructStatementNode | ModuleStatementNode | PreprocessorNode | BlockNode;
 export type ModuleStatementNode = ModuleVariableDeclarationNode | LocalFunctionDeclarationNode | ModuleDeclarationNode | EndModuleNode;
 export type PreprocessorNode = PreprocessorDefineNode | PreprocessorIfNode | PreprocessorIncludeNode;
@@ -42,13 +42,7 @@ export interface DistributedPolynomialLiteralNode extends TypedExpressionNode {
 export interface IdentifierNode extends TypedExpressionNode {
     kind: 'Identifier';
     name: string;
-    isVar: boolean;
-    isSpecialVar: boolean;
     resolvedSymbol?: Symbol;
-}
-export interface QualifiedIdentifierNode extends TypedExpressionNode {
-    kind: 'QualifiedIdentifier';
-    path: IdentifierNode[];
 }
 export interface BinaryOperationNode extends TypedExpressionNode {
     kind: 'BinaryOperation';
@@ -80,14 +74,14 @@ export interface IndexAccessNode extends TypedExpressionNode {
 }
 export interface FunctionCallNode extends TypedExpressionNode {
     kind: 'FunctionCall';
-    callee: QualifiedIdentifierNode;
+    callee: IdentifierNode;
     isGlobal: boolean;
     args: ExpressionNode[];
     options: OptionPairNode[];
 }
 export interface OptionPairNode extends ASTNode {
     kind: 'OptionPair';
-    key: QualifiedIdentifierNode;
+    key: IdentifierNode;
     value: ExpressionNode;
 }
 export interface ParenExpressionNode extends TypedExpressionNode {
@@ -188,7 +182,7 @@ export interface BlockNode extends ASTNode {
 }
 export interface PreprocessorDefineNode extends ASTNode {
     kind: 'PreprocessorDefine';
-    name: QualifiedIdentifierNode;
+    name: IdentifierNode;
     parameters: IdentifierNode[];
     body: ExpressionNode;
 }

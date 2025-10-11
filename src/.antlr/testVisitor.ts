@@ -31,9 +31,7 @@ import { ReturnContext } from "./testParser.js";
 import { ContinueContext } from "./testParser.js";
 import { BreakContext } from "./testParser.js";
 import { StructContext } from "./testParser.js";
-import { FcallContext } from "./testParser.js";
 import { ModuleAssignContext } from "./testParser.js";
-import { ModuleFunctionContext } from "./testParser.js";
 import { ModuleStartContext } from "./testParser.js";
 import { ModuleEndContext } from "./testParser.js";
 import { MainContext } from "./testParser.js";
@@ -64,6 +62,7 @@ import { IndExprContext } from "./testParser.js";
 import { RealContext } from "./testParser.js";
 import { IdExprContext } from "./testParser.js";
 import { FCallExprContext } from "./testParser.js";
+import { FunctorCallExprContext } from "./testParser.js";
 import { ParenContext } from "./testParser.js";
 import { StringLiteralContext } from "./testParser.js";
 import { ListLiteralContext } from "./testParser.js";
@@ -77,7 +76,7 @@ import { BitNumContext } from "./testParser.js";
 import { RatNumContext } from "./testParser.js";
 import { DecNumContext } from "./testParser.js";
 import { ImaNumContext } from "./testParser.js";
-import { VIdContext } from "./testParser.js";
+import { GenNumContext } from "./testParser.js";
 import { BefContext } from "./testParser.js";
 import { BefNContext } from "./testParser.js";
 import { V2IdContext } from "./testParser.js";
@@ -89,10 +88,8 @@ import { SentenceContext } from "./testParser.js";
 import { Sentence1Context } from "./testParser.js";
 import { ExprlistContext } from "./testParser.js";
 import { TerminatorContext } from "./testParser.js";
-import { MemberNameContext } from "./testParser.js";
 import { SystemPathContext } from "./testParser.js";
 import { OptionPairContext } from "./testParser.js";
-import { QualifiedIdentifierContext } from "./testParser.js";
 
 
 /**
@@ -299,26 +296,12 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitStruct?: (ctx: StructContext) => Result;
     /**
-     * Visit a parse tree produced by the `Fcall`
-     * labeled alternative in `testParser.functionCall`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitFcall?: (ctx: FcallContext) => Result;
-    /**
      * Visit a parse tree produced by the `ModuleAssign`
      * labeled alternative in `testParser.functionModule`.
      * @param ctx the parse tree
      * @return the visitor result
      */
     visitModuleAssign?: (ctx: ModuleAssignContext) => Result;
-    /**
-     * Visit a parse tree produced by the `ModuleFunction`
-     * labeled alternative in `testParser.functionModule`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitModuleFunction?: (ctx: ModuleFunctionContext) => Result;
     /**
      * Visit a parse tree produced by the `ModuleStart`
      * labeled alternative in `testParser.functionModule`.
@@ -530,6 +513,13 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitFCallExpr?: (ctx: FCallExprContext) => Result;
     /**
+     * Visit a parse tree produced by the `FunctorCallExpr`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitFunctorCallExpr?: (ctx: FunctorCallExprContext) => Result;
+    /**
      * Visit a parse tree produced by the `Paren`
      * labeled alternative in `testParser.primaryExpr`.
      * @param ctx the parse tree
@@ -621,12 +611,12 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitImaNum?: (ctx: ImaNumContext) => Result;
     /**
-     * Visit a parse tree produced by the `VId`
-     * labeled alternative in `testParser.id`.
+     * Visit a parse tree produced by the `GenNum`
+     * labeled alternative in `testParser.num`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitVId?: (ctx: VIdContext) => Result;
+    visitGenNum?: (ctx: GenNumContext) => Result;
     /**
      * Visit a parse tree produced by the `Bef`
      * labeled alternative in `testParser.id`.
@@ -703,12 +693,6 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitTerminator?: (ctx: TerminatorContext) => Result;
     /**
-     * Visit a parse tree produced by `testParser.memberName`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitMemberName?: (ctx: MemberNameContext) => Result;
-    /**
      * Visit a parse tree produced by `testParser.systemPath`.
      * @param ctx the parse tree
      * @return the visitor result
@@ -720,11 +704,5 @@ export class testVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      * @return the visitor result
      */
     visitOptionPair?: (ctx: OptionPairContext) => Result;
-    /**
-     * Visit a parse tree produced by `testParser.qualifiedIdentifier`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitQualifiedIdentifier?: (ctx: QualifiedIdentifierContext) => Result;
 }
 

@@ -12,8 +12,6 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         return {
             kind: 'Identifier',
             name: token.text,
-            isVar: token.type === testParser_js_1.testParser.VAR_ID,
-            isSpecialVar: token.type === testParser_js_1.testParser.VAR_2,
             loc: (0, errors_js_1.getLoc)(tokenOrNode)
         };
     }
@@ -124,13 +122,13 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         return {
             kind: 'UnaryOperation',
             operator: '#',
-            operand: this.visitAndCheck(ctx.memberName()),
+            operand: this.createIdentifierNode(ctx.ID()),
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
     visitPreChrPlus(ctx) {
-        const leftNode = this.visitAndCheck(ctx.memberName(0));
-        const rightNode = this.visitAndCheck(ctx.memberName(1));
+        const leftNode = this.createIdentifierNode(ctx.ID(0));
+        const rightNode = this.createIdentifierNode(ctx.ID(1));
         return {
             kind: 'BinaryOperation',
             operator: '##',
@@ -140,8 +138,8 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         };
     }
     visitPDef(ctx) {
-        const nameNode = this.visitAndCheck(ctx._name);
-        const parmNodes = (ctx._params || []).map(p => this.visitAndCheck(p));
+        const nameNode = this.createIdentifierNode(ctx._name);
+        const parmNodes = (ctx._params || []).map(p => this.createIdentifierNode(p));
         const bodyNode = this.visitAndCheck(ctx._body);
         return {
             kind: 'PreprocessorDefine',
@@ -261,8 +259,8 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         };
     }
     visitStructAssign(ctx) {
-        const base = this.createIdentifierNode(ctx.VAR_ID());
-        const members = ctx.memberName().map(m => this.visitAndCheck(m));
+        const base = this.createIdentifierNode(ctx.ID());
+        const members = ctx.indeterminate().map(m => this.visitAndCheck(m));
         const operatorText = (ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN()).getText();
         const right = this.visitAndCheck(ctx.assignmentExpr());
         return {
@@ -278,7 +276,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         const operatorText = (ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN()).getText();
         return {
             kind: 'ListDestructuringAssignment',
-            targets: ctx.VAR_ID().map(v => this.createIdentifierNode(v)),
+            targets: ctx.ID().map(v => this.createIdentifierNode(v)),
             operator: operatorText,
             right: this.visitAndCheck(ctx.assignmentExpr()),
             loc: (0, errors_js_1.getLoc)(ctx)
@@ -408,11 +406,10 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
     visitRat(ctx) { return { kind: 'NumberLiteral', value: ctx.getText(), rawText: ctx.getText(), loc: (0, errors_js_1.getLoc)(ctx) }; }
     visitFloat(ctx) { return { kind: 'NumberLiteral', value: parseFloat(ctx.getText()), rawText: ctx.getText(), loc: (0, errors_js_1.getLoc)(ctx) }; }
-    visitVId(ctx) { return this.createIdentifierNode(ctx.VAR_ID()); }
     visitV2Id(ctx) { return this.createIdentifierNode(ctx.VAR_2()); }
     visitBef(ctx) { return this.createIdentifierNode(ctx.BEFORE()); }
     visitBefN(ctx) { return this.createIdentifierNode(ctx.BEFORE_N()); }
-    // visitFunc(ctx: FuncContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.qualifiedIdentifier()!); }
+    visitFunc(ctx) { return this.createIdentifierNode(ctx.ID()); }
     visitAtFunc(ctx) { return this.createIdentifierNode(ctx.ATFUNC()); }
     visitChFunc(ctx) { return this.createIdentifierNode(ctx.NOSTRING()); }
     visitListExpr(ctx) {
@@ -431,9 +428,9 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
     // --- Control Flow and Definitions ---
     visitDef(ctx) {
-        const nameNode = this.visitAndCheck(ctx.indeterminate());
-        const paramNodes = (ctx.VAR_ID() || []).map(v => this.createIdentifierNode(v));
-        const bodyNode = this.visitAndCheck(ctx.block());
+        const nameNode = this.visitAndCheck(ctx._name);
+        const paramNodes = (ctx._params || []).map(v => this.createIdentifierNode(v));
+        const bodyNode = this.visitAndCheck(ctx._body);
         return {
             kind: 'FunctionDefinition',
             name: nameNode,
@@ -552,19 +549,12 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         return {
             kind: 'ModuleVariableDeclaration',
             scope: scope,
-            variables: ctx.VAR_ID().map(v => this.createIdentifierNode(v)),
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    visitModuleFunction(ctx) {
-        return {
-            kind: 'LocalFunctionDeclaration',
-            functions: ctx.FUNC_ID().map(f => this.createIdentifierNode(f)),
+            variables: ctx.indeterminate().map(v => this.visitAndCheck(v)),
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
     visitModuleStart(ctx) {
-        return { kind: 'ModuleDeclaration', name: this.createIdentifierNode(ctx.FUNC_ID()), loc: (0, errors_js_1.getLoc)(ctx) };
+        return { kind: 'ModuleDeclaration', name: this.visitAndCheck(ctx.indeterminate()), loc: (0, errors_js_1.getLoc)(ctx) };
     }
     visitModuleEnd(ctx) {
         return { kind: 'EndModule', loc: (0, errors_js_1.getLoc)(ctx) };
@@ -592,14 +582,6 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             kind: 'OptionPair',
             key: keyNode,
             value: valueNode,
-            loc: (0, errors_js_1.getLoc)(ctx)
-        };
-    }
-    visitQualifiedIdentifier(ctx) {
-        const pathNode = ctx.FUNC_ID().map(i => this.createIdentifierNode(i));
-        return {
-            kind: 'QualifiedIdentifier',
-            path: pathNode,
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
