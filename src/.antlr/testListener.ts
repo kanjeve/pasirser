@@ -7,6 +7,7 @@ import { ProgContext } from "./testParser.js";
 import { ExprStatementContext } from "./testParser.js";
 import { EmptyLineStatementContext } from "./testParser.js";
 import { DefinitionStatementContext } from "./testParser.js";
+import { ForwardDeclStatementContext } from "./testParser.js";
 import { IfStatementContext } from "./testParser.js";
 import { ForStatementContext } from "./testParser.js";
 import { WhileStatementContext } from "./testParser.js";
@@ -23,6 +24,7 @@ import { PDefContext } from "./testParser.js";
 import { PIfContext } from "./testParser.js";
 import { PIncContext } from "./testParser.js";
 import { DefContext } from "./testParser.js";
+import { FormDeclContext } from "./testParser.js";
 import { IfContext } from "./testParser.js";
 import { ForContext } from "./testParser.js";
 import { WhileContext } from "./testParser.js";
@@ -54,10 +56,11 @@ import { UnaryMinusContext } from "./testParser.js";
 import { NotExprContext } from "./testParser.js";
 import { PowExprContext } from "./testParser.js";
 import { PowExContext } from "./testParser.js";
-import { FactrialExprContext } from "./testParser.js";
+import { FactorialExprContext } from "./testParser.js";
 import { PreFixContext } from "./testParser.js";
 import { PostFixContext } from "./testParser.js";
 import { IndexAccessContext } from "./testParser.js";
+import { MemberAccessContext } from "./testParser.js";
 import { IndExprContext } from "./testParser.js";
 import { RealContext } from "./testParser.js";
 import { IdExprContext } from "./testParser.js";
@@ -89,6 +92,8 @@ import { Sentence1Context } from "./testParser.js";
 import { ExprlistContext } from "./testParser.js";
 import { TerminatorContext } from "./testParser.js";
 import { SystemPathContext } from "./testParser.js";
+import { ElifClauseContext } from "./testParser.js";
+import { ElseClauseContext } from "./testParser.js";
 import { OptionPairContext } from "./testParser.js";
 
 
@@ -143,6 +148,18 @@ export class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitDefinitionStatement?: (ctx: DefinitionStatementContext) => void;
+    /**
+     * Enter a parse tree produced by the `ForwardDeclStatement`
+     * labeled alternative in `testParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterForwardDeclStatement?: (ctx: ForwardDeclStatementContext) => void;
+    /**
+     * Exit a parse tree produced by the `ForwardDeclStatement`
+     * labeled alternative in `testParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitForwardDeclStatement?: (ctx: ForwardDeclStatementContext) => void;
     /**
      * Enter a parse tree produced by the `IfStatement`
      * labeled alternative in `testParser.statement`.
@@ -335,6 +352,18 @@ export class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitDef?: (ctx: DefContext) => void;
+    /**
+     * Enter a parse tree produced by the `FormDecl`
+     * labeled alternative in `testParser.formDeclaration`.
+     * @param ctx the parse tree
+     */
+    enterFormDecl?: (ctx: FormDeclContext) => void;
+    /**
+     * Exit a parse tree produced by the `FormDecl`
+     * labeled alternative in `testParser.formDeclaration`.
+     * @param ctx the parse tree
+     */
+    exitFormDecl?: (ctx: FormDeclContext) => void;
     /**
      * Enter a parse tree produced by the `If`
      * labeled alternative in `testParser.functionIf`.
@@ -708,17 +737,17 @@ export class testListener implements ParseTreeListener {
      */
     exitPowEx?: (ctx: PowExContext) => void;
     /**
-     * Enter a parse tree produced by the `FactrialExpr`
+     * Enter a parse tree produced by the `FactorialExpr`
      * labeled alternative in `testParser.factExpr`.
      * @param ctx the parse tree
      */
-    enterFactrialExpr?: (ctx: FactrialExprContext) => void;
+    enterFactorialExpr?: (ctx: FactorialExprContext) => void;
     /**
-     * Exit a parse tree produced by the `FactrialExpr`
+     * Exit a parse tree produced by the `FactorialExpr`
      * labeled alternative in `testParser.factExpr`.
      * @param ctx the parse tree
      */
-    exitFactrialExpr?: (ctx: FactrialExprContext) => void;
+    exitFactorialExpr?: (ctx: FactorialExprContext) => void;
     /**
      * Enter a parse tree produced by the `PreFix`
      * labeled alternative in `testParser.prefixExpr`.
@@ -755,6 +784,18 @@ export class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitIndexAccess?: (ctx: IndexAccessContext) => void;
+    /**
+     * Enter a parse tree produced by the `MemberAccess`
+     * labeled alternative in `testParser.memberAccessExpr`.
+     * @param ctx the parse tree
+     */
+    enterMemberAccess?: (ctx: MemberAccessContext) => void;
+    /**
+     * Exit a parse tree produced by the `MemberAccess`
+     * labeled alternative in `testParser.memberAccessExpr`.
+     * @param ctx the parse tree
+     */
+    exitMemberAccess?: (ctx: MemberAccessContext) => void;
     /**
      * Enter a parse tree produced by the `IndExpr`
      * labeled alternative in `testParser.primaryExpr`.
@@ -1121,6 +1162,26 @@ export class testListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitSystemPath?: (ctx: SystemPathContext) => void;
+    /**
+     * Enter a parse tree produced by `testParser.elifClause`.
+     * @param ctx the parse tree
+     */
+    enterElifClause?: (ctx: ElifClauseContext) => void;
+    /**
+     * Exit a parse tree produced by `testParser.elifClause`.
+     * @param ctx the parse tree
+     */
+    exitElifClause?: (ctx: ElifClauseContext) => void;
+    /**
+     * Enter a parse tree produced by `testParser.elseClause`.
+     * @param ctx the parse tree
+     */
+    enterElseClause?: (ctx: ElseClauseContext) => void;
+    /**
+     * Exit a parse tree produced by `testParser.elseClause`.
+     * @param ctx the parse tree
+     */
+    exitElseClause?: (ctx: ElseClauseContext) => void;
     /**
      * Enter a parse tree produced by `testParser.optionPair`.
      * @param ctx the parse tree

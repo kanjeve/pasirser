@@ -1,8 +1,7 @@
 import { CharStream, CommonTokenStream } from 'antlr4ng';
-// ↓これらはantlr4ngが生成したファイル。パスは適宜修正してください。
 import { testLexer } from './.antlr/testLexer';
 import { testParser } from './.antlr/testParser';
-import { CustomErrorListener } from './customErrorListener'; // 先ほど作ったリスナー
+import { CustomErrorListener } from './customErrorListener'; 
 
 export function validateSyntax(code: string) {
   // 1. 入力コードから文字ストリームを作成

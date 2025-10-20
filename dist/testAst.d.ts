@@ -1,3 +1,4 @@
+import { AsirType, Symbol } from './semantics/types';
 export interface ASTNode {
     kind: string;
     loc?: {
@@ -10,8 +11,8 @@ export interface ASTNode {
 export interface TypedExpressionNode extends ASTNode {
     resolvedType?: AsirType;
 }
-export type LValueNode = IdentifierNode | IndexAccessNode;
-export type ExpressionNode = NumberLiteralNode | StringLiteralNode | CharLiteralNode | IdentifierNode | BinaryOperationNode | UnaryOperationNode | TernaryOperationNode | PowerOperationNode | IndexAccessNode | FunctionCallNode | ParenExpressionNode | ListLiteralNode | DistributedPolynomialLiteralNode | AssignmentExpressionNode | StructMemberAssignmentNode | ListDestructuringAssignmentNode;
+export type LValueNode = IndeterminateNode | IndexAccessNode | StructMemberAssignmentNode;
+export type ExpressionNode = NumberLiteralNode | StringLiteralNode | IndeterminateNode | BinaryOperationNode | UnaryOperationNode | TernaryOperationNode | PowerOperationNode | IndexAccessNode | MemberAccessNode | FunctionCallNode | FunctorCallNode | ParenExpressionNode | ListLiteralNode | DistributedPolynomialLiteralNode | AssignmentExpressionNode | StructMemberAssignmentNode | ListDestructuringAssignmentNode;
 export type StatementNode = ExpressionStatementNode | EmptyStatementNode | DefinitionStatementNode | IfStatementNode | ForStatementNode | WhileStatementNode | DoWhileStatementNode | ReturnStatementNode | BreakStatementNode | ContinueStatementNode | StructStatementNode | ModuleStatementNode | PreprocessorNode | BlockNode;
 export type ModuleStatementNode = ModuleVariableDeclarationNode | LocalFunctionDeclarationNode | ModuleDeclarationNode | EndModuleNode;
 export type PreprocessorNode = PreprocessorDefineNode | PreprocessorIfNode | PreprocessorIncludeNode;
@@ -39,8 +40,8 @@ export interface DistributedPolynomialLiteralNode extends TypedExpressionNode {
     terms: number[];
     modulus?: number;
 }
-export interface IdentifierNode extends TypedExpressionNode {
-    kind: 'Identifier';
+export interface IndeterminateNode extends TypedExpressionNode {
+    kind: 'Indeterminate';
     name: string;
     resolvedSymbol?: Symbol;
 }
@@ -72,16 +73,27 @@ export interface IndexAccessNode extends TypedExpressionNode {
     base: ExpressionNode;
     indices: ExpressionNode[];
 }
+export interface MemberAccessNode extends TypedExpressionNode {
+    kind: 'MemberAccess';
+    base: ExpressionNode;
+    members: IndeterminateNode[];
+}
 export interface FunctionCallNode extends TypedExpressionNode {
     kind: 'FunctionCall';
-    callee: IdentifierNode;
+    callee: IndeterminateNode;
     isGlobal: boolean;
+    args: ExpressionNode[];
+    options: OptionPairNode[];
+}
+export interface FunctorCallNode extends TypedExpressionNode {
+    kind: 'FunctorCall';
+    callee: ExpressionNode;
     args: ExpressionNode[];
     options: OptionPairNode[];
 }
 export interface OptionPairNode extends ASTNode {
     kind: 'OptionPair';
-    key: IdentifierNode;
+    key: IndeterminateNode;
     value: ExpressionNode;
 }
 export interface ParenExpressionNode extends TypedExpressionNode {
@@ -102,12 +114,12 @@ export interface AssignmentExpressionNode extends BaseAssignmentNode {
 }
 export interface StructMemberAssignmentNode extends BaseAssignmentNode {
     kind: 'StructMemberAssignment';
-    base: IdentifierNode;
-    members: IdentifierNode[];
+    base: IndeterminateNode;
+    members: IndeterminateNode[];
 }
 export interface ListDestructuringAssignmentNode extends BaseAssignmentNode {
     kind: 'ListDestructuringAssignment';
-    targets: IdentifierNode[];
+    targets: IndeterminateNode[];
 }
 export interface ExpressionStatementNode extends ASTNode {
     kind: 'ExpressionStatement';
@@ -118,8 +130,8 @@ export interface EmptyStatementNode extends ASTNode {
 }
 export interface DefinitionStatementNode extends ASTNode {
     kind: 'FunctionDefinition';
-    name: IdentifierNode;
-    parameters: IdentifierNode[];
+    name: IndeterminateNode;
+    parameters: IndeterminateNode[];
     body: StatementNode;
 }
 export interface IfStatementNode extends ASTNode {
@@ -157,21 +169,21 @@ export interface ContinueStatementNode extends ASTNode {
 }
 export interface StructStatementNode extends ASTNode {
     kind: 'StructStatement';
-    name: IdentifierNode;
-    members: IdentifierNode[];
+    name: IndeterminateNode;
+    members: IndeterminateNode[];
 }
 export interface ModuleVariableDeclarationNode extends ASTNode {
     kind: 'ModuleVariableDeclaration';
-    scope: 'extern' | 'static' | 'global' | 'local';
-    variables: IdentifierNode[];
+    scope: 'extern' | 'static' | 'global' | 'local' | 'localf';
+    variables: IndeterminateNode[];
 }
 export interface LocalFunctionDeclarationNode extends ASTNode {
     kind: 'LocalFunctionDeclaration';
-    functions: IdentifierNode[];
+    functions: IndeterminateNode[];
 }
 export interface ModuleDeclarationNode extends ASTNode {
     kind: 'ModuleDeclaration';
-    name: IdentifierNode;
+    name: IndeterminateNode;
 }
 export interface EndModuleNode extends ASTNode {
     kind: 'EndModule';
@@ -182,8 +194,8 @@ export interface BlockNode extends ASTNode {
 }
 export interface PreprocessorDefineNode extends ASTNode {
     kind: 'PreprocessorDefine';
-    name: IdentifierNode;
-    parameters: IdentifierNode[];
+    name: IndeterminateNode;
+    parameters: IndeterminateNode[];
     body: ExpressionNode;
 }
 export interface PreprocessorIfNode extends ASTNode {
@@ -207,13 +219,4 @@ export interface PreprocessorIncludeNode extends ASTNode {
 export interface ExpressionListNode extends ASTNode {
     kind: 'ExpressionList';
     expressions: ExpressionNode[];
-}
-export type AsirType = 'number' | 'polynomial' | 'list' | 'string' | 'function' | 'struct' | 'module' | 'any' | 'unknown';
-export interface Symbol {
-    name: string;
-    type: AsirType;
-    definedAt: {
-        line: number;
-        column: number;
-    };
 }

@@ -27,7 +27,6 @@ import { ReturnContext } from "./testParser.js";
 import { ContinueContext } from "./testParser.js";
 import { BreakContext } from "./testParser.js";
 import { StructContext } from "./testParser.js";
-import { FcallContext } from "./testParser.js";
 import { ModuleAssignContext } from "./testParser.js";
 import { ModuleStartContext } from "./testParser.js";
 import { ModuleEndContext } from "./testParser.js";
@@ -55,10 +54,12 @@ import { FactrialExprContext } from "./testParser.js";
 import { PreFixContext } from "./testParser.js";
 import { PostFixContext } from "./testParser.js";
 import { IndexAccessContext } from "./testParser.js";
+import { MemberAccessContext } from "./testParser.js";
 import { IndExprContext } from "./testParser.js";
 import { RealContext } from "./testParser.js";
 import { IdExprContext } from "./testParser.js";
 import { FCallExprContext } from "./testParser.js";
+import { FunctorCallExprContext } from "./testParser.js";
 import { ParenContext } from "./testParser.js";
 import { StringLiteralContext } from "./testParser.js";
 import { ListLiteralContext } from "./testParser.js";
@@ -72,6 +73,7 @@ import { BitNumContext } from "./testParser.js";
 import { RatNumContext } from "./testParser.js";
 import { DecNumContext } from "./testParser.js";
 import { ImaNumContext } from "./testParser.js";
+import { GenNumContext } from "./testParser.js";
 import { BefContext } from "./testParser.js";
 import { BefNContext } from "./testParser.js";
 import { V2IdContext } from "./testParser.js";
@@ -289,13 +291,6 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      */
     visitStruct?: (ctx: StructContext) => Result;
     /**
-     * Visit a parse tree produced by the `Fcall`
-     * labeled alternative in `testParser.functionCall`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitFcall?: (ctx: FcallContext) => Result;
-    /**
      * Visit a parse tree produced by the `ModuleAssign`
      * labeled alternative in `testParser.functionModule`.
      * @param ctx the parse tree
@@ -485,6 +480,13 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      */
     visitIndexAccess?: (ctx: IndexAccessContext) => Result;
     /**
+     * Visit a parse tree produced by the `MemberAccess`
+     * labeled alternative in `testParser.memberAccessExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitMemberAccess?: (ctx: MemberAccessContext) => Result;
+    /**
      * Visit a parse tree produced by the `IndExpr`
      * labeled alternative in `testParser.primaryExpr`.
      * @param ctx the parse tree
@@ -512,6 +514,13 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      * @return the visitor result
      */
     visitFCallExpr?: (ctx: FCallExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `FunctorCallExpr`
+     * labeled alternative in `testParser.primaryExpr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitFunctorCallExpr?: (ctx: FunctorCallExprContext) => Result;
     /**
      * Visit a parse tree produced by the `Paren`
      * labeled alternative in `testParser.primaryExpr`.
@@ -603,6 +612,13 @@ export declare class testVisitor<Result> extends AbstractParseTreeVisitor<Result
      * @return the visitor result
      */
     visitImaNum?: (ctx: ImaNumContext) => Result;
+    /**
+     * Visit a parse tree produced by the `GenNum`
+     * labeled alternative in `testParser.num`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitGenNum?: (ctx: GenNumContext) => Result;
     /**
      * Visit a parse tree produced by the `Bef`
      * labeled alternative in `testParser.id`.

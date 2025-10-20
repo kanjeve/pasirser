@@ -1,3 +1,5 @@
+import { AsirType, Symbol } from './semantics/types';
+
 // 1. ASTノードの共通ベースインターフェース
 export interface ASTNode {
     kind: string;
@@ -18,26 +20,26 @@ export interface TypedExpressionNode extends ASTNode {
 }
 
 // 代入の左辺に来れるノード (L-Value)
-export type LValueNode = IdentifierNode | IndexAccessNode;
+export type LValueNode = IndeterminateNode | IndexAccessNode | MemberAccessNode;
 
 // 2. 式を表すノードのユニオン型
 export type ExpressionNode =
     | NumberLiteralNode
     | StringLiteralNode
-    | IdentifierNode
     | IndeterminateNode
     | BinaryOperationNode
     | UnaryOperationNode
     | TernaryOperationNode
     | PowerOperationNode
     | IndexAccessNode
+    | MemberAccessNode
     | FunctionCallNode
     | FunctorCallNode
     | ParenExpressionNode
     | ListLiteralNode
     | DistributedPolynomialLiteralNode
     | AssignmentExpressionNode
-    | StructMemberAssignmentNode
+    // | StructMemberAssignmentNode
     | ListDestructuringAssignmentNode;
 
 // 3. 文を表すノードのユニオン型
@@ -45,6 +47,7 @@ export type StatementNode =
     | ExpressionStatementNode
     | EmptyStatementNode
     | DefinitionStatementNode
+    | FormDeclarationNode
     | IfStatementNode
     | ForStatementNode
     | WhileStatementNode
@@ -94,13 +97,6 @@ export interface StringLiteralNode extends TypedExpressionNode {
     rawText?: string;
 }
 
-// 文字列('')
-export interface CharLiteralNode extends TypedExpressionNode {
-    kind: 'CharLiteral';
-    value: string;
-    rawText?: string;
-}
-
 // 分散表現多項式リテラル (e.g., <<1,2,3:4>>)
 export interface DistributedPolynomialLiteralNode extends TypedExpressionNode {
     kind: 'DistributedPolynomialLiteral';
@@ -110,15 +106,10 @@ export interface DistributedPolynomialLiteralNode extends TypedExpressionNode {
 
 // --- 識別子ノード ---
 
-export interface IdentifierNode extends TypedExpressionNode {
-    kind: 'Identifier';
+export interface IndeterminateNode extends TypedExpressionNode {
+    kind: 'Indeterminate';
     name: string;
     resolvedSymbol?: Symbol;
-}
-
-export interface IndeterminateNode extends TypedExpressionNode {
-    kind: 'Indterminate';
-    name: string;
 }
 
 // --- 演算子ノード ---
@@ -163,11 +154,19 @@ export interface IndexAccessNode extends TypedExpressionNode {
     indices: ExpressionNode[];
 }
 
+// メンバーアクセス
+export interface MemberAccessNode extends TypedExpressionNode {
+    kind: 'MemberAccess';
+    base: ExpressionNode;
+    members: IndeterminateNode[];
+}
+
 // 関数呼び出し
 export interface FunctionCallNode extends TypedExpressionNode {
     kind: 'FunctionCall';
-    callee: IdentifierNode;
+    callee: IndeterminateNode;
     isGlobal: boolean;
+    diffOrders?: number[];
     args: ExpressionNode[];
     options: OptionPairNode[];
 }
@@ -182,7 +181,7 @@ export interface FunctorCallNode extends TypedExpressionNode {
 // オプション
 export interface OptionPairNode extends ASTNode {
     kind: 'OptionPair';
-    key: IdentifierNode;
+    key: IndeterminateNode;
     value: ExpressionNode;
 }
 
@@ -212,17 +211,19 @@ export interface AssignmentExpressionNode extends BaseAssignmentNode {
     left: LValueNode;
 }
 
+/*
 // 構造体メンバーへの代入
 export interface StructMemberAssignmentNode extends BaseAssignmentNode {
     kind: 'StructMemberAssignment';
-    base: IdentifierNode;
-    members: IdentifierNode[];
+    base: IndeterminateNode;
+    members: IndeterminateNode[];
 }
+*/
 
 // リスト要素一括代入
 export interface ListDestructuringAssignmentNode extends BaseAssignmentNode {
     kind: 'ListDestructuringAssignment';
-    targets: IdentifierNode[];
+    targets: IndeterminateNode[];
 }
 
 // --- 文ノード ---
@@ -241,9 +242,16 @@ export interface EmptyStatementNode extends ASTNode {
 // def文
 export interface DefinitionStatementNode extends ASTNode {
     kind: 'FunctionDefinition';
-    name: IdentifierNode;
-    parameters: IdentifierNode[];
+    name: IndeterminateNode;
+    parameters: IndeterminateNode[];
     body: StatementNode;
+}
+
+// function文
+export interface FormDeclarationNode extends ASTNode {
+    kind: 'FormDeclaration';
+    name: IndeterminateNode;
+    parameters: IndeterminateNode[];
 }
 
 // If文
@@ -296,26 +304,26 @@ export interface ContinueStatementNode extends ASTNode {
 // 構造体定義
 export interface StructStatementNode extends ASTNode {
     kind: 'StructStatement';
-    name: IdentifierNode;
-    members: IdentifierNode[];
+    name: IndeterminateNode;
+    members: IndeterminateNode[];
 }
 
 // --- モジュール関連の文ノード ---
 
 export interface ModuleVariableDeclarationNode extends ASTNode {
     kind: 'ModuleVariableDeclaration';
-    scope: 'extern' | 'static' | 'global' | 'local';
-    variables: IdentifierNode[];
+    scope: 'extern' | 'static' | 'global' | 'local' | 'localf';
+    variables: IndeterminateNode[];
 }
 
 export interface LocalFunctionDeclarationNode extends ASTNode {
     kind: 'LocalFunctionDeclaration';
-    functions: IdentifierNode[];
+    functions: IndeterminateNode[];
 }
 
 export interface ModuleDeclarationNode extends ASTNode {
     kind: 'ModuleDeclaration';
-    name: IdentifierNode;
+    name: IndeterminateNode;
 }
 
 export interface EndModuleNode extends ASTNode {
@@ -332,8 +340,8 @@ export interface BlockNode extends ASTNode {
 
 export interface PreprocessorDefineNode extends ASTNode {
     kind: 'PreprocessorDefine';
-    name: IdentifierNode;
-    parameters: IdentifierNode[];
+    name: IndeterminateNode;
+    parameters: IndeterminateNode[];
     body: ExpressionNode;
 }
 
@@ -343,12 +351,17 @@ export interface PreprocessorIfNode extends ASTNode {
     condition: ExpressionNode;
     thenStatements: StatementNode[];
     elifClauses: PreprocessorElifNode[];
-    elseStatements?: StatementNode[];
+    elseStatements?: PreprocessorElseNode;
 }
 
 export interface PreprocessorElifNode extends ASTNode {
     kind: 'PreprocessorElif';
     condition: ExpressionNode;
+    statements: StatementNode[];
+}
+
+export interface PreprocessorElseNode extends ASTNode {
+    kind: 'PreprocessorElse';
     statements: StatementNode[];
 }
 
@@ -364,14 +377,4 @@ export interface PreprocessorIncludeNode extends ASTNode {
 export interface ExpressionListNode extends ASTNode {
     kind: 'ExpressionList';
     expressions: ExpressionNode[];
-}
-
-// --- 意味解析で使われる型 ---
-// (仮の定義、必要に応じて拡張)
-export type AsirType = 'number' | 'polynomial' | 'list' | 'string' | 'function' | 'struct' | 'module' | 'any' | 'unknown';
-
-export interface Symbol {
-    name: string;
-    type: AsirType;
-    definedAt: { line: number; column: number };
 }

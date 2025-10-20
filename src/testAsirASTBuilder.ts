@@ -3,13 +3,14 @@ import { Token, ParserRuleContext, TerminalNode, AbstractParseTreeVisitor } from
 import { testVisitor } from './.antlr/testVisitor.js';
 import * as ast from './testAst.js'
 import { ASTBuilderError, getLoc } from './errors.js';
-import { FactExprContext, testParser } from './.antlr/testParser.js';
+import { FactExprContext, ForwardDeclStatementContext, testParser } from './.antlr/testParser.js';
 
 // Import all context types
 import { ProgContext } from "./.antlr/testParser.js";
 import { ExprStatementContext } from "./.antlr/testParser.js";
 import { EmptyLineStatementContext } from "./.antlr/testParser.js";
 import { DefinitionStatementContext } from "./.antlr/testParser.js";
+import { FormDeclarationContext } from "./.antlr/testParser.js";
 import { IfStatementContext } from "./.antlr/testParser.js";
 import { ForStatementContext } from "./.antlr/testParser.js";
 import { WhileStatementContext } from "./.antlr/testParser.js";
@@ -26,6 +27,7 @@ import { PDefContext } from "./.antlr/testParser.js";
 import { PIfContext } from "./.antlr/testParser.js";
 import { PIncContext } from "./.antlr/testParser.js";
 import { DefContext } from "./.antlr/testParser.js";
+import { FormDeclContext } from "./.antlr/testParser.js";
 import { IfContext } from "./.antlr/testParser.js";
 import { ForContext } from "./.antlr/testParser.js";
 import { WhileContext } from "./.antlr/testParser.js";
@@ -59,10 +61,11 @@ import { UnaryMinusContext } from "./.antlr/testParser.js";
 import { NotExprContext } from "./.antlr/testParser.js";
 import { PowExprContext } from "./.antlr/testParser.js";
 import { PowExContext } from "./.antlr/testParser.js";
-import { FactrialExprContext } from "./.antlr/testParser.js";
+import { FactorialExprContext } from "./.antlr/testParser.js";
 import { PreFixContext } from "./.antlr/testParser.js";
 import { PostFixContext } from "./.antlr/testParser.js";
 import { IndexAccessContext } from "./.antlr/testParser.js";
+import { MemberAccessContext } from "./.antlr/testParser.js";
 import { IndExprContext } from "./.antlr/testParser.js";
 import { RealContext } from "./.antlr/testParser.js";
 import { IdExprContext } from "./.antlr/testParser.js";
@@ -93,6 +96,8 @@ import { Sentence1Context } from "./.antlr/testParser.js";
 import { ExprlistContext } from "./.antlr/testParser.js";
 import { TerminatorContext } from "./.antlr/testParser.js";
 import { SystemPathContext } from "./.antlr/testParser.js";
+import { ElifClauseContext } from "./.antlr/testParser.js";
+import { ElseClauseContext } from "./.antlr/testParser.js";
 import { OptionPairContext } from "./.antlr/testParser.js";
 
 
@@ -101,10 +106,10 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
     // --- Helper Methods ---
 
-    private createIdentifierNode(tokenOrNode: TerminalNode | Token): ast.IdentifierNode {
+    private createIndeterminateNode(tokenOrNode: TerminalNode | Token): ast.IndeterminateNode {
         const token = (tokenOrNode instanceof TerminalNode) ? tokenOrNode.symbol : tokenOrNode;
         return {
-            kind: 'Identifier',
+            kind: 'Indeterminate',
             name: token.text!,
             loc: getLoc(tokenOrNode)
         };
@@ -189,6 +194,10 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         return this.visitAndCheck<ast.DefinitionStatementNode>(ctx.functionDefinition()!);
     }
 
+    visitForwardDeclStatement(ctx: ForwardDeclStatementContext): ast.FormDeclarationNode {
+        return this.visitAndCheck<ast.FormDeclarationNode>(ctx.formDeclaration()!);
+    }
+
     visitIfStatement(ctx: IfStatementContext): ast.IfStatementNode {
         return this.visitAndCheck<ast.IfStatementNode>(ctx.functionIf()!);
     }
@@ -238,14 +247,14 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         return {
             kind: 'UnaryOperation',
             operator: '#',
-            operand: this.createIdentifierNode(ctx.ID()),
+            operand: this.createIndeterminateNode(ctx.ID()),
             loc: getLoc(ctx)
         };
     }
 
     visitPreChrPlus(ctx: PreChrPlusContext): ast.BinaryOperationNode {
-        const leftNode = this.createIdentifierNode(ctx.ID(0)!);
-        const rightNode = this.createIdentifierNode(ctx.ID(1)!);
+        const leftNode = this.createIndeterminateNode(ctx.ID(0)!);
+        const rightNode = this.createIndeterminateNode(ctx.ID(1)!);
         return {
             kind: 'BinaryOperation',
             operator: '##',
@@ -256,8 +265,8 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
 
     visitPDef(ctx: PDefContext): ast.PreprocessorDefineNode {
-        const nameNode = this.createIdentifierNode(ctx._name!);
-        const parmNodes = (ctx._params || []).map(p => this.createIdentifierNode(p) );
+        const nameNode = this.createIndeterminateNode(ctx._name!);
+        const parmNodes = (ctx._params || []).map(p => this.createIndeterminateNode(p) );
         const bodyNode = this.visitAndCheck<ast.ExpressionNode>(ctx._body);
 
         return {
@@ -291,45 +300,15 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
 
     visitPIf(ctx: PIfContext): ast.PreprocessorIfNode {
-        const directive = (ctx.PIF() || ctx.PIFDEF() || ctx.PIFNDEF())!.getText() as ast.PreprocessorIfNode['directive'];
-        const mainCondition = this.visitAndCheck<ast.ExpressionNode>(ctx.expr(0)!);
-        const thenStatements: ast.StatementNode[] = [];
-        const elifClauses: ast.PreprocessorElifNode[] = [];
-        let elseStatements: ast.StatementNode[] | undefined = undefined;
-        let currentStatements: ast.StatementNode[] = thenStatements;
-        let currentElif: ast.PreprocessorElifNode | null = null;
+        const directive = ctx._directive!.text as ast.PreprocessorIfNode['directive'];
+        const mainCondition = this.visitAndCheck<ast.ExpressionNode>(ctx._condition);
+        const thenStatements = ctx._thenSymts.map(s => this.visitAndCheck<ast.StatementNode>(s));
+        const elifClauses = ctx._elifs.map(c => this.visitElifClause(c));
 
-        if (ctx.children) {
-            for (const child of ctx.children) {
-                if (child instanceof TerminalNode) {
-                    if (child.symbol.type === testParser.PELIF) {
-                        if (currentElif) { elifClauses.push(currentElif); }
-                        currentElif = {
-                            kind: 'PreprocessorElif',
-                            condition: null as any,
-                            statements: [],
-                            loc: getLoc(child)
-                        };
-                    } else if (child.symbol.type === testParser.PELSE) {
-                        if (currentElif) {
-                            elifClauses.push(currentElif);
-                            currentElif = null;
-                        }
-                        elseStatements = [];
-                        currentStatements = elseStatements;
-                    }
-                } else if (child instanceof ParserRuleContext) {
-                    if (child.ruleIndex=== testParser.RULE_expr) {
-                        if (currentElif && !currentElif.condition) {
-                            currentElif.condition = this.visitAndCheck<ast.ExpressionNode>(child);
-                        }
-                    } else if (child.ruleIndex === testParser.RULE_statement) {
-                        currentStatements.push(this.visitAndCheck<ast.StatementNode>(child));
-                    }
-                }
-            }
+        let elseClause: ast.PreprocessorElseNode | undefined = undefined;
+        if (ctx._elseBlk) {
+            elseClause = this.visitElseClause(ctx._elseBlk);
         }
-        if (currentElif) { elifClauses.push(currentElif); }
 
         return {
             kind: 'PreprocessorIf',
@@ -337,7 +316,24 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
             condition: mainCondition,
             thenStatements: thenStatements,
             elifClauses: elifClauses,
-            elseStatements: elseStatements,
+            elseStatements: elseClause,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitElifClause(ctx: ElifClauseContext): ast.PreprocessorElifNode {
+        return {
+            kind: 'PreprocessorElif',
+            condition: this.visitAndCheck<ast.ExpressionNode>(ctx._condition),
+            statements: ctx._statements.map(s => this.visitAndCheck<ast.StatementNode>(s)),
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitElseClause(ctx: ElseClauseContext): ast.PreprocessorElseNode {
+        return {
+            kind: 'PreprocessorElse',
+            statements: ctx._statements.map(s => this.visitAndCheck<ast.StatementNode>(s)),
             loc: getLoc(ctx)
         };
     }
@@ -355,7 +351,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
 
     visitAssign(ctx: AssignContext): ast.AssignmentExpressionNode {
-        const targetNode = this.createIdentifierNode(ctx._left!);
+        const targetNode = this.createIndeterminateNode(ctx._left!);
         let leftNode: ast.LValueNode = targetNode;
 
         if (ctx._indices && ctx._indices.length > 0) {
@@ -380,18 +376,21 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
-    visitStructAssign(ctx: StructAssignContext): ast.StructMemberAssignmentNode {
-        const base = this.createIdentifierNode(ctx.ID()!);
-        const members = ctx.indeterminate().map(m => this.visitAndCheck<ast.IdentifierNode>(m));
+    visitStructAssign(ctx: StructAssignContext): ast.AssignmentExpressionNode {
+        const leftNode: ast.MemberAccessNode ={
+            kind: 'MemberAccess',
+            base: this.createIndeterminateNode(ctx.ID()!),
+            members: ctx.indeterminate().map(m => this.visitAndCheck<ast.IndeterminateNode>(m)),
+            loc: getLoc(ctx.ID()!)
+        };
         const operatorText = (ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN())!.getText();
-        const right = this.visitAndCheck<ast.ExpressionNode>(ctx.assignmentExpr()!);
+        const rightNode = this.visitAndCheck<ast.ExpressionNode>(ctx.assignmentExpr()!);
 
         return {
-            kind: 'StructMemberAssignment',
-            base: base,
-            members: members,
+            kind: 'AssignmentExpression',
+            left: leftNode,
             operator: operatorText,
-            right: right,
+            right: rightNode,
             loc: getLoc(ctx)
         };
     }
@@ -401,7 +400,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
         return {
             kind: 'ListDestructuringAssignment',
-            targets: ctx.ID().map(v => this.createIdentifierNode(v)),
+            targets: ctx.ID().map(v => this.createIndeterminateNode(v)),
             operator: operatorText,
             right: this.visitAndCheck<ast.ExpressionNode>(ctx.assignmentExpr()!),
             loc: getLoc(ctx)
@@ -428,8 +427,17 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         return condition;
     }
 
-    visitQuote(ctx: QuoteContext): ast.UnaryOperationNode {
-        return { kind: 'UnaryOperation', operator: '`', operand: this.visitAndCheck<ast.ExpressionNode>(ctx.qeNotExpr()!), loc: getLoc(ctx) };
+    visitQuote(ctx: QuoteContext): ast.ExpressionNode {
+        const operand = this.visitAndCheck<ast.ExpressionNode>(ctx.qeNotExpr()!);
+        if (ctx.BACK()) {
+            return {
+                kind: 'UnaryOperation',
+                operator: '`',
+                operand: operand,
+                loc: getLoc(ctx)
+            };
+        }
+        return operand;
     }
 
     visitQEnot(ctx: QEnotContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.qeOrExpr(i)); }
@@ -469,7 +477,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         return base;
     }
 
-    visitFactrialExpr(ctx: FactrialExprContext): ast.ExpressionNode {
+    visitFactorialExpr(ctx: FactorialExprContext): ast.ExpressionNode {
         const baseExpr = this.visit(ctx.postfixExpr()! || ctx.prefixExpr()! || ctx.indexAccessExpr()!);
 
         if (ctx.NOT()) {
@@ -507,7 +515,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
 
     visitIndexAccess(ctx: IndexAccessContext): ast.ExpressionNode {
-        const base = this.visitAndCheck<ast.ExpressionNode>(ctx.primaryExpr()!);
+        const base = this.visitAndCheck<ast.ExpressionNode>(ctx.memberAccessExpr()!);
         if (ctx.LBRACKET().length > 0) {
             return {
                 kind: 'IndexAccess',
@@ -519,11 +527,23 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         return base;
     }
 
+    visitMemberAccess(ctx: MemberAccessContext): ast.ExpressionNode {
+        const base = this.visitAndCheck<ast.ExpressionNode>(ctx.primaryExpr());
+        if (!ctx.ARROW() || ctx.ARROW().length === 0) { return base; }
+        const members = ctx.indeterminate().map(id => this.visitAndCheck<ast.IndeterminateNode>(id));
+        return {
+            kind: 'MemberAccess',
+            base: base,
+            members: members,
+            loc: getLoc(ctx)
+        };
+    }
+
     // --- Primary Expressions ---
 
     visitIndExpr(ctx: IndExprContext): ast.ExpressionNode{ return this.visitAndCheck<ast.IndeterminateNode>(ctx.indeterminate()); }
     visitReal(ctx: RealContext): ast.NumberLiteralNode { return this.visitAndCheck<ast.NumberLiteralNode>(ctx.num()!); }
-    visitIdExpr(ctx: IdExprContext): ast.ExpressionNode{ return this.visitAndCheck<ast.IdentifierNode>(ctx.id()); }
+    visitIdExpr(ctx: IdExprContext): ast.ExpressionNode{ return this.visitAndCheck<ast.IndeterminateNode>(ctx.id()); }
     visitParen(ctx: ParenContext): ast.ParenExpressionNode {
         return { kind: 'ParenExpression', expression: this.visitAndCheck<ast.ExpressionNode>(ctx.expr()!), loc: getLoc(ctx) };
     }
@@ -557,19 +577,19 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
     visitRat(ctx: RatContext): ast.NumberLiteralNode { return { kind: 'NumberLiteral', value: ctx.getText(), rawText: ctx.getText(), loc: getLoc(ctx) }; }
     visitFloat(ctx: FloatContext): ast.NumberLiteralNode { return { kind: 'NumberLiteral', value: parseFloat(ctx.getText()), rawText: ctx.getText(), loc: getLoc(ctx) }; }
-    visitV2Id(ctx: V2IdContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.VAR_2()!); }
-    visitBef(ctx: BefContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.BEFORE()!); }
-    visitBefN(ctx: BefNContext): ast.IdentifierNode { return this.createIdentifierNode(ctx.BEFORE_N()!); }
+    visitV2Id(ctx: V2IdContext): ast.IndeterminateNode { return this.createIndeterminateNode(ctx.VAR_2()!); }
+    visitBef(ctx: BefContext): ast.IndeterminateNode { return this.createIndeterminateNode(ctx.BEFORE()!); }
+    visitBefN(ctx: BefNContext): ast.IndeterminateNode { return this.createIndeterminateNode(ctx.BEFORE_N()!); }
     visitFunc(ctx: FuncContext): ast.IndeterminateNode {
         return {
-            kind: 'Indterminate',
+            kind: 'Indeterminate',
             name: ctx.ID().getText(),
             loc: getLoc(ctx)
         };
     }
     visitAtFunc(ctx: AtFuncContext): ast.IndeterminateNode {
         return {
-            kind: 'Indterminate',
+            kind: 'Indeterminate',
             name: ctx.ATFUNC().getText(),
             loc: getLoc(ctx)
         };
@@ -578,7 +598,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         const rawText = ctx.NOSTRING().getText();
         const name = rawText.substring(1, rawText.length - 1);
         return {
-            kind: 'Indterminate',
+            kind: 'Indeterminate',
             name: name,
             loc: getLoc(ctx)
         };
@@ -602,14 +622,25 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     // --- Control Flow and Definitions ---
 
     visitDef(ctx: DefContext): ast.DefinitionStatementNode {
-        const nameNode = this.visitAndCheck<ast.IdentifierNode>(ctx._name);
-        const paramNodes = (ctx._params || []).map(v => this.createIdentifierNode(v));
+        const nameNode = this.visitAndCheck<ast.IndeterminateNode>(ctx._name);
+        const paramNodes = (ctx._params || []).map(v => this.createIndeterminateNode(v));
         const bodyNode = this.visitAndCheck<ast.StatementNode>(ctx._body);
         return {
             kind: 'FunctionDefinition',
             name: nameNode,
             parameters: paramNodes,
             body: bodyNode,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitFormDecl(ctx: FormDeclContext): ast.FormDeclarationNode {
+        const nameNode =this.visitAndCheck<ast.IndeterminateNode>(ctx._name);
+        const paramNodes = (ctx._params || []).map(p => this.visitAndCheck<ast.IndeterminateNode>(p));
+        return {
+            kind: 'FormDeclaration',
+            name: nameNode,
+            parameters: paramNodes,
             loc: getLoc(ctx)
         };
     }
@@ -697,10 +728,10 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     visitBreak(ctx: BreakContext): ast.BreakStatementNode { return { kind: 'BreakStatement', loc: getLoc(ctx) }; }
     visitContinue(ctx: ContinueContext): ast.ContinueStatementNode { return { kind: 'ContinueStatement', loc: getLoc(ctx) }; }
 
-    visitStrct(ctx: StructContext): ast.StructStatementNode {
-        const nameNode = this.visitAndCheck<ast.IdentifierNode>(ctx._name);
+    visitStruct(ctx: StructContext): ast.StructStatementNode {
+        const nameNode = this.visitAndCheck<ast.IndeterminateNode>(ctx._name);
         const memberNodes = ctx._members.map(memberCtx =>
-            this.visitAndCheck<ast.IdentifierNode>(memberCtx)
+            this.visitAndCheck<ast.IndeterminateNode>(memberCtx)
         );
         return {
             kind: 'StructStatement',
@@ -711,9 +742,13 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
 
     visitFCallExpr(ctx: FCallExprContext): ast.FunctionCallNode {
-        const callee = this.visitAndCheck<ast.IdentifierNode>(ctx._name);
+        const callee = this.visitAndCheck<ast.IndeterminateNode>(ctx._name);
         const isGlobal = !!ctx._is_global;
 
+        let diffOrders: number[] | undefined = undefined;
+        if (ctx._diffOrders && ctx._diffOrders.length > 0) {
+            diffOrders = ctx._diffOrders.map(token => parseInt(token.text!, 10));
+        }
         let args: ast.ExpressionNode[] = [];
         if (ctx._args) {
             const argsNode = this.visitAndCheck<ast.ExpressionListNode>(ctx._args);
@@ -728,6 +763,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
             kind: 'FunctionCall',
             callee: callee,
             isGlobal: isGlobal,
+            diffOrders: diffOrders,
             args: args,
             options: options,
             loc: getLoc(ctx)
@@ -757,17 +793,17 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     // --- Module-related ---
 
     visitModuleAssign(ctx: ModuleAssignContext): ast.ModuleVariableDeclarationNode {
-        const scope = (ctx.EXTERN() || ctx.STATIC() || ctx.GLOBAL() || ctx.LOCAL())!.getText() as ast.ModuleVariableDeclarationNode['scope'];
+        const scope = (ctx.EXTERN() || ctx.STATIC() || ctx.GLOBAL() || ctx.LOCAL() || ctx.LOCALF())!.getText() as ast.ModuleVariableDeclarationNode['scope'];
         return {
             kind: 'ModuleVariableDeclaration',
             scope: scope,
-            variables: ctx.indeterminate().map(v => this.visitAndCheck<ast.IdentifierNode>(v)),
+            variables: ctx.indeterminate().map(v => this.visitAndCheck<ast.IndeterminateNode>(v)),
             loc: getLoc(ctx)
         };
     }
 
     visitModuleStart(ctx: ModuleStartContext): ast.ModuleDeclarationNode {
-        return { kind: 'ModuleDeclaration', name: this.visitAndCheck<ast.IdentifierNode>(ctx.indeterminate()!), loc: getLoc(ctx) };
+        return { kind: 'ModuleDeclaration', name: this.visitAndCheck<ast.IndeterminateNode>(ctx.indeterminate()!), loc: getLoc(ctx) };
     }
 
     visitModuleEnd(ctx: ModuleEndContext): ast.EndModuleNode {
@@ -795,7 +831,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
 
     visitOptionPair(ctx: OptionPairContext): ast.OptionPairNode {
-        const keyNode = this.visitAndCheck<ast.IdentifierNode>(ctx._key);
+        const keyNode = this.visitAndCheck<ast.IndeterminateNode>(ctx._key);
         const valueNode = this.visitAndCheck<ast.ExpressionNode>(ctx._value);
 
         return {

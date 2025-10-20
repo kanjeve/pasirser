@@ -6,6 +6,7 @@ prog : statement* EOF;
 statement : expr terminator       #ExprStatement
           | terminator            #EmptyLineStatement
           | functionDefinition    #DefinitionStatement
+          | formDeclaration       #ForwardDeclStatement
           | functionIf            #IfStatement
           | functionFor           #ForStatement
           | functionWhile         #WhileStatement
@@ -23,12 +24,13 @@ prechar : CHAR ID #PreChr
         | ID CHARPLUS ID #PreChrPlus
         ;
 preprocessor : PDEFINE name=ID (LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN)? body=expr #PDef
-             | (PIF | PIFDEF | PIFNDEF) expr statement* (PELIF expr statement*)* (PELSE statement*)? PENDIF #PIf
+             | directive=(PIF | PIFDEF | PIFNDEF) condition=expr thenSymts+=statement* elifs+=elifClause* elseBlk=elseClause? PENDIF #PIf
              | PINCLUDE (path_sys=systemPath | path_loc=STRING) #PInc
              ;
 
 // キーワード
 functionDefinition : DEF name=indeterminate LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN body=block #Def;
+formDeclaration :FUNCTION name=indeterminate LPAREN (params+=indeterminate (COMMA params+=indeterminate)*)? RPAREN terminator #FormDecl;
 functionIf : IF LPAREN condition=expr RPAREN thenBlock=block (ELSE elseBlock=block)? #If;
 functionFor : FOR LPAREN init=exprlist? SEMI cond=exprlist? SEMI update=exprlist? RPAREN block #For;
 functionWhile : WHILE LPAREN exprlist? RPAREN block #While;
@@ -81,18 +83,20 @@ unaryExpr : MINUS unaryExpr         #UnaryMinus
 
 powerExpr : base=factExpr (POWER exponent=unaryExpr)? #PowEx;
 
-factExpr : (postfixExpr | prefixExpr | indexAccessExpr) (NOT)? #FactrialExpr;
+factExpr : (postfixExpr | prefixExpr | indexAccessExpr) (NOT)? #FactorialExpr;
 
 prefixExpr : (INC | DEC) indexAccessExpr #PreFix;
 
 postfixExpr : indexAccessExpr (INC | DEC) #PostFix; 
 
-indexAccessExpr : primaryExpr (LBRACKET expr RBRACKET)* #IndexAccess;
+indexAccessExpr : memberAccessExpr (LBRACKET expr RBRACKET)* #IndexAccess;
+
+memberAccessExpr : primaryExpr (ARROW indeterminate)* #MemberAccess;
 
 primaryExpr : indeterminate         #IndExpr
             | num                   #Real
             | id                    #IdExpr
-            | is_global=COLON2? name=indeterminate LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN         #FCallExpr
+            | is_global=COLON2? name=indeterminate (LBRANCE diffOrders+=INT (COMMA diffOrders+=INT)* RBRANCE)? LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN         #FCallExpr
             | LPAREN MULT callee=expr RPAREN LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN #FunctorCallExpr
             | LPAREN expr RPAREN    #Paren
             | STRING                #StringLiteral
@@ -107,7 +111,7 @@ dpoly : LTLT INT (COMMA INT)* (COLON INT)? GTGT #Dp;
 
 rational : (MINUS)? INT DIV (MINUS)? INT #Rat;
 
-decimal  : (MINUS)? (FLOAT | INT) (EXP)? #Float;
+decimal  : (FLOAT | INT) #Float;
 
 
 num  : HEX        #HexNum
@@ -123,7 +127,7 @@ id   : BEFORE  #Bef
      | VAR_2   #V2Id
      ;
 
-indeterminate : ID                  #Func
+indeterminate : ID              #Func
               | ATFUNC              #AtFunc
               | NOSTRING            #ChFunc
               ;
@@ -141,6 +145,10 @@ exprlist : expr (COMMA expr)* ;
 terminator : SEMI | DOLLAR;
 
 systemPath : LT ID GT;
+
+elifClause : PELIF condition=expr statements+=statement*;
+
+elseClause : PELSE statements+=statement*;
 
 optionPair : key=indeterminate ASSIGN value=expr;
 
@@ -186,12 +194,8 @@ COLON    : ':';
 SEMI     : ';';
 DOLLAR   : '$';
 COMMA    : ',';
-HEX      : '0x'[0-9]*;
-BIT      : '0b'[0-9]*;
-FLOAT    : [0-9]+ '.' [0-9]+;
-EXP      : [Ee][+\-]?[0-9]*;
-INT      : [0-9]+;
-POINT    : '.';
+HEX      : '0'[Xx][0-9]*;
+BIT      : '0'[Bb][0-9]*;
 IMAGINARY: '@i';
 AEGEN    : '@s';
 BEFORE   : '@@';
@@ -225,9 +229,16 @@ STATIC   : 'static';
 GLOBAL   : 'global';
 LOCAL    : 'local';
 LOCALF   : 'localf';
+FUNCTION : 'function';
 ATFUNC   : '@'([a-zA-Z])+;
 VAR_2    : '@';
-ID       : [_]?[a-zA-Z_]([a-zA-Z0-9_.])*; 
+ID       : [_]?[a-zA-Z_]([a-zA-Z0-9_.])*;
+FLOAT    : [0-9]+ '.' [0-9]* EXPONENT?
+         | '.' [0-9]* EXPONENT?
+         | [0-9]+ EXPONENT
+         ;
+INT      : [0-9]+;
+POINT    : '.';
 NEWLINE  : '\n' -> skip;
 WS       : [ \t]+ -> skip;
 COMMENT  : '/*' .*? '*/' -> skip;
@@ -245,6 +256,8 @@ CHARPLUS : '##';
 CHAR     : '#';
 STRING   : '"' .*? '"';
 NOSTRING : '\'' .*?  '\'';
+
+fragment EXPONENT : [Ee] [+\-]?[0-9]*;
 
 /*
 fragment EscapeSequence : '\\'

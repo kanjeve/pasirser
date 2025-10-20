@@ -37,6 +37,7 @@ function parseAndBuildAST(code: string): { ast: ast.ProgramNode | null; syntaxEr
             const errorInfo: SyntaxErrorInfo = {
                 line: e.loc?.startLine ?? 0,
                 column: e.loc?.startColumn ?? 0,
+                endLine: e.loc?.endLine ?? e.loc?.startLine ?? 0,
                 message: e.message,
                 offendingSymbol: null,
                 ruleStack: [],
@@ -44,7 +45,7 @@ function parseAndBuildAST(code: string): { ast: ast.ProgramNode | null; syntaxEr
             return { ast: null, syntaxErrors: [errorInfo] };
         } else {
             console.error(`[FATAL] AST構築中に予期せぬエラーが発生しました: ${e}`);
-            const errorInfo: SyntaxErrorInfo = { line: 1, column: 0, message: `致命的なエラー: ${e}`, offendingSymbol: null, ruleStack: [] };
+            const errorInfo: SyntaxErrorInfo = { line: 1, column: 0, endLine: 1, message: `致命的なエラー: ${e}`, offendingSymbol: null, ruleStack: [] };
             return { ast: null, syntaxErrors: [errorInfo] };
         }
     }

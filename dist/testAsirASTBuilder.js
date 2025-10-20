@@ -7,10 +7,10 @@ const testParser_js_1 = require("./.antlr/testParser.js");
 // Custom Visitor Class
 class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     // --- Helper Methods ---
-    createIdentifierNode(tokenOrNode) {
+    createIndeterminateNode(tokenOrNode) {
         const token = (tokenOrNode instanceof antlr4ng_1.TerminalNode) ? tokenOrNode.symbol : tokenOrNode;
         return {
-            kind: 'Identifier',
+            kind: 'Indeterminate',
             name: token.text,
             loc: (0, errors_js_1.getLoc)(tokenOrNode)
         };
@@ -122,13 +122,13 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         return {
             kind: 'UnaryOperation',
             operator: '#',
-            operand: this.createIdentifierNode(ctx.ID()),
+            operand: this.createIndeterminateNode(ctx.ID()),
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
     visitPreChrPlus(ctx) {
-        const leftNode = this.createIdentifierNode(ctx.ID(0));
-        const rightNode = this.createIdentifierNode(ctx.ID(1));
+        const leftNode = this.createIndeterminateNode(ctx.ID(0));
+        const rightNode = this.createIndeterminateNode(ctx.ID(1));
         return {
             kind: 'BinaryOperation',
             operator: '##',
@@ -138,8 +138,8 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         };
     }
     visitPDef(ctx) {
-        const nameNode = this.createIdentifierNode(ctx._name);
-        const parmNodes = (ctx._params || []).map(p => this.createIdentifierNode(p));
+        const nameNode = this.createIndeterminateNode(ctx._name);
+        const parmNodes = (ctx._params || []).map(p => this.createIndeterminateNode(p));
         const bodyNode = this.visitAndCheck(ctx._body);
         return {
             kind: 'PreprocessorDefine',
@@ -234,7 +234,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         return this.visitAndCheck(ctx.ternaryExpr());
     }
     visitAssign(ctx) {
-        const targetNode = this.createIdentifierNode(ctx._left);
+        const targetNode = this.createIndeterminateNode(ctx._left);
         let leftNode = targetNode;
         if (ctx._indices && ctx._indices.length > 0) {
             const indices = ctx._indices.map(e => this.visitAndCheck(e));
@@ -259,7 +259,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         };
     }
     visitStructAssign(ctx) {
-        const base = this.createIdentifierNode(ctx.ID());
+        const base = this.createIndeterminateNode(ctx.ID());
         const members = ctx.indeterminate().map(m => this.visitAndCheck(m));
         const operatorText = (ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN()).getText();
         const right = this.visitAndCheck(ctx.assignmentExpr());
@@ -276,7 +276,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         const operatorText = (ctx.PLUSEQ() || ctx.MINUSEQ() || ctx.MULTEQ() || ctx.DIVEQ() || ctx.SUREQ() || ctx.POWEREQ() || ctx.ASSIGN()).getText();
         return {
             kind: 'ListDestructuringAssignment',
-            targets: ctx.ID().map(v => this.createIdentifierNode(v)),
+            targets: ctx.ID().map(v => this.createIndeterminateNode(v)),
             operator: operatorText,
             right: this.visitAndCheck(ctx.assignmentExpr()),
             loc: (0, errors_js_1.getLoc)(ctx)
@@ -299,7 +299,16 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         return condition;
     }
     visitQuote(ctx) {
-        return { kind: 'UnaryOperation', operator: '`', operand: this.visitAndCheck(ctx.qeNotExpr()), loc: (0, errors_js_1.getLoc)(ctx) };
+        const operand = this.visitAndCheck(ctx.qeNotExpr());
+        if (ctx.BACK()) {
+            return {
+                kind: 'UnaryOperation',
+                operator: '`',
+                operand: operand,
+                loc: (0, errors_js_1.getLoc)(ctx)
+            };
+        }
+        return operand;
     }
     visitQEnot(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.qeOrExpr(i)); }
     visitQEor(ctx) { return this.visitBinaryOp(ctx, (i) => ctx.qeAndExpr(i)); }
@@ -363,7 +372,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         };
     }
     visitIndexAccess(ctx) {
-        const base = this.visitAndCheck(ctx.primaryExpr());
+        const base = this.visitAndCheck(ctx.memberAccessExpr());
         if (ctx.LBRACKET().length > 0) {
             return {
                 kind: 'IndexAccess',
@@ -374,11 +383,23 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         }
         return base;
     }
+    visitMemberAccess(ctx) {
+        const base = this.visitAndCheck(ctx.primaryExpr());
+        if (!ctx.ARROW() || ctx.ARROW().length === 0) {
+            return base;
+        }
+        const members = ctx.indeterminate().map(id => this.visitAndCheck(id));
+        return {
+            kind: 'MemberAccess',
+            base: base,
+            members: members,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
     // --- Primary Expressions ---
     visitIndExpr(ctx) { return this.visitAndCheck(ctx.indeterminate()); }
     visitReal(ctx) { return this.visitAndCheck(ctx.num()); }
     visitIdExpr(ctx) { return this.visitAndCheck(ctx.id()); }
-    visitFCallExpr(ctx) { return this.visitAndCheck(ctx.functionCall()); }
     visitParen(ctx) {
         return { kind: 'ParenExpression', expression: this.visitAndCheck(ctx.expr()), loc: (0, errors_js_1.getLoc)(ctx) };
     }
@@ -404,14 +425,38 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
         const rawText = ctx.IMAGINARY().getText();
         return { kind: 'NumberLiteral', value: ctx.getText(), rawText: rawText, loc: (0, errors_js_1.getLoc)(ctx) };
     }
+    visitGenNum(ctx) {
+        const rawText = ctx.AEGEN().getText();
+        return { kind: 'NumberLiteral', value: ctx.getText(), rawText: rawText, loc: (0, errors_js_1.getLoc)(ctx) };
+    }
     visitRat(ctx) { return { kind: 'NumberLiteral', value: ctx.getText(), rawText: ctx.getText(), loc: (0, errors_js_1.getLoc)(ctx) }; }
     visitFloat(ctx) { return { kind: 'NumberLiteral', value: parseFloat(ctx.getText()), rawText: ctx.getText(), loc: (0, errors_js_1.getLoc)(ctx) }; }
-    visitV2Id(ctx) { return this.createIdentifierNode(ctx.VAR_2()); }
-    visitBef(ctx) { return this.createIdentifierNode(ctx.BEFORE()); }
-    visitBefN(ctx) { return this.createIdentifierNode(ctx.BEFORE_N()); }
-    visitFunc(ctx) { return this.createIdentifierNode(ctx.ID()); }
-    visitAtFunc(ctx) { return this.createIdentifierNode(ctx.ATFUNC()); }
-    visitChFunc(ctx) { return this.createIdentifierNode(ctx.NOSTRING()); }
+    visitV2Id(ctx) { return this.createIndeterminateNode(ctx.VAR_2()); }
+    visitBef(ctx) { return this.createIndeterminateNode(ctx.BEFORE()); }
+    visitBefN(ctx) { return this.createIndeterminateNode(ctx.BEFORE_N()); }
+    visitFunc(ctx) {
+        return {
+            kind: 'Indeterminate',
+            name: ctx.ID().getText(),
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
+    visitAtFunc(ctx) {
+        return {
+            kind: 'Indeterminate',
+            name: ctx.ATFUNC().getText(),
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
+    visitChFunc(ctx) {
+        const rawText = ctx.NOSTRING().getText();
+        const name = rawText.substring(1, rawText.length - 1);
+        return {
+            kind: 'Indeterminate',
+            name: name,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
     visitListExpr(ctx) {
         let elements = [];
         if (ctx.exprlist()) {
@@ -429,7 +474,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     // --- Control Flow and Definitions ---
     visitDef(ctx) {
         const nameNode = this.visitAndCheck(ctx._name);
-        const paramNodes = (ctx._params || []).map(v => this.createIdentifierNode(v));
+        const paramNodes = (ctx._params || []).map(v => this.createIndeterminateNode(v));
         const bodyNode = this.visitAndCheck(ctx._body);
         return {
             kind: 'FunctionDefinition',
@@ -512,7 +557,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
     }
     visitBreak(ctx) { return { kind: 'BreakStatement', loc: (0, errors_js_1.getLoc)(ctx) }; }
     visitContinue(ctx) { return { kind: 'ContinueStatement', loc: (0, errors_js_1.getLoc)(ctx) }; }
-    visitStrct(ctx) {
+    visitStruct(ctx) {
         const nameNode = this.visitAndCheck(ctx._name);
         const memberNodes = ctx._members.map(memberCtx => this.visitAndCheck(memberCtx));
         return {
@@ -522,7 +567,7 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
-    visitFcall(ctx) {
+    visitFCallExpr(ctx) {
         const callee = this.visitAndCheck(ctx._name);
         const isGlobal = !!ctx._is_global;
         let args = [];
@@ -543,9 +588,28 @@ class AsirASTBuilder extends antlr4ng_1.AbstractParseTreeVisitor {
             loc: (0, errors_js_1.getLoc)(ctx)
         };
     }
+    visitFunctorCallExpr(ctx) {
+        const callee = this.visitAndCheck(ctx._callee);
+        let args = [];
+        if (ctx._args) {
+            const argsNode = this.visitAndCheck(ctx._args);
+            args = argsNode.expressions;
+        }
+        let options = [];
+        if (ctx._options && ctx._options.length > 0) {
+            options = ctx._options.map(o => this.visitAndCheck(o));
+        }
+        return {
+            kind: 'FunctorCall',
+            callee: callee,
+            args: args,
+            options: options,
+            loc: (0, errors_js_1.getLoc)(ctx)
+        };
+    }
     // --- Module-related ---
     visitModuleAssign(ctx) {
-        const scope = (ctx.EXTERN() || ctx.STATIC() || ctx.GLOBAL() || ctx.LOCAL()).getText();
+        const scope = (ctx.EXTERN() || ctx.STATIC() || ctx.GLOBAL() || ctx.LOCAL() || ctx.LOCALF()).getText();
         return {
             kind: 'ModuleVariableDeclaration',
             scope: scope,

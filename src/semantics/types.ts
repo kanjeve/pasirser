@@ -7,7 +7,7 @@ export type PrimitiveAsirTypeName =
     | 'quote' | 'option' | 'symbol' | 'range' | 'textbuffer' | 'dpolyvector' | 'quotearg' | 'imatrix' | 'ncpoly' | 'dmodpoly' | 'void'
     | 'rational' | 'float' | 'alg' | 'bigfloat' | 'complex' | 'fsmall' | 'flarge' | 'fchar2' | 'fcharp'
     | 'fcharpsmall' | 'fchardefp' | 'dalg' | 'indeterminate' | 'uc' | 'form' | 'functor'
-    | 'any' | 'undefined' | 'parameter' | 'integer' | 'pp';
+    | 'any' | 'undefined' | 'parameter' | 'integer' | 'pp' | 'struct';
 
 export interface TypeMetadata {
     parent?: PrimitiveAsirTypeName;
@@ -61,25 +61,31 @@ export const TYPE_METADATA = new Map<PrimitiveAsirTypeName, TypeMetadata>([
     ['any', { category: 'other' }],
     ['undefined', { category: 'other' }],
     ['parameter', { category: 'other' }],
+    ['struct', { category: 'other' }]
 ]);
 
 export type PrimitiveAsirType = { kind: 'primitive', name: PrimitiveAsirTypeName };
 export type ListAsirType = { kind: 'list', elementType: AsirType };
 export type TupleType = { kind: 'tuple', elements: TupleElement[] };
 export type TupleElement = { name?: string, type: AsirType };
-export type VectorAsirType = { kind: 'vector', elementType: AsirType };
-export type MatrixAsirType = { kind: 'matrix', elementType: AsirType };
-export type FunctionAsirType = { kind: 'function', parameters: { name: string, type: AsirType }[], returnType: AsirType, allowesOptions?: Map<string, AsirType> };
-export type StructAsirType = { kind: 'struct', name: string, members: Map<string, Symbol> };
+export type VectorAsirType = { kind: 'vector', elementType: AsirType, length?: number };
+export type MatrixAsirType = { kind: 'matrix', elementType: AsirType, rows?: number, cols?: number };
+export type FunctionBehavior = 
+    | 'callable_only'
+    | 'callable_and_symbol';
+
+export type FunctionAsirType = { kind: 'function', parameters: { name: string, type: AsirType }[], restParameter?: { name: string, type: AsirType }, returnType: AsirType, allowesOptions?: Map<string, AsirType>, behavior: FunctionBehavior };
+export type StructAsirType = { kind: 'struct', name: string, members: Map<string, AsirType> };
 export type ModuleAsirType = { kind: 'module', name: string, members: Map<string, Symbol> };
 export type StandardPolynomialType = { kind: 'standard_polynomial', coefficientType: AsirType };
 export type DistributedPolynomialType = { kind: 'distributed_polynomial', coefficientType: AsirType };
+export type DistributedModPolynomialType = { kind: 'dmod_polynomial', coefficientType: AsirType };
 export type NonCommuutativePolynomialType = { kind: 'non_commutative_polynomial', coefficientType: AsirType };
 export type RationalFunctionType  = { kind: 'rational_function', coefficientType: AsirType };
-export type PolynomialAsirType = | StandardPolynomialType | DistributedPolynomialType | NonCommuutativePolynomialType | RationalFunctionType;
+export type PolynomialAsirType = | StandardPolynomialType | DistributedPolynomialType | NonCommuutativePolynomialType | RationalFunctionType | DistributedModPolynomialType;
 export type LiteralValue = number | string;
 export type LiteralUnionType = { kind: 'literal_union', values: LiteralValue[] };
-export type OverloadedFunctionType = { kind: 'overloaded_function', signatures: FunctionAsirType[] };
+export type OverloadedFunctionType = { kind: 'overloaded_function', signatures: FunctionAsirType[], behavior: FunctionBehavior };
 export type UnionType = { kind: 'union', types: AsirType[] };
 
 export type AsirType =
