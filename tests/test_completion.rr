@@ -1,0 +1,8 @@
+def myFunc(arg1, arg2) {
+  return arg1 + arg2;
+}
+
+MyVar = 10;
+
+// カーソル位置を想定
+myF;

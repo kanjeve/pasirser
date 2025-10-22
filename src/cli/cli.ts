@@ -1,15 +1,18 @@
 import { CharStream, CommonTokenStream } from 'antlr4ng';
-import { asirLexer } from './.antlr/asirLexer.js';
-import { asirParser } from './.antlr/asirParser.js';
-import { AsirASTBuilder } from './asirASTBuilder.js';
-import { CustomErrorListener, SyntaxErrorInfo, AmbiguityInfo, DiagnosticInfo } from './customErrorListener.js';
+import { asirLexer } from '../.antlr/asirLexer.js';
+import { asirParser } from '../.antlr/asirParser.js';
+import { AsirASTBuilder } from '../core/ast/asirASTBuilder.js';
+import { CustomErrorListener, SyntaxErrorInfo, AmbiguityInfo, DiagnosticInfo } from '../core/parser/customErrorListener.js';
 import * as fs from 'fs';
-import { ASTBuilderError } from './errors.js';
-import * as ast from './asirAst.js';
-import { Validator } from './semantics/validator.js';
-import { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
-import { SymbolTable } from './semantics/symbolTable.js';
-import { Command } from 'commander';
+import { ASTBuilderError } from '../utils/errors.js';
+import * as ast from '../core/ast/asirAst.js';
+import { Validator } from '../semantics/validator.js';
+import { Diagnostic, DiagnosticSeverity } from '../utils/diagnostics.js';
+import { SymbolTable } from '../semantics/symbolTable.js';
+import { Command } from 'commander'; // commanderをインポート
+import { AsirFormatter } from '../features/formatter.js'; // AsirFormatterをインポート
+import { getCompletions } from '../features/completionProvider.js'; // getCompletionsをインポート
+import { getHoverInfo } from '../features/hover/hoverProvider.js'; 
 
 function parseAndBuildAST(code: string): { ast: ast.ProgramNode | null; syntaxErrors: SyntaxErrorInfo[]; ambiguities: AmbiguityInfo[]; otherDiagnostics: DiagnosticInfo[]; } {
     const chars = CharStream.fromString(code);
@@ -111,20 +114,16 @@ export function analyze(code: string): { ast: ast.ProgramNode | null, diagnostic
 if (require.main === module) {
     const program = new Command();
 
-    program
-        .name('pasirser')
-        .description('A static analyzer for Asir language.')
-        .version('1.0.0') // package.jsonから取得するのが望ましい
-        .argument('<file>', 'File to analyze')
+    program.command('analyze <file>')
+        .description('Analyze an Asir file for diagnostics.')
         .option('-f, --format <type>', 'Output format (text or json)', 'text')
-        .option('--min-severity <level>', '表示する診断の最小重要度 (error, warning, info, hint)', 'hint') // ← ここを追加
+        .option('--min-severity <level>', '表示する診断の最小重要度 (error, warning, info, hint)', 'hint')
         .action((filePath, options) => {
             console.log(`Analyzing: ${filePath}`);
             try {
                 const code = fs.readFileSync(filePath, 'utf-8');
                 const { diagnostics } = analyze(code);
 
-                // 最小重要度に基づいて診断をフィルタリング
                 const severityLevels = {
                     'error': DiagnosticSeverity.Error,
                     'warning': DiagnosticSeverity.Warning,
@@ -150,6 +149,90 @@ if (require.main === module) {
                 }
             } catch (e) {
                 console.error(`Error reading file: ${e}`);
+                process.exit(1);
+            }
+        });
+
+    program.command('format <file>')
+        .description('Format an Asir file.')
+        .action((filePath) => {
+            console.log(`Formatting: ${filePath}`);
+            try {
+                const code = fs.readFileSync(filePath, 'utf-8');
+                const { ast, syntaxErrors } = parseAndBuildAST(code);
+
+                if (syntaxErrors.length > 0 || !ast) {
+                    console.error('Formatting failed due to syntax errors:');
+                    syntaxErrors.forEach(e => {
+                        console.error(`L${e.line}:C${e.column} - ${e.message}`);
+                    });
+                    process.exit(1);
+                }
+
+                const formatter = new AsirFormatter();
+                const formattedCode = formatter.format(ast);
+                console.log(formattedCode);
+
+            } catch (e) {
+                console.error(`Error formatting file: ${e}`);
+                process.exit(1);
+            }
+        });
+
+    program.command('complete <file> <line> <character>')
+        .description('Provide code completion suggestions for an Asir file.')
+        .action((filePath, lineStr, charStr) => {
+            console.log(`Getting completions for: ${filePath} at L${lineStr}:C${charStr}`);
+            try {
+                const code = fs.readFileSync(filePath, 'utf-8');
+                const line = parseInt(lineStr, 10);
+                const character = parseInt(charStr, 10);
+
+                const { ast, syntaxErrors } = parseAndBuildAST(code);
+
+                if (syntaxErrors.length > 0 || !ast) {
+                    console.error('Completion failed due to syntax errors:');
+                    syntaxErrors.forEach(e => {
+                        console.error(`L${e.line}:C${e.column} - ${e.message}`);
+                    });
+                    process.exit(1);
+                }
+
+                const symbolTable = new SymbolTable(ast);
+                const completions = getCompletions(code, { line, character }, ast, symbolTable);
+                console.log(JSON.stringify(completions, null, 2));
+
+            } catch (e) {
+                console.error(`Error getting completions: ${e}`);
+                process.exit(1);
+            }
+        });
+
+    program.command('hover <file> <line> <character>')
+        .description('Provide hover information for a symbol in an Asir file.')
+        .action((filePath, lineStr, charStr) => {
+            console.log(`Getting hover info for: ${filePath} at L${lineStr}:C${charStr}`);
+            try {
+                const code = fs.readFileSync(filePath, 'utf-8');
+                const line = parseInt(lineStr, 10);
+                const character = parseInt(charStr, 10);
+
+                const { ast, syntaxErrors } = parseAndBuildAST(code);
+
+                if (syntaxErrors.length > 0 || !ast) {
+                    console.error('Hover failed due to syntax errors:');
+                    syntaxErrors.forEach(e => {
+                        console.error(`L${e.line}:C${e.column} - ${e.message}`);
+                    });
+                    process.exit(1);
+                }
+
+                const symbolTable = new SymbolTable(ast);
+                const hoverInfo = getHoverInfo(code, { line, character }, ast, symbolTable);
+                console.log(JSON.stringify(hoverInfo, null, 2));
+
+            } catch (e) {
+                console.error(`Error getting hover info: ${e}`);
                 process.exit(1);
             }
         });

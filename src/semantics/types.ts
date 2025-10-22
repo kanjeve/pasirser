@@ -1,4 +1,4 @@
-import { ASTNode } from '../asirAst.js';
+import { ASTNode } from '../core/ast/asirAst.js';
 
 // --- Rich Type System ---
 

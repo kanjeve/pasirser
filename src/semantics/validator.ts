@@ -1,7 +1,7 @@
-import * as ast from '../asirAst.js';
+import * as ast from '../core/ast/asirAst.js';
 import { SymbolTable } from './symbolTable.js';
 import { AsirType, FunctionAsirType, PrimitiveAsirType, PrimitiveAsirTypeName, Symbol, Scope, TYPE_METADATA, StructAsirType, ModuleAsirType, ListAsirType, PolynomialAsirType, TupleElement, p_type } from './types.js';
-import { Diagnostic, DiagnosticSeverity } from '../diagnostics.js';
+import { Diagnostic, DiagnosticSeverity } from '../utils/diagnostics.js';
 import { ALL_ASIR_BUILTIN, ASIR_KEYWORDS } from '../data/builtins.js';
 import { BUILTIN_SIGNATURES } from '../data/builtinSignatures.js';
 import { BUILTIN_CONSTANTS } from '../data/builtinConstants.js'

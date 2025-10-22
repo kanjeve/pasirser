@@ -1,0 +1,15 @@
+def  myFunc(  a,b )  {
+  if(a>0)  {
+    return a+b;
+  }else{
+    return a-b;
+  }
+}
+
+#define  MAX_VAL(X,Y)  ( (X) > (Y) ? (X) : (Y) )
+
+#include  "my_header.asir"
+
+struct  MyStruct  {  member1,  member2  };
+
+MyVar  =  10  ;

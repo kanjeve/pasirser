@@ -16,20 +16,20 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Scope = exports.SymbolTable = exports.DiagnosticSeverity = exports.ASTBuilderError = exports.CustomErrorListener = exports.AsirASTBuilder = exports.analyze = void 0;
 // 公開する主要な関数
-var run_js_1 = require("./run.js");
-Object.defineProperty(exports, "analyze", { enumerable: true, get: function () { return run_js_1.analyze; } });
+var cli_js_1 = require("./cli/cli.js");
+Object.defineProperty(exports, "analyze", { enumerable: true, get: function () { return cli_js_1.analyze; } });
 // ASTの型定義
-__exportStar(require("./asirAst.js"), exports);
+__exportStar(require("./core/ast/asirAst.js"), exports);
 // ASTビルダーのクラス（高度な利用向け）
-var asirASTBuilder_js_1 = require("./asirASTBuilder.js");
+var asirASTBuilder_js_1 = require("./core/ast/asirASTBuilder.js");
 Object.defineProperty(exports, "AsirASTBuilder", { enumerable: true, get: function () { return asirASTBuilder_js_1.AsirASTBuilder; } });
 // エラーリスナーとエラー情報の型（デバッグや詳細なエラーハンドリング向け）
-var customErrorListener_js_1 = require("./customErrorListener.js");
+var customErrorListener_js_1 = require("./core/parser/customErrorListener.js");
 Object.defineProperty(exports, "CustomErrorListener", { enumerable: true, get: function () { return customErrorListener_js_1.CustomErrorListener; } });
-var errors_js_1 = require("./errors.js");
+var errors_js_1 = require("./utils/errors.js");
 Object.defineProperty(exports, "ASTBuilderError", { enumerable: true, get: function () { return errors_js_1.ASTBuilderError; } });
 // importしたやつ
-var diagnostics_js_1 = require("./diagnostics.js");
+var diagnostics_js_1 = require("./utils/diagnostics.js");
 Object.defineProperty(exports, "DiagnosticSeverity", { enumerable: true, get: function () { return diagnostics_js_1.DiagnosticSeverity; } });
 var symbolTable_js_1 = require("./semantics/symbolTable.js");
 Object.defineProperty(exports, "SymbolTable", { enumerable: true, get: function () { return symbolTable_js_1.SymbolTable; } });

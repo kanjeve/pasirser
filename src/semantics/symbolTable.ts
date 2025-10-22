@@ -1,6 +1,6 @@
-import { ASTNode } from '../asirAst.js';
+import { ASTNode } from '../core/ast/asirAst.js';
 import { Scope } from './types.js';
-import { Position } from '../diagnostics.js';
+import { Position } from '../utils/diagnostics.js';
 
 export class SymbolTable {
     public currentScope: Scope;

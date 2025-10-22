@@ -1,4 +1,4 @@
-import { AsirType, Symbol } from './semantics/types';
+import { AsirType, Symbol } from '../../semantics/types';
 
 // 1. ASTノードの共通ベースインターフェース
 export interface ASTNode {
