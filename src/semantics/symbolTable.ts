@@ -1,4 +1,4 @@
-import { ASTNode } from '../testAst.js';
+import { ASTNode } from '../asirAst.js';
 import { Scope } from './types.js';
 import { Position } from '../diagnostics.js';
 

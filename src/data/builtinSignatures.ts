@@ -1,22 +1,4 @@
-import { Literal } from "acorn";
-import { AsirType, FunctionAsirType, ListAsirType, VectorAsirType, MatrixAsirType, PrimitiveAsirType, PrimitiveAsirTypeName, LiteralUnionType, OverloadedFunctionType, UnionType, PolynomialAsirType, StructAsirType } from "../semantics/types";
-
-// 型生成用ヘルパー
-const p_type = (name: PrimitiveAsirTypeName): PrimitiveAsirType => ({ kind: 'primitive', name });
-const u_type = (types: AsirType[]): UnionType => ({ kind: 'union', types });
-const l_type = (elementType: AsirType): ListAsirType => ({ kind: 'list', elementType });
-const v_type = (elementType: AsirType): VectorAsirType => ({ kind: 'vector', elementType });
-const m_type = (elementType: AsirType): MatrixAsirType => ({ kind: 'matrix', elementType });
-const stdpoly_type = (coeffType: AsirType): PolynomialAsirType  => ({ kind: 'standard_polynomial', coefficientType: coeffType });
-const dpoly_type = (coeffType: AsirType): PolynomialAsirType => ({ kind: 'distributed_polynomial', coefficientType: coeffType });
-const dpm_type = (coeffType: AsirType): PolynomialAsirType => ({ kind: 'dmod_polynomial', coefficientType: coeffType });
-const rat_type = (coeffType: AsirType): PolynomialAsirType => ({ kind: 'rational_function', coefficientType: coeffType });
-
-const type_0: LiteralUnionType = { kind: 'literal_union', values: [0] };
-const type_1: LiteralUnionType = { kind: 'literal_union', values: [1] };
-const type_0_1: LiteralUnionType = { kind: 'literal_union', values: [0, 1] };
-const type_m1_0_1: LiteralUnionType = { kind: 'literal_union', values: [-1, 0, 1] };
-const type_0_1_2: LiteralUnionType = { kind: 'literal_union', values: [0, 1, 2] };
+import { FunctionAsirType,OverloadedFunctionType, UnionType,p_type, u_type, l_type, v_type, m_type, stdpoly_type, dpoly_type, dpm_type, rat_type, type_0, type_1, type_0_1, type_m1_0_1, type_0_1_2 } from "../semantics/types";
 
 // 組み込み関数用のシグネチャ
 export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedFunctionType>([
@@ -74,13 +56,13 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
             kind: 'function',
             parameters: [
                 { name: 'name', type: p_type('string') },
-                { name: 'add', type: u_type([p_type('functor'), type_0]) }, 
-                { name: 'sub', type: u_type([p_type('functor'), type_0]) },
-                { name: 'mul', type: u_type([p_type('functor'), type_0]) },
-                { name: 'div', type: u_type([p_type('functor'), type_0]) },
-                { name: 'pwr', type: u_type([p_type('functor'), type_0]) },
-                { name: 'chsgn', type: u_type([p_type('functor'), type_0]) },
-                { name: 'comp', type: u_type([p_type('functor'), type_0]) }
+                { name: 'add', type: u_type([p_type('any'), type_0]) }, 
+                { name: 'sub', type: u_type([p_type('any'), type_0]) },
+                { name: 'mul', type: u_type([p_type('any'), type_0]) },
+                { name: 'div', type: u_type([p_type('any'), type_0]) },
+                { name: 'pwr', type: u_type([p_type('any'), type_0]) },
+                { name: 'chsgn', type: u_type([p_type('any'), type_0]) },
+                { name: 'comp', type: u_type([p_type('any'), type_0]) }
             ],
             returnType: type_1,
             behavior: 'callable_and_symbol'
@@ -139,7 +121,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
         {
             kind: 'function',
             parameters: [
-                { name: 'name', type: p_type('functor') },
+                { name: 'name', type: p_type('any') },
                 { name: 'args', type: l_type(p_type('any')) }
             ],
             returnType: p_type('any'),
@@ -1816,13 +1798,13 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
                 {
                     kind: 'function',
                     parameters: [],
-                    returnType: l_type(p_type('functor')),
+                    returnType: l_type(p_type('any')),
                     behavior: 'callable_and_symbol'
                 },
                 {
                     kind: 'function',
                     parameters: [{ name: 'mname', type: p_type("string") }],
-                    returnType: l_type(p_type('functor')),
+                    returnType: l_type(p_type('any')),
                     behavior: 'callable_and_symbol'
                 }
             ],
@@ -1843,16 +1825,16 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
         {
             kind: 'function',
             parameters: [{ name: 'func', type: p_type('form') }],
-            returnType: l_type(p_type('any')), // [functor, arg1, arg2,...] の形
+            returnType: l_type(p_type('any')), // [any, arg1, arg2,...] の形
             behavior: 'callable_and_symbol'
         }
     ],
     [
-        'functor',
+        'any',
         {
             kind: 'function',
             parameters: [{ name: 'func', type: p_type('form') }],
-            returnType: p_type('functor'),
+            returnType: p_type('any'),
             behavior: 'callable_and_symbol'
         }
     ],
@@ -2399,7 +2381,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
         {
             kind: 'function',
             parameters: [
-                { name: 'function', type: p_type('functor') },
+                { name: 'function', type: p_type('any') },
                 { name: 'arg0', type: p_type('any') } // 実際にはlist,vector,matrixが望ましく、それ以外の場合はcallと同じ
             ],
             restParameter: { name: 'args', type: p_type('any') },

@@ -18,7 +18,5 @@
   ],
   "exclude": [
     "node_modules",
-    "src/testAST.ts",
-    "src/testAsirASTBuilder.ts"
   ]
 }

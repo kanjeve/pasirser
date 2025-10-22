@@ -19,5 +19,5 @@ export interface Diagnostic {
     severity: DiagnosticSeverity;
     range: Range;
     message: string;
-    source?: string;
+    source: string; // 必須に変更
 }

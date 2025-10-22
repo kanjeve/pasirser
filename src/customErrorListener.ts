@@ -6,6 +6,7 @@ export interface SyntaxErrorInfo {
   line: number;
   column: number;
   endLine: number;
+  endColumn: number;
   message: string;
   offendingSymbol: string | null; 
   ruleStack: string[]; 
@@ -62,6 +63,7 @@ export class CustomErrorListener implements ANTLRErrorListener {
       line: line,
       column: charPositionInLine,
       endLine: line,
+      endColumn: ecdColumn, 
       message: this.translateErrorMessage(msg, recognizer.vocabulary),
       offendingSymbol: offendingSymbol?.text ?? null,
       ruleStack: ruleStack,

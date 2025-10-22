@@ -19,10 +19,10 @@ exports.Scope = exports.SymbolTable = exports.DiagnosticSeverity = exports.ASTBu
 var run_js_1 = require("./run.js");
 Object.defineProperty(exports, "analyze", { enumerable: true, get: function () { return run_js_1.analyze; } });
 // ASTの型定義
-__exportStar(require("./testAst.js"), exports);
+__exportStar(require("./asirAst.js"), exports);
 // ASTビルダーのクラス（高度な利用向け）
-var testAsirASTBuilder_js_1 = require("./testAsirASTBuilder.js");
-Object.defineProperty(exports, "AsirASTBuilder", { enumerable: true, get: function () { return testAsirASTBuilder_js_1.AsirASTBuilder; } });
+var asirASTBuilder_js_1 = require("./asirASTBuilder.js");
+Object.defineProperty(exports, "AsirASTBuilder", { enumerable: true, get: function () { return asirASTBuilder_js_1.AsirASTBuilder; } });
 // エラーリスナーとエラー情報の型（デバッグや詳細なエラーハンドリング向け）
 var customErrorListener_js_1 = require("./customErrorListener.js");
 Object.defineProperty(exports, "CustomErrorListener", { enumerable: true, get: function () { return customErrorListener_js_1.CustomErrorListener; } });

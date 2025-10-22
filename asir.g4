@@ -1,4 +1,4 @@
-grammar test;
+grammar asir;
 
 // --- Parser Rules ---
 prog : statement* EOF;
@@ -56,7 +56,9 @@ assignmentExpr : ternaryExpr                                                    
 
 ternaryExpr : condition=quoteExpr (QUESTION consequence=expr COLON alternative=expr)? #Ternary;
 
-quoteExpr : (BACK)? qeNotExpr #Quote;
+quoteExpr : (BACK)? qeImplExpr #Quote;
+
+qeImplExpr : qeNotExpr ((QE_REPL | QE_REPL | QE_EQUIV) qeNotExpr)* #QEImpl;
 
 qeNotExpr : qeOrExpr (QE_8 qeOrExpr)* #QEnot;
 
@@ -96,7 +98,7 @@ memberAccessExpr : primaryExpr (ARROW indeterminate)* #MemberAccess;
 primaryExpr : indeterminate         #IndExpr
             | num                   #Real
             | id                    #IdExpr
-            | is_global=COLON2? name=indeterminate (LBRANCE diffOrders+=INT (COMMA diffOrders+=INT)* RBRANCE)? LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN         #FCallExpr
+            | is_global=COLON2? path=qualifiedName (LBRANCE diffOrders+=INT (COMMA diffOrders+=INT)* RBRANCE)? LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN         #FCallExpr
             | LPAREN MULT callee=expr RPAREN LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN #FunctorCallExpr
             | LPAREN expr RPAREN    #Paren
             | STRING                #StringLiteral
@@ -140,11 +142,15 @@ block : LBRANCE statement* RBRANCE #Sentence
 
 // 補助
 
+qualifiedName : (moduleName=ID DOT)? funcName=indeterminate;
+
+dottedIdentifier : indeterminate (DOT indeterminate)+;
+
 exprlist : expr (COMMA expr)* ;
 
 terminator : SEMI | DOLLAR;
 
-systemPath : LT ID GT;
+systemPath : SYSTEM_PATH_LITERAL;
 
 elifClause : PELIF condition=expr statements+=statement*;
 
@@ -212,6 +218,9 @@ QE_9     : '@&&';
 QE_10    : '@&';
 QE_11    : '@||';
 QE_12    : '@|';
+QE_IMPL  : '@impl';
+QE_REPL  : '@repl';
+QE_EQUIV : '@equiv';
 DEF      : 'def';
 IF       : 'if';
 FOR      : 'for';
@@ -232,13 +241,13 @@ LOCALF   : 'localf';
 FUNCTION : 'function';
 ATFUNC   : '@'([a-zA-Z])+;
 VAR_2    : '@';
-ID       : [_]?[a-zA-Z_]([a-zA-Z0-9_.])*;
+ID       : [_]?[a-zA-Z_]([a-zA-Z0-9_])*;
 FLOAT    : [0-9]+ '.' [0-9]* EXPONENT?
          | '.' [0-9]* EXPONENT?
          | [0-9]+ EXPONENT
          ;
 INT      : [0-9]+;
-POINT    : '.';
+DOT      : '.';
 NEWLINE  : '\n' -> skip;
 WS       : [ \t]+ -> skip;
 COMMENT  : '/*' .*? '*/' -> skip;
@@ -256,6 +265,7 @@ CHARPLUS : '##';
 CHAR     : '#';
 STRING   : '"' .*? '"';
 NOSTRING : '\'' .*?  '\'';
+SYSTEM_PATH_LITERAL: '<' [a-zA-Z0-9_./\\-]+ '>';
 
 fragment EXPONENT : [Ee] [+\-]?[0-9]*;
 

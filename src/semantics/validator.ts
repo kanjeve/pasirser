@@ -1,10 +1,12 @@
-import * as ast from '../testAst.js';
+import * as ast from '../asirAst.js';
 import { SymbolTable } from './symbolTable.js';
-import { AsirType, FunctionAsirType, PrimitiveAsirType, PrimitiveAsirTypeName, Symbol, TYPE_METADATA, StructAsirType, ModuleAsirType, ListAsirType, PolynomialAsirType } from './types.js';
+import { AsirType, FunctionAsirType, PrimitiveAsirType, PrimitiveAsirTypeName, Symbol, Scope, TYPE_METADATA, StructAsirType, ModuleAsirType, ListAsirType, PolynomialAsirType, TupleElement, p_type } from './types.js';
 import { Diagnostic, DiagnosticSeverity } from '../diagnostics.js';
-import { ASIR_BUILTIN_FUNCTIONS, ASIR_KEYWORDS } from '../data/builtins.js';
+import { ALL_ASIR_BUILTIN, ASIR_KEYWORDS } from '../data/builtins.js';
 import { BUILTIN_SIGNATURES } from '../data/builtinSignatures.js';
-import { escapeWhitespace } from 'antlr4ng';
+import { BUILTIN_CONSTANTS } from '../data/builtinConstants.js'
+
+// TODO: データフロー解析
 
 // A simple base class for visiting our custom AST
 abstract class AsirASTVisitor<T> {
@@ -17,11 +19,10 @@ abstract class AsirASTVisitor<T> {
             case 'FunctionDefinition': return this.visitFunctionDefinition(node as ast.DefinitionStatementNode);
             case 'FormDeclaration': return this.visitFormDeclaration(node as ast.FormDeclarationNode);
             case 'StructStatement': return this.visitStructStatement(node as ast.StructStatementNode);
-            case 'ModuleDeclaration':
-            case 'ModuleVariableDeclaration':
-            case 'LocalFunctionDeclaration':
-            case 'EndModule':
-                return this.visitModuleStatement(node as ast.ModuleStatementNode);
+            case 'ModuleDeclaration': return this.visitModuleDeclaration(node as ast.ModuleDeclarationNode);
+            case 'ModuleVariableDeclaration': return this.visitModuleVariableDeclaration(node as ast.ModuleVariableDeclarationNode);
+            case 'LocalFunctionDeclaration': return this.visitLocalFunctionDeclaration(node as ast.LocalFunctionDeclarationNode);
+            case 'EndModule': return this.visitEndModule(node as ast.EndModuleNode);
             case 'AssignmentExpression': return this.visitAssignmentExpression(node as ast.AssignmentExpressionNode);
             case 'ListDestructuringAssignment': return this.visitListDestructuringAssignment(node as ast.ListDestructuringAssignmentNode);
             case 'IfStatement': return this.visitIfStatement(node as ast.IfStatementNode);
@@ -31,6 +32,7 @@ abstract class AsirASTVisitor<T> {
             case 'ReturnStatement': return this.visitReturnStatement(node as ast.ReturnStatementNode);
             case 'BreakStatement': return this.visitBreakStatement(node as ast.BreakStatementNode);
             case 'ContinueStatement': return this.visitContinueStatement(node as ast.ContinueStatementNode);
+            case 'QualifiedName': return this.visitQualifiedName(node as ast.QualifiedNameNode); 
             case 'FunctionCall': return this.visitFunctionCall(node as ast.FunctionCallNode);
             case 'Indeterminate': return this.visitIndeterminate(node as ast.IndeterminateNode);
             case 'BinaryOperation': return this.visitBinaryOperation(node as ast.BinaryOperationNode);
@@ -43,11 +45,11 @@ abstract class AsirASTVisitor<T> {
             case 'StringLiteral': return this.visitStringLiteral(node as ast.StringLiteralNode);
             case 'DistributedPolynomialLiteral': return this.visitDPolyLiteral(node as ast.DistributedPolynomialLiteralNode); 
             case 'ListLiteral': return this.visitListLiteral(node as ast.ListLiteralNode);
+            case 'DottedIdentifier': return this.visitDottedIdentifier(node as ast.DottedIdentifierNode);
             case 'PreprocessorDefine': return this.visitPDef(node as ast.PreprocessorDefineNode);
             case 'PreprocessorIf': return this.visitPIf(node as ast.PreprocessorIfNode);
             case 'PreprocessorInclude': return this.visitPInc(node as ast.PreprocessorIncludeNode);
             default: 
-                console.warn(`[AsirASTVisitor] Unhandled AST node kind: ${node.kind}`);
                 return this.visitChildren(node);
         }
     }
@@ -88,7 +90,10 @@ abstract class AsirASTVisitor<T> {
     visitFunctionDefinition(node: ast.DefinitionStatementNode): T | undefined { return this.visitChildren(node); }
     visitFormDeclaration(node: ast.FormDeclarationNode): T | undefined { return this.visitChildren(node); }
     visitStructStatement(node: ast.StructStatementNode): T | undefined { return this.visitChildren(node); }
-    visitModuleStatement(node: ast.ModuleStatementNode): T | undefined { return this.visitChildren(node); }
+    visitModuleDeclaration(node: ast.ModuleDeclarationNode): T | undefined { return this.visitChildren(node); }
+    visitModuleVariableDeclaration(node: ast.ModuleVariableDeclarationNode): T | undefined { return this.visitChildren(node); }
+    visitLocalFunctionDeclaration(node: ast.LocalFunctionDeclarationNode): T | undefined { return this.visitChildren(node); }
+    visitEndModule(node: ast.EndModuleNode): T | undefined { return this.visitChildren(node); }
     visitAssignmentExpression(node: ast.AssignmentExpressionNode): T | undefined { return this.visitChildren(node); }
     visitListDestructuringAssignment(node: ast.ListDestructuringAssignmentNode): T | undefined { return this.visitChildren(node); }
     visitIfStatement(node: ast.IfStatementNode): T | undefined { return this.visitChildren(node); }
@@ -99,6 +104,7 @@ abstract class AsirASTVisitor<T> {
     visitBreakStatement(node: ast.BreakStatementNode): T | undefined { return this.visitChildren(node); }
     visitContinueStatement(node: ast.ContinueStatementNode): T | undefined { return this.visitChildren(node); }
     visitFunctionCall(node: ast.FunctionCallNode): T | undefined { return this.visitChildren(node); }
+    visitQualifiedName(node: ast.QualifiedNameNode): T | undefined { return this.visitChildren(node); }
     visitIndeterminate(node: ast.IndeterminateNode): T | undefined { return this.visitChildren(node); }
     visitBinaryOperation(node: ast.BinaryOperationNode): T | undefined { return this.visitChildren(node); }
     visitUnaryOperation(node: ast.UnaryOperationNode): T | undefined { return this.visitChildren(node); }
@@ -111,6 +117,7 @@ abstract class AsirASTVisitor<T> {
     visitStringLiteral(node: ast.StringLiteralNode): T | undefined { return this.visitChildren(node); }
     visitNumberLiteral(node: ast.NumberLiteralNode): T | undefined { return this.visitChildren(node); }
     visitDPolyLiteral(node: ast.DistributedPolynomialLiteralNode): T | undefined { return this.visitChildren(node); }
+    visitDottedIdentifier(node: ast.DottedIdentifierNode): T | undefined { return this.visitChildren(node); }
     visitPDef(node: ast.PreprocessorDefineNode): T | undefined { return this.visitChildren(node); }
     visitPIf(node: ast.PreprocessorIfNode): T | undefined { return this.visitChildren(node); }
     visitPInc(node: ast.PreprocessorIncludeNode): T | undefined { return this.visitChildren(node); }
@@ -121,6 +128,8 @@ export class Validator extends AsirASTVisitor<AsirType> {
     public symbolTable: SymbolTable;
     private currentFunction: ast.DefinitionStatementNode | null = null;
     private isInLoop: boolean = false;
+    private currentModuleScope: Scope | null = null;
+    private currentModule: ModuleAsirType | null = null;
     private assignmentsInBranch: Map<string, AsirType> | null = null;
 
     constructor(programNode: ast.ProgramNode) {
@@ -179,10 +188,6 @@ export class Validator extends AsirASTVisitor<AsirType> {
         return false;
     }
 
-    private createPrimitiveType(name: PrimitiveAsirTypeName): PrimitiveAsirType {
-        return { kind: 'primitive', name };
-    }
-
     public analyze(node: ast.ProgramNode): Diagnostic[] {
         this.visit(node);
         return this.diagnostics;
@@ -199,9 +204,6 @@ export class Validator extends AsirASTVisitor<AsirType> {
     }
 
     private isTypeCompatible(sourceType: AsirType, targetType: AsirType): boolean {
-        if (sourceType.kind === 'function' && targetType.kind === 'primitive' && targetType.name === 'functor') {
-            return true;
-        }
         if (sourceType.kind === 'primitive' && this.isSubtypeOf(sourceType.name, 'pp') && this.isPolynomialType(targetType)) {
             return true;
         }
@@ -312,10 +314,10 @@ export class Validator extends AsirASTVisitor<AsirType> {
     }
 
     private getCommonSupertype(types: AsirType[]): AsirType {
-        if (types.length === 0) { return this.createPrimitiveType('any'); }
+        if (types.length === 0) { return p_type('any'); }
         const uniqueTypes = Array.from(new Map(types.map(t => [JSON.stringify(t), t])).values());
         if (uniqueTypes.length === 1) { return uniqueTypes[0]; }
-        if (uniqueTypes.some(t => t.kind === 'primitive' && t.name === 'any')) { return this.createPrimitiveType('any'); }
+        if (uniqueTypes.some(t => t.kind === 'primitive' && t.name === 'any')) { return p_type('any'); }
 
         const allNumeric = uniqueTypes.every(t => t.kind === 'primitive' && this.isSubtypeOf(t.name, 'number'));
         if (allNumeric) {
@@ -323,7 +325,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
             for (let i=1; i < uniqueTypes.length; i++) {
                 widerTypeName = this.getWiderNumericType(widerTypeName, (uniqueTypes[i] as PrimitiveAsirType).name);
             }
-            return this.createPrimitiveType(widerTypeName);
+            return p_type(widerTypeName);
         }
         // 現状はunion型とする
         return { kind: 'union', types: uniqueTypes };
@@ -374,7 +376,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
             }
             // オプションの型のチェック
             const expecedType = allowesOptions.get(keyName)!;
-            const actualType = this.visit(optionNode.value) || this.createPrimitiveType('any');
+            const actualType = this.visit(optionNode.value) || p_type('any');
             if (!this.isTypeCompatible(actualType, expecedType)) {
                 this.addDiagnostic(
                     optionNode.value,
@@ -439,7 +441,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
     // --- 具体的な意味解析 ---
 
     visitAssignmentExpression(node: ast.AssignmentExpressionNode): AsirType {
-        const rightType = this.visit(node.right) || this.createPrimitiveType('any');
+        const rightType = this.visit(node.right) || p_type('any');
         this.checkUsageAsValue(node.right, rightType);
 
         if (this.assignmentsInBranch !== null && node.left.kind === 'Indeterminate') {
@@ -450,6 +452,19 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 const symbol = this.symbolTable.currentScope.lookup(varName);
                 if (!symbol) {
                     this.checkVariableNameConvention(node.left);
+                    if (this.currentModuleScope && !this.currentFunction) {
+                        this.addDiagnostic(
+                            node.left,
+                            `モジュールのトップレベルの変数 '${varName}' は、staticまたはexternで事前に宣言する必要があります。`,
+                            DiagnosticSeverity.Error
+                        );
+                    } else if (this.currentFunction && this.symbolTable.currentScope.hasLocalDeclaration) {
+                        this.addDiagnostic(
+                            node.left,
+                            `未宣言のローカル変数 '${varName}' に代入されました。`,
+                            DiagnosticSeverity.Warning
+                        );
+                    }
                     if (node.left.loc) {
                         this.symbolTable.currentScope.define({
                             name: varName,
@@ -550,12 +565,19 @@ export class Validator extends AsirASTVisitor<AsirType> {
         if (exprType) {
             this.checkUsageAsValue(node.expression, exprType);
         }
-        return exprType || this.createPrimitiveType('undefined');
+        return exprType || p_type('undefined');
     }
 
     visitFunctionDefinition(node: ast.DefinitionStatementNode): AsirType {
         const funcName = node.name.name;
-        // --- 意味解析部 ---
+
+        // モジュール内の宣言チェック
+        if (this.currentModuleScope) {
+            const symbol = this.symbolTable.currentScope.lookup(funcName);
+            if (!symbol || (symbol.type.kind !== 'function' && symbol.type.kind !== 'overloaded_function')) {
+                this.addDiagnostic(node.name, `モジュール内の関数 '${funcName}' は、localfで事前に宣言する必要があります。`, DiagnosticSeverity.Error);
+            }
+        }
         // 関数が定義済みかをチェックする。
         const existingSymbol = this.symbolTable.currentScope.lookupCurrentScope(funcName);
         if (existingSymbol) {
@@ -565,7 +587,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                     `関数 '${funcName}' は前方宣言されているため、この 'def' による定義は無視されます。この関数への呼び出しは常に「関数形式」を返します。`,
                     DiagnosticSeverity.Warning
                 );
-                return this.createPrimitiveType('undefined');
+                return p_type('undefined');
             } else {
                 this.addDiagnostic(node.name, `関数 '${funcName}' はこのスコープで既に定義されています。`, DiagnosticSeverity.Error);
             }
@@ -575,12 +597,12 @@ export class Validator extends AsirASTVisitor<AsirType> {
         // 関数の型情報を作成する。
         const parameterTypes = node.parameters.map(p => ({
             name: p.name,
-            type: this.createPrimitiveType('parameter') as AsirType
+            type: p_type('parameter') as AsirType
         }));
         const functionType: FunctionAsirType = {
             kind: 'function',
             parameters: parameterTypes,
-            returnType: this.createPrimitiveType('any'), // 戻り値は後で解析する
+            returnType: p_type('any'), // 戻り値は後で解析する
             behavior: 'callable_and_symbol'
         };
         // シンボルテーブルに関数を登録する
@@ -610,7 +632,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
         this.symbolTable.exitScope();
         this.currentFunction = null;
 
-        return this.createPrimitiveType('undefined');
+        return p_type('undefined');
     }
 
     visitFormDeclaration(node: ast.FormDeclarationNode): AsirType {
@@ -637,8 +659,8 @@ export class Validator extends AsirASTVisitor<AsirType> {
         // シンボルテーブルに登録
         const functionType: FunctionAsirType = {
             kind: 'function',
-            parameters: node.parameters.map(p => ({ name: p.name, type: this.createPrimitiveType('any') })),
-            returnType: this.createPrimitiveType('form'),
+            parameters: node.parameters.map(p => ({ name: p.name, type: p_type('any') })),
+            returnType: p_type('form'),
             behavior: 'callable_and_symbol'
         };
         if (node.loc) {
@@ -649,27 +671,9 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 node
             });
         }
-        return this.createPrimitiveType('undefined');
+        return p_type('undefined');
     }
 
-/*
-    visitIdentifier(node: ast.IdentifierNode): AsirType {
-        const name = node.name;
-        if (ASIR_KEYWORDS.includes(name)) {
-            return this.createPrimitiveType('any');
-        }
-        const symbol = this.symbolTable.currentScope.lookup(node.name);
-        if (symbol) {
-            return symbol.type;
-        }
-        this.addDiagnostic(
-            node, 
-            `未定義のシンボルです: '${name}'`,
-            DiagnosticSeverity.Error
-        );
-        return this.createPrimitiveType('any');
-    }
-*/
     visitIndeterminate(node: ast.IndeterminateNode): AsirType {
         const name = node.name;
         // キーワードをチェック
@@ -679,7 +683,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 `'${name}' はキーワードであり、式の中では使用できません。`,
                 DiagnosticSeverity.Error
             );
-            return this.createPrimitiveType('any');
+            return p_type('any');
         }
         // 変数・関数としてシンボルテーブルに登録されていないか探す
         const symbol = this.symbolTable.currentScope.lookup(name);
@@ -687,68 +691,288 @@ export class Validator extends AsirASTVisitor<AsirType> {
             node.resolvedSymbol = symbol;
             return symbol.type;
         }
-        //組み込み関数をチェック
+        // 組み込み関数をチェック
         if (BUILTIN_SIGNATURES.has(name)) {
-            return this.createPrimitiveType('functor');
+            return BUILTIN_SIGNATURES.get(name)!;
+        }
+        // 組み込み定数をチェック
+        if (BUILTIN_CONSTANTS.has(name)) {
+            return BUILTIN_CONSTANTS.get(name)!;
+        }
+        // 詳細不明な組み込み関数
+        if (ALL_ASIR_BUILTIN.includes(name)) {
+            this.addDiagnostic(
+                node,
+                `組み込み関数 '${name}' の型シグネチャは未定義です。型チェックは行われません。`,
+                DiagnosticSeverity.Information
+            );
+            const genericFunctionType: FunctionAsirType = {
+                kind: 'function',
+                parameters: [],
+                restParameter: { name: 'args', type: p_type('any') },
+                returnType: p_type('any'),
+                behavior: 'callable_and_symbol'
+            }
+            return genericFunctionType;
         }
         // シンボルテーブルにない場合
         if (name.match(/^(?:[A-Z]|_[A-Z])/)) {
             this.addDiagnostic(
                 node,
-                `未定義の変数です： '${name}'`,
-                DiagnosticSeverity.Error
+                `未定義の変数 '${name}' が参照されました。暗黙的に 0 として扱われます。`,
+                DiagnosticSeverity.Warning
             );
-            return this.createPrimitiveType('any');
+            return p_type('integer');
         } else {
-            return this.createPrimitiveType('indeterminate')
+            return p_type('indeterminate')
         }
     }
 
     visitFunctionCall(node: ast.FunctionCallNode): AsirType {
-        if (node.callee.kind !== 'Indeterminate') { return this.createPrimitiveType('any'); }
-        const funcName = node.callee.name;
+        //if (node.callee.kind !== 'Indeterminate') { return p_type('any'); }
+        const calleeNode = node.callee;
+        const funcName = calleeNode.functionName.name;
         const actualArgs = node.args;
-        const actualArgTypes = actualArgs.map(arg => this.visit(arg) || this.createPrimitiveType('any'));
+        const actualArgTypes = actualArgs.map(arg => this.visit(arg) || p_type('any'));
+        let calleeType: AsirType | undefined;
 
-        // 特定の組み込み関数を特別扱いする
+        // --- 呼び出し方に応じたロジック ---
+        if (node.isGlobal) {
+            if (calleeNode.moduleName) {
+                this.addDiagnostic(node, `'::' と '.'を同時に使用することはできません。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+            const globalScope = this.symbolTable.getRootScope();
+            calleeType = globalScope.lookup(funcName)?.type;
+            if (!calleeType && BUILTIN_SIGNATURES.has(funcName)) {
+                calleeType = BUILTIN_SIGNATURES.get(funcName);
+            }
+        } else if (calleeNode.moduleName) {
+            const moduleName = calleeNode.moduleName.name;
+            const moduleSymbol = this.symbolTable.currentScope.lookup(moduleName);
+
+            if (!moduleSymbol) {
+                this.addDiagnostic(calleeNode.moduleName, `モジュール '${moduleName}' は定義されていません。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+            if (moduleSymbol.type.kind !== 'module') {
+                this.addDiagnostic(calleeNode.moduleName, `'${moduleName}' はモジュールではありません。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            } 
+            calleeType = moduleSymbol.type.members.get(funcName)?.type;
+        } else {
+            const symbol = this.symbolTable.currentScope.lookup(funcName);
+            if (symbol) {
+                calleeType = symbol.type;
+            } else if (BUILTIN_SIGNATURES.has(funcName)) {
+                calleeType = BUILTIN_SIGNATURES.get(funcName);
+            }
+        }
+
+        // --- 型チェック ---
+        if (!calleeType) {
+            this.addDiagnostic(calleeNode.functionName, `関数 '${funcName}' は定義されていません。`, DiagnosticSeverity.Error);
+            return p_type('any');
+        }
+
+        if (calleeType.kind === 'union') {
+            const funcPart = calleeType.types.find(t => t.kind === 'function' || t.kind === 'overloaded_function');
+            if (funcPart) { calleeType = funcPart; }
+        }
+
+        // --- 特定の組み込み関数を特別扱いする ---
+        // リスト系
         if (funcName === 'car') {
             if (actualArgs.length !== 1) {
                 this.addDiagnostic(node, `'${funcName}' は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
-                return this.createPrimitiveType('any');
+                return p_type('any');
             }
             const argType = actualArgTypes[0];
-            if (argType.kind === 'list') {
+            if (argType.kind === 'tuple') {
+                if (argType.elements.length > 0) {
+                    return argType.elements[0].type;
+                } else {
+                    return { kind: 'tuple', elements: [] };
+                }
+            } else if (argType.kind === 'list') {
                 return argType.elementType;
             } else {
                 this.addDiagnostic(actualArgs[0], `'${funcName}' の引数はリストでなければなりません。`, DiagnosticSeverity.Error);
-                return this.createPrimitiveType('any');
+                return p_type('any');
             }
         }
-        if (funcName === 'newstruct') {
-            console.log(`[Debug] visitFunctionCall: Processing 'newstruct'.`);
+        if (funcName === 'cdr') {
             if (actualArgs.length !== 1) {
-                this.addDiagnostic(node, `'newstruct' は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
-                return this.createPrimitiveType('any');
+                this.addDiagnostic(node, `'${funcName}' は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+            const argType = actualArgTypes[0];
+            if (argType.kind === 'tuple') {
+                if (argType.elements.length > 1) {
+                    return { kind: 'tuple', elements: argType.elements.slice(1) };
+                } else {
+                    return { kind: 'tuple', elements: [] };
+                }
+            } else if (argType.kind === 'list') {
+                return argType;
+            } else {
+                if (argType.kind === 'primitive' && argType.name === 'any') {
+                    return p_type('any');
+                }
+                this.addDiagnostic(actualArgs[0], `'${funcName}' の引数はリストでなければなりません。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+        }
+        if (funcName === 'cons') {
+            if (actualArgs.length !== 2) {
+                this.addDiagnostic(node, `'${funcName}' は引数を2つ取ります。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+            const itemType = actualArgTypes[0];
+            const listType = actualArgTypes[1];
+
+            if (listType.kind === 'tuple') {
+                const newElements = [{type: itemType}, ...listType.elements];
+                return { kind: 'tuple', elements: newElements };
+            } else if (listType.kind === 'list') {
+                const commonElementType = this.getCommonSupertype([itemType, listType.elementType]);
+                return { kind: 'list', elementType: commonElementType };
+            } else {
+                if (listType.kind === 'primitive' && listType.name === 'any') {
+                    return { kind: 'list', elementType: p_type('any') };
+                }
+                this.addDiagnostic(actualArgs[0], `'${funcName}' の第二引数はリストでなければなりません。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+        }
+        if (funcName === 'append') {
+            if (actualArgs.length !== 2) {
+                this.addDiagnostic(node, `'${funcName}' は引数を2つ取ります。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+            const list1Type = actualArgTypes[0];
+            const list2Type = actualArgTypes[1];
+            if (list1Type.kind === 'tuple' && list2Type.kind === 'tuple') {
+                const newElements = list1Type.elements.concat(list2Type.elements);
+                return { kind: 'tuple', elements: newElements };
+            } else if ((list1Type.kind === 'tuple' || list1Type.kind === 'list') && (list2Type.kind === 'tuple' || list2Type.kind === 'list')) {
+                return { kind: 'list', elementType: p_type('any') };
+            } else {
+                this.addDiagnostic(actualArgs[0], `'${funcName}' の引数は両方ともリストでなければなりません。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+        }
+        if (funcName === 'reverse') {
+            if (actualArgs.length !== 1) {
+                this.addDiagnostic(node, `'${funcName}' は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+            const argType = actualArgTypes[0];
+            if (argType.kind === 'tuple') {
+                const reverseedElements = [...argType.elements].reverse();
+                return { kind: 'tuple', elements: reverseedElements };
+            } else if (argType.kind === 'list') {
+                return argType;
+            } else {
+                if (argType.kind === 'primitive' && argType.name === 'any') {
+                    return p_type('any');
+                }
+                this.addDiagnostic(actualArgs[0], `'${funcName}' の引数はリストでなければなりません。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+        }
+        // 関数を引数に取る関数
+        if (funcName === 'map') {
+            if (actualArgs.length < 2) {
+                this.addDiagnostic(node, `'${funcName}' は少なくとも2つの引数を取ります。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+            const funcArgNode = node.args[0];
+            let resolvedFuncType: AsirType | undefined;
+
+            if (funcArgNode.kind === 'Indeterminate') {
+                const funcNameToFind = (funcArgNode as ast.IndeterminateNode).name;
+                const symbol = this.symbolTable.currentScope.lookup(funcNameToFind);
+                if (symbol) {
+                    resolvedFuncType = symbol.type;
+                } else if (BUILTIN_SIGNATURES.has(funcNameToFind)) {
+                    resolvedFuncType = BUILTIN_SIGNATURES.get(funcNameToFind);
+                }
+            }
+            if (resolvedFuncType && resolvedFuncType.kind === 'union') {
+                const funcPart = resolvedFuncType.types.find(t => t.kind === 'function' || t.kind === 'overloaded_function');
+                if (funcPart) { resolvedFuncType = funcPart; }
+            }
+            
+            if (!resolvedFuncType || (resolvedFuncType.kind !== 'function' && resolvedFuncType.kind !== 'overloaded_function')) {
+                this.addDiagnostic(funcArgNode, `'${funcName}' の第一引数は関数である必要があります。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+            if (resolvedFuncType.kind === 'overloaded_function') {
+                this.addDiagnostic(funcArgNode, `'${funcName}' にこの関数を渡した場合の型推論は、まだサポートされていません。`, DiagnosticSeverity.Hint);
+                return { kind: 'list', elementType: p_type('any') };
+            }
+            
+            const containerType = actualArgTypes[1];
+            const fixedArgTypes = actualArgTypes.slice(2);
+            switch (containerType.kind) {
+                case 'tuple': {
+                    const fixedArgNodes = node.args.slice(2);
+                    const resultElements: TupleElement[] = containerType.elements.map((element, i) => {
+                        const callArgTypes = [element.type, ...fixedArgTypes];
+
+                        if (resolvedFuncType.parameters.length !== callArgTypes.length) {
+                            this.addDiagnostic(
+                                node,
+                                `'${funcName}' に渡された関数は ${resolvedFuncType.parameters.length} 個の引数を期待しますが、 ${callArgTypes.length} 個が渡されました。`,
+                                DiagnosticSeverity.Error
+                            );
+                            return { type: p_type('any') };
+                        }
+
+                        const expectedElementType = resolvedFuncType.parameters[0].type;
+                        if (!this.isTypeCompatible(element.type, expectedElementType)) {
+                            this.addDiagnostic(
+                                actualArgs[1],
+                                `'${funcName}' のリストの ${i+1} 番目の要素の型 '${this.typeToString(element.type)}' は、関数が期待する第一引数の型 '${this.typeToString(expectedElementType)}' と互換性がありません。`,
+                                DiagnosticSeverity.Error
+                            );
+                        }
+                        fixedArgTypes.forEach((fixedArgTypes, j) => {
+                            const expectedFixedArgType = resolvedFuncType.parameters[j+1].type;
+                            if (!this.isTypeCompatible(fixedArgTypes, expectedElementType)) {
+                                this.addDiagnostic(
+                                    fixedArgNodes[j],
+                                    `'${funcName}' の ${j+1} 番目の型 '${this.typeToString(fixedArgTypes)}' は、関数が期待する型 '${this.typeToString(expectedFixedArgType)}' と互換性がありません。`,
+                                    DiagnosticSeverity.Error
+                                );
+                            }
+                        });
+                        return { type: resolvedFuncType.returnType };
+                    });
+                    return { kind: 'tuple', elements: resultElements };
+                }
+            }
+        }
+        // その他
+        if (funcName === 'newstruct') {
+            if (actualArgs.length !== 1) {
+                this.addDiagnostic(node, `'${funcName}' は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
+                return p_type('any');
             }
             const argNode = actualArgs[0];
-            console.log(`[Debug] argNode.kind is: '${argNode.kind}'`);
             // 引数をチェック
             if (argNode.kind === 'Indeterminate') {
                 const structName = (argNode as ast.IndeterminateNode).name;
-                console.log(`[Debug] visitFunctionCall: Looking up '${structName}' from scope '${this.symbolTable.currentScope.node.kind}'.`); 
                 const typeSymbol = this.symbolTable.currentScope.lookup(structName);
-                console.log(`[Debug] visitFunctionCall: Lookup result is '${typeSymbol ? typeSymbol.type.kind : 'NotFound'}'.`);
                 if (typeSymbol && typeSymbol.type.kind === 'struct') { return typeSymbol.type; }
             }
-            this.addDiagnostic(argNode, `'newstruct'の引数は定義済みの構造体名である必要があります。`, DiagnosticSeverity.Error);
-            return this.createPrimitiveType('any');
+            this.addDiagnostic(argNode, `'${funcName}'の引数は定義済みの構造体名である必要があります。`, DiagnosticSeverity.Error);
+            return p_type('any');
         }
-        // TODO: 引数によって返り値が左右：call, map, 
-        // TODO: 返り値のリストの型が変わる：append, cdr
 
-        const calleeType = this.visit(node.callee);
         // シンボルがなければvisitIdentifierがエラーを返すので、ここではエラーを返さない。
-        if (!calleeType) { return this.createPrimitiveType('any'); }
+        if (!calleeType) { return p_type('any'); }
 
         // 引数が一定の関数のチェック
         if (calleeType.kind === 'function') {
@@ -809,35 +1033,42 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 const argTypesString = actualArgTypes.map(t => this.typeToString(t)).join(', ');
                 this.addDiagnostic(
                     node,
-                    `${node.callee.name} に引数 ${argTypesString} にマッチする定義が見つかりません。`,
+                    `${funcName} に引数 ${argTypesString} にマッチする定義が見つかりません。`,
                     DiagnosticSeverity.Error
                 );
-                return this.createPrimitiveType('any');
+                return p_type('any');
             }
         }
 
         // 関数でないものを呼び出す場合はエラーを返す
         this.addDiagnostic(
-            node.callee,
-            `'${this.typeToString(calleeType)}' 型の式は関数として呼び出せません。`,
+            calleeNode.functionName,
+            `'${funcName}' は関数として呼び出せません。`,
             DiagnosticSeverity.Error
         );
-        return this.createPrimitiveType('any');
+        return p_type('any');
     }
 
     visitBinaryOperation(node: ast.BinaryOperationNode): AsirType {
-        let leftType = this.visit(node.left) || this.createPrimitiveType('any');
-        let rightType = this.visit(node.right) || this.createPrimitiveType('any');
+        let leftType = this.visit(node.left) || p_type('any');
+        let rightType = this.visit(node.right) || p_type('any');
         const operator = node.operator;
 
         this.checkUsageAsValue(node.left, leftType);
         this.checkUsageAsValue(node.right, rightType);
 
+        // QE系のロジック
+        if (operator.startsWith('@')) {
+            this.visit(node.left);
+            this.visit(node.right);
+            return p_type('qeformula');
+        }
+
         if (leftType.kind === 'primitive' && this.isSubtypeOf(leftType.name, 'pp')) {
-            leftType = { kind: 'standard_polynomial', coefficientType: this.createPrimitiveType('integer') };
+            leftType = { kind: 'standard_polynomial', coefficientType: p_type('integer') };
         }
         if (rightType.kind === 'primitive' && this.isSubtypeOf(rightType.name, 'pp')) {
-            rightType = { kind: 'standard_polynomial', coefficientType: this.createPrimitiveType('integer') };
+            rightType = { kind: 'standard_polynomial', coefficientType: p_type('integer') };
         }
 
         switch (operator) {
@@ -861,7 +1092,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                         `型 '${this.typeToString(leftType)}' と '${this.typeToString(rightType)}' の間での '${operator}' 演算はサポートされていません。`,
                         DiagnosticSeverity.Error
                     );
-                    return this.createPrimitiveType('any');
+                    return p_type('any');
                 }
 
                 if (isLeftPoly && isRightPoly) {
@@ -874,7 +1105,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                             `互換性のない係数型 (${this.typeToString(resultCoeffType)}) を持つ多項式同士の演算はできません。`,
                             DiagnosticSeverity.Error
                         );
-                        return this.createPrimitiveType('any');
+                        return p_type('any');
                     }
                     const polyPrecedence = ['standard_polynomial', 'rational_function', 'distributed_polynomial'];
                     const kind1_idx = polyPrecedence.indexOf(poly1.kind);
@@ -890,7 +1121,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                                 `演算子 '${operator}' は、型 '${this.typeToString(leftType)}' と '${this.typeToString(rightType)}' の組み合わせには適用できません。`,
                                 DiagnosticSeverity.Error
                             );
-                            return this.createPrimitiveType('any');
+                            return p_type('any');
                         }
                     }
                     if (['+', '-', '*'].includes(operator)) { return { kind: resultKind, coefficientType: resultCoeffType } as PolynomialAsirType; }
@@ -906,7 +1137,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                             `互換性のない係数型 (${this.typeToString(resultCoeffType)}) を持つ多項式同士の演算はできません。`,
                             DiagnosticSeverity.Error
                         );
-                        return this.createPrimitiveType('any');
+                        return p_type('any');
                     }
                     return { kind: polyType.kind, coefficientType: resultCoeffType } as PolynomialAsirType;
                 }
@@ -917,12 +1148,12 @@ export class Validator extends AsirASTVisitor<AsirType> {
 
                     if (!leftMeta || !rightMeta) {
                         this.addDiagnostic(node, `型 '${leftType.name}' または '${rightType.name}' の演算ルールが定義されていません。`, DiagnosticSeverity.Error);
-                        return this.createPrimitiveType('any');
+                        return p_type('any');
                     }
 
                      if (leftMeta.category === 'general_numeric' && rightMeta.category === 'general_numeric') {
                         const resultType = this.getWiderNumericType(leftType.name, rightType.name);
-                        return this.createPrimitiveType(resultType);
+                        return p_type(resultType);
                     }
                     if (leftType.name === 'rational' && rightMeta.category === 'finite_field') {
                         return rightType;
@@ -943,7 +1174,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                         if (leftType.name === rightType.name) { return leftType; }
                     }
                     if (operator === '+' && leftMeta.category === 'string' && rightMeta.category === 'string') {
-                        return this.createPrimitiveType('string');
+                        return p_type('string');
                     }
                 }
             
@@ -955,7 +1186,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                         `演算子 '%' の右辺は整数である必要がありますが、型 '${this.typeToString(rightType)}' が指定されました。`,
                         DiagnosticSeverity.Error
                     );
-                    return this.createPrimitiveType('any');
+                    return p_type('any');
                 }
 
                 const isLeftInt = leftType.kind === 'primitive' && leftType.name === 'integer';
@@ -971,12 +1202,12 @@ export class Validator extends AsirASTVisitor<AsirType> {
                         `演算子 '%' の左辺は、整数または整数係数多項式である必要がありますが、型 '${this.typeToString(leftType)}' が指定されました。`,
                         DiagnosticSeverity.Error
                     );
-                    return this.createPrimitiveType('any');
+                    return p_type('any');
                 }
 
             case '==':
             case '!=':
-                return this.createPrimitiveType('integer');  // とりあえず、なんに対しても0か1を返すので、許可
+                return p_type('integer');  // とりあえず、なんに対しても0か1を返すので、許可
 
             case '<':
             case '>':
@@ -988,7 +1219,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                     const isNumeric = this.isSubtypeOf(leftType.name, 'number') && this.isSubtypeOf(rightType.name, 'number');
                     const isString = leftType.name === 'string' && rightType.name === 'string';
                     if (isNumeric || isString) {
-                        return this.createPrimitiveType('integer');
+                        return p_type('integer');
                     }
                 }
                 this.addDiagnostic(
@@ -996,20 +1227,20 @@ export class Validator extends AsirASTVisitor<AsirType> {
                     `この演算は意図しない値を返す可能性があります。型 '${this.typeToString(leftType)}' と型 '${this.typeToString(rightType)}' の間での '${operator}' 演算は意図しない結果になる可能性があります。`,
                     DiagnosticSeverity.Warning
                 );
-                return this.createPrimitiveType('integer');
+                return p_type('integer');
         }
         this.addDiagnostic(
             node,
             `演算子 '${operator}' は、型 '${this.typeToString(leftType)}' と '${this.typeToString(rightType)}' には適用できません。`,
             DiagnosticSeverity.Error
         );
-        return this.createPrimitiveType('any');
+        return p_type('any');
     }
 
     visitUnaryOperation(node: ast.UnaryOperationNode): AsirType {
         const operandType = this.visit(node.operand);
         if (!operandType) {
-            return this.createPrimitiveType('any');
+            return p_type('any');
         }
         
         this.checkUsageAsValue(node.operand, operandType);
@@ -1033,18 +1264,18 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 if (node.isPostfix) {
                     if (operandType.kind === 'primitive') {
                         if (operandType.name === 'integer') {
-                            return this.createPrimitiveType('integer');
+                            return p_type('integer');
                         }
                         if (this.isSubtypeOf(operandType.name, 'pp')) {
-                            return this.createPrimitiveType('form');
+                            return p_type('form');
                         }
                     }
-                    return this.createPrimitiveType('form');
+                    return p_type('form');
                 } else {
-                    return this.createPrimitiveType('integer');
+                    return p_type('integer');
                 }
             case '`':
-                return this.createPrimitiveType('quote');
+                return p_type('quote');
             default:
                 return operandType;
         }
@@ -1060,7 +1291,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
         if (alternativeType) {
             this.checkUsageAsValue(node.alternative, alternativeType);
         }
-        return this.getCommonSupertype([consequenceType || this.createPrimitiveType('any'), alternativeType || this.createPrimitiveType('any')]);
+        return this.getCommonSupertype([consequenceType || p_type('any'), alternativeType || p_type('any')]);
     }
 
     visitPowerOperation(node: ast.PowerOperationNode): AsirType {
@@ -1069,14 +1300,14 @@ export class Validator extends AsirASTVisitor<AsirType> {
             this.checkUsageAsValue(node.base, baseType);
         }
         this.visit(node.exponent);
-        return this.createPrimitiveType('any'); // Or calculate a more specific type
+        return p_type('any'); // Or calculate a more specific type
     }
 
     visitIndexAccess(node: ast.IndexAccessNode): AsirType {
-        let currentType = this.visit(node.base) || this.createPrimitiveType('any');
+        let currentType = this.visit(node.base) || p_type('any');
 
         node.indices.forEach(indexExpr => {
-            const indexType = this.visit(indexExpr) || this.createPrimitiveType('any');
+            const indexType = this.visit(indexExpr) || p_type('any');
             if (indexType.kind !== 'primitive' || !this.isSubtypeOf(indexType.name, 'integer')) {
                 this.addDiagnostic(indexExpr, `インデックスは整数でなければなりません。`, DiagnosticSeverity.Error);
             }
@@ -1098,7 +1329,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                             currentType = currentType.elements[indexValue].type;
                         } else {
                             this.addDiagnostic(indexNode, `リストのインデックス '${indexValue}' が範囲外です。`, DiagnosticSeverity.Error);
-                            return this.createPrimitiveType('any');
+                            return p_type('any');
                         }
                     } else {
                         const elementTypes = currentType.elements.map(e => e.type);
@@ -1111,7 +1342,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                         `型 '${this.typeToString(currentType)}' に対してインデックスアクセスはできません。`,
                         DiagnosticSeverity.Error
                     );
-                    return this.createPrimitiveType('any');
+                    return p_type('any');
             }
         }
         return currentType;
@@ -1120,20 +1351,20 @@ export class Validator extends AsirASTVisitor<AsirType> {
     visitMemberAccess(node: ast.MemberAccessNode): AsirType {
         let currentType = this.visit(node.base);
         for (const memberIndeterminate of node.members) {
-            if (!currentType) { return this.createPrimitiveType('any') }
+            if (!currentType) { return p_type('any') }
             const memberName = memberIndeterminate.name;
             if (currentType.kind !== 'struct') {
                 this.addDiagnostic(memberIndeterminate, `'${this.typeToString(currentType)}' 型にメンバー '${memberName}' はありません。`, DiagnosticSeverity.Error);
-                return this.createPrimitiveType('any');
+                return p_type('any');
             }
             const memberType = currentType.members.get(memberName);
             if (!memberType) {
                 this.addDiagnostic(memberIndeterminate, `構造体 '${currentType.name}' にメンバー '${memberName}' はありません。`, DiagnosticSeverity.Error);
-                return this.createPrimitiveType('any');
+                return p_type('any');
             }
             currentType = memberType;
         }
-        return currentType || this.createPrimitiveType('any');
+        return currentType || p_type('any');
     }
 
     
@@ -1152,7 +1383,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
         } finally {
             this.isInLoop = previousInLoop;
         }
-        return this.createPrimitiveType('undefined');
+        return p_type('undefined');
     }
 
     visitIfStatement(node: ast.IfStatementNode): AsirType {
@@ -1198,7 +1429,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
             }
         }
 
-        return this.createPrimitiveType('undefined');
+        return p_type('undefined');
     }
 
     visitWhileStatement(node: ast.WhileStatementNode): AsirType {
@@ -1211,7 +1442,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
         } finally {
             this.isInLoop = previousInLoop;
         }
-        return this.createPrimitiveType('undefined');
+        return p_type('undefined');
     }
 
     visitDoWhileStatement(node: ast.DoWhileStatementNode): AsirType {
@@ -1224,7 +1455,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
         }
 
         node.conditions.forEach(cond => this.visit(cond));
-        return this.createPrimitiveType('undefined');
+        return p_type('undefined');
     }
 
     visitBreakStatement(node: ast.BreakStatementNode): AsirType {
@@ -1235,7 +1466,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 DiagnosticSeverity.Error
             );
         }
-        return this.createPrimitiveType('undefined');
+        return p_type('undefined');
     }
 
     visitContinueStatement(node: ast.ContinueStatementNode): AsirType {
@@ -1246,17 +1477,17 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 DiagnosticSeverity.Error
             );
         }
-        return this.createPrimitiveType('undefined');
+        return p_type('undefined');
     }
 
     visitReturnStatement(node: ast.ReturnStatementNode): AsirType {
-        const returnType = node.value ? this.visit(node.value) : this.createPrimitiveType('undefined');
+        const returnType = node.value ? this.visit(node.value) : p_type('undefined');
         if (node.value && returnType) {
             this.checkUsageAsValue(node.value, returnType);
         }
 
         if (!returnType) {
-            const safeReturnType = this.createPrimitiveType('any');
+            const safeReturnType = p_type('any');
             this.handleReturn(node, safeReturnType);
             return safeReturnType;
         }
@@ -1265,12 +1496,11 @@ export class Validator extends AsirASTVisitor<AsirType> {
     }
 
     visitStructStatement(node: ast.StructStatementNode): AsirType {
-        console.log(`[Debug] visitStructStatement: Processing definition for '${node.name.name}'.`);
         const structName = node.name.name;
         // メンバーの情報収集
         const memberMap = new Map<string, AsirType>();
         for (const memberID of node.members) {
-            memberMap.set(memberID.name, this.createPrimitiveType('any'));
+            memberMap.set(memberID.name, p_type('any'));
         }
         const structType: StructAsirType = {
             kind: 'struct',
@@ -1279,7 +1509,6 @@ export class Validator extends AsirASTVisitor<AsirType> {
         };
         // 構造体の型をシンボルテーブルに登録
         if (node.loc) {
-            console.log(`[Debug] visitStructStatement: Defining symbol '${structName}' in scope '${this.symbolTable.currentScope.node.kind}'.`);
             this.symbolTable.currentScope.define({
                 name: structName,
                 type: structType,
@@ -1287,28 +1516,144 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 node: node
             });
         }
-        return this.createPrimitiveType('undefined');
+        return p_type('undefined');
+    }
+    // モジュール関係
+    visitModuleDeclaration(node: ast.ModuleDeclarationNode): AsirType {
+        const moduleName =node.name.name;
+        if (this.symbolTable.currentScope.lookupCurrentScope(moduleName)) {
+            this.addDiagnostic(node.name, `シンボル '${moduleName}' はこのスコープで既に定義されています。`, DiagnosticSeverity.Error);
+        }
+
+        const moduleType: ModuleAsirType = {
+            kind: 'module',
+            name: moduleName,
+            members: new Map() // 将来的に拡張するらしい
+        };
+        if (node.loc) {
+            this.symbolTable.currentScope.define({
+                name: moduleName,
+                type: moduleType,
+                definedAt: node.loc,
+                node: node
+            });
+        }
+
+        this.symbolTable.enterScope(node); // スコープ開始
+        this.currentModuleScope = this.symbolTable.currentScope;
+        this.currentModule = moduleType;
+        return p_type('undefined');
+    }
+
+    visitModuleVariableDeclaration(node: ast.ModuleVariableDeclarationNode): AsirType {
+        const scopeType = node.scope;
+
+        for (const variableNode of node.variables) {
+            const varName = variableNode.name;
+            const newSymbol: Symbol = {
+                name: varName,
+                type: p_type('any'),
+                definedAt: variableNode.loc,
+                node: variableNode
+            };
+
+            switch (scopeType) {
+                case 'global': {
+                    const globalScope = this.symbolTable.getRootScope();
+                    if (globalScope.lookupCurrentScope(varName)) {
+                        this.addDiagnostic(variableNode, `大域変数 '${varName}' は既に定義されています。`, DiagnosticSeverity.Warning);
+                    } else { globalScope.define(newSymbol); }
+                    break;
+                }
+                case'local': {
+                    this.symbolTable.currentScope.hasLocalDeclaration = true;
+                    if (this.symbolTable.currentScope.lookupCurrentScope(varName)) {
+                        this.addDiagnostic(variableNode, `局所変数 '${varName}' はこのスコープで定義されています。`, DiagnosticSeverity.Warning);
+                    } else { this.symbolTable.currentScope.define(newSymbol); }
+                    break;
+                }
+                case 'static': {
+                    if (!this.currentModuleScope) {
+                        this.addDiagnostic(variableNode, `'static' はモジュール内でのみ宣言できます。`, DiagnosticSeverity.Error);
+                        break;
+                    }
+                    if (this.currentModuleScope.lookupCurrentScope(varName)) {
+                        this.addDiagnostic(variableNode, `変数 '${varName}' はこのモジュールで既に定義されています。`, DiagnosticSeverity.Warning);
+                    } else {
+                        this.currentModuleScope.define(newSymbol);
+                    }
+                    break;
+                }
+                case 'extern': {
+                    if (!this.currentModuleScope || !this.currentModule) {
+                        this.addDiagnostic(variableNode, `'extern' はモジュール内でのみ宣言できます。`, DiagnosticSeverity.Error);
+                        break;
+                    }
+                    if (this.currentModuleScope.lookupCurrentScope(varName)) {
+                        this.addDiagnostic(variableNode, `変数 '${varName}' はこのモジュールで既に定義されています。`, DiagnosticSeverity.Warning);
+                    } else {
+                        this.currentModuleScope.define(newSymbol);
+                        this.symbolTable.getRootScope().define(newSymbol);
+                        this.currentModule.members.set(varName, newSymbol);
+                    }
+                    break;
+                }
+                case 'localf': {
+                    if (this.symbolTable.currentScope.lookupCurrentScope(varName)) {
+                        this.addDiagnostic(variableNode, `関数 '${varName}' はこのスコープで既に定義されています。`, DiagnosticSeverity.Warning);
+                    } else {
+                        const funcType: FunctionAsirType = {
+                            kind: 'function',
+                            parameters: [],
+                            returnType: p_type('any'),
+                            behavior: 'callable_and_symbol'
+                        };
+                        this.symbolTable.currentScope.define({ name: varName, type: funcType, definedAt: variableNode.loc, node: variableNode });
+                    }
+                    break;
+                }
+            }
+        }
+        return p_type('undefined');
+    }
+
+    visitEndModule(node: ast.EndModuleNode): AsirType {
+        this.currentModuleScope = null;
+        this.currentModule = null;
+        this.symbolTable.exitScope(); // スコープ終了
+        return p_type('undefined');
     }
 
     // --- リテラル ---
-    visitStringLiteral(node: ast.StringLiteralNode): AsirType { return this.createPrimitiveType('string'); }
+    visitStringLiteral(node: ast.StringLiteralNode): AsirType { return p_type('string'); }
     visitNumberLiteral(node: ast.NumberLiteralNode): AsirType {
         const text = node.rawText ?? String(node.value);
-        if (text.includes('/')) { return this.createPrimitiveType('rational'); }
-        if (text.includes('.') || text.toLowerCase().includes('e') || text.toLowerCase().includes('E')) { return this.createPrimitiveType('float'); }
+        if (text.includes('/')) { return p_type('rational'); }
+        if (text.includes('.') || text.toLowerCase().includes('e') || text.toLowerCase().includes('E')) { return p_type('float'); }
 
-        return this.createPrimitiveType('integer');
+        return p_type('integer');
     }
     visitDPolyLiteral(node: ast.DistributedPolynomialLiteralNode): AsirType {
-        return this.createPrimitiveType('dpoly');
+        return p_type('dpoly');
         // 多分dpとdpmを分けるロジックが必要
     }
     visitListLiteral(node: ast.ListLiteralNode): AsirType {
        const elementTypes = node.elements.map(el => {
-            const elType = this.visit(el) || this.createPrimitiveType('any');
+            const elType = this.visit(el) || p_type('any');
             this.checkUsageAsValue(el, elType);
             return elType;
        });
        return { kind: 'tuple', elements: elementTypes.map(t => ({ type: t })) };
+    }
+
+    // エラー検知用
+    visitDottedIdentifier(node: ast.DottedIdentifierNode): AsirType {
+        const fullName = node.identifiers.map(id => id.name).join('.');
+        this.addDiagnostic(
+            node,
+            `識別子 '${fullName}' に '.' を含めることは推奨されません。 'module.func()' でモジュール内の関数を呼びだす時に使用してください。`,
+            DiagnosticSeverity.Error
+        );
+        return p_type('any');
     }
 }

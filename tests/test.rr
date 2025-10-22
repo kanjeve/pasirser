@@ -1,0 +1,52 @@
+def collatz(Integer) {
+    /* 
+    print("start: ",0)$    
+    print(Integer)$ 
+    */
+    while (Integer != 1) {
+        I += 1$        
+        if ( irem(Integer, 2) == 0) {
+            Integer = idiv(Integer, 2)$        
+        } else {            
+            Integer = 3*Integer + 1$        
+        }
+        /*
+        print(I, 0)$        
+        print(": ", 0)$
+        print(Integer)$  
+        */  
+    }    
+    /* print("complete!")$ */
+    return I$
+}
+
+def lsort(A,B) { return A[0]>B[0]? 1 : (A[0]<B[0]? -1:0)$ }
+
+def collatz_list(Mini, Max) {
+    L = []$
+    for (I = Mini; I <= Max; I++) {
+        A = collatz(I)$
+        L = cons([A,I],L)$
+    }
+    L = ltov(L)$
+    qsort(L, lsort)$
+    return L$
+}
+
+def collatz_detected(Mini, Max) {
+    L = collatz_list(Mini, Max)$
+    Mi = L[0]$
+    Ma = L[length(L)-1]$
+    print("Min: ", 0)$
+    print(Mi[1], 0)$
+    print(" (", 0)$
+    print(Mi[0],0)$
+    print(" times)")$
+    print("Max: ", 0)$
+    print(Ma[1], 0)$
+    print(" (", 0)$
+    print(Ma[0],0)$
+    print(" times)")$
+}
+
+collatz_detected(10,999)$

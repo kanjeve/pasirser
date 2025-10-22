@@ -7,6 +7,10 @@
 node_modules/
 dist/
 
+# Temporary files
+temp_for_review/
+tome/
+
 # Compiled Java class files
 *.class
 

@@ -1,5 +1,5 @@
 import { ParserRuleContext, TerminalNode, Token } from 'antlr4ng';
-import * as ast from './testAst.js';
+import * as ast from './asirAst.js';
 
 /**
  * ParserRuleContext または TerminalNode から ASTNode の位置情報を取得します。

@@ -1,4 +1,4 @@
-import { ASTNode } from '../testAst.js';
+import { ASTNode } from '../asirAst.js';
 
 // --- Rich Type System ---
 
@@ -6,7 +6,7 @@ export type PrimitiveAsirTypeName =
     | 'number' | 'ratfunction' | 'string' |'dpoly' | 'usint' | 'error' | 'gf2mat' | 'mathcap' | 'qeformula' | 'gfmmat' | 'bytearray'
     | 'quote' | 'option' | 'symbol' | 'range' | 'textbuffer' | 'dpolyvector' | 'quotearg' | 'imatrix' | 'ncpoly' | 'dmodpoly' | 'void'
     | 'rational' | 'float' | 'alg' | 'bigfloat' | 'complex' | 'fsmall' | 'flarge' | 'fchar2' | 'fcharp'
-    | 'fcharpsmall' | 'fchardefp' | 'dalg' | 'indeterminate' | 'uc' | 'form' | 'functor'
+    | 'fcharpsmall' | 'fchardefp' | 'dalg' | 'indeterminate' | 'uc' | 'form' /*| 'functor'*/
     | 'any' | 'undefined' | 'parameter' | 'integer' | 'pp' | 'struct';
 
 export interface TypeMetadata {
@@ -33,7 +33,7 @@ export const TYPE_METADATA = new Map<PrimitiveAsirTypeName, TypeMetadata>([
     ['indeterminate', { parent: 'pp', category: 'polynomial' }],
     ['uc', { parent: 'pp', category: 'polynomial' }],
     ['form', { parent: 'pp', category: 'polynomial' }],
-    ['functor', { parent: 'pp', category: 'polynomial' }],
+    // ['functor', { parent: 'pp', category: 'polynomial' }],
     ['pp', { category: 'polynomial' }],
 
     ['ratfunction', { category: 'polynomial' }],
@@ -73,7 +73,6 @@ export type MatrixAsirType = { kind: 'matrix', elementType: AsirType, rows?: num
 export type FunctionBehavior = 
     | 'callable_only'
     | 'callable_and_symbol';
-
 export type FunctionAsirType = { kind: 'function', parameters: { name: string, type: AsirType }[], restParameter?: { name: string, type: AsirType }, returnType: AsirType, allowesOptions?: Map<string, AsirType>, behavior: FunctionBehavior };
 export type StructAsirType = { kind: 'struct', name: string, members: Map<string, AsirType> };
 export type ModuleAsirType = { kind: 'module', name: string, members: Map<string, Symbol> };
@@ -111,6 +110,7 @@ export interface Symbol {
 
 export class Scope {
     public symbols: Map<string, Symbol> = new Map();
+    public hasLocalDeclaration: boolean = false;
     public readonly parent: Scope | null;
     public children: Scope[] = [];
     public readonly node: ASTNode;
@@ -144,3 +144,20 @@ export class Scope {
         return this.symbols.get(name);
     }
 }
+
+// 型生成用ヘルパー
+export const p_type = (name: PrimitiveAsirTypeName): PrimitiveAsirType => ({ kind: 'primitive', name });
+export const u_type = (types: AsirType[]): UnionType => ({ kind: 'union', types });
+export const l_type = (elementType: AsirType): ListAsirType => ({ kind: 'list', elementType });
+export const v_type = (elementType: AsirType): VectorAsirType => ({ kind: 'vector', elementType });
+export const m_type = (elementType: AsirType): MatrixAsirType => ({ kind: 'matrix', elementType });
+export const stdpoly_type = (coeffType: AsirType): PolynomialAsirType  => ({ kind: 'standard_polynomial', coefficientType: coeffType });
+export const dpoly_type = (coeffType: AsirType): PolynomialAsirType => ({ kind: 'distributed_polynomial', coefficientType: coeffType });
+export const dpm_type = (coeffType: AsirType): PolynomialAsirType => ({ kind: 'dmod_polynomial', coefficientType: coeffType });
+export const rat_type = (coeffType: AsirType): PolynomialAsirType => ({ kind: 'rational_function', coefficientType: coeffType });
+
+export const type_0: LiteralUnionType = { kind: 'literal_union', values: [0] };
+export const type_1: LiteralUnionType = { kind: 'literal_union', values: [1] };
+export const type_0_1: LiteralUnionType = { kind: 'literal_union', values: [0, 1] };
+export const type_m1_0_1: LiteralUnionType = { kind: 'literal_union', values: [-1, 0, 1] };
+export const type_0_1_2: LiteralUnionType = { kind: 'literal_union', values: [0, 1, 2] };

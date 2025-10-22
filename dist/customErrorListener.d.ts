@@ -2,6 +2,8 @@ import { ANTLRErrorListener, Recognizer, RecognitionException, Token, ATNSimulat
 export interface SyntaxErrorInfo {
     line: number;
     column: number;
+    endLine: number;
+    endColumn: number;
     message: string;
     offendingSymbol: string | null;
     ruleStack: string[];
@@ -21,6 +23,9 @@ export declare class CustomErrorListener implements ANTLRErrorListener {
     private _errors;
     private _ambiguities;
     private _diagnostics;
+    getErrors(): SyntaxErrorInfo[];
+    hasErrors(): boolean;
+    clear(): void;
     syntaxError<S extends Token, T extends ATNSimulator>(recognizer: Recognizer<T>, offendingSymbol: S | null, line: number, charPositionInLine: number, msg: string, e: RecognitionException | null): void;
     /**
      * 文法が曖昧な箇所を報告するために呼び出される
@@ -37,11 +42,8 @@ export declare class CustomErrorListener implements ANTLRErrorListener {
     /**
      * 典型的なエラーメッセージを日本語で表示
      */
-    formatErrorMessage(recognizer: Recognizer<any>, msg: string): string;
+    private translateErrorMessage;
     private formatExpectedTokens;
-    getErrors(): SyntaxErrorInfo[];
     getAmbiguities(): AmbiguityInfo[];
     getDiagnostics(): DiagnosticInfo[];
-    hasErrors(): boolean;
-    clear(): void;
 }

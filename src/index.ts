@@ -2,10 +2,10 @@
 export { analyze } from './run.js';
 
 // ASTの型定義
-export * from './testAst.js';
+export * from './asirAst.js';
 
 // ASTビルダーのクラス（高度な利用向け）
-export { AsirASTBuilder } from './testAsirASTBuilder.js';
+export { AsirASTBuilder } from './asirASTBuilder.js'
 
 // エラーリスナーとエラー情報の型（デバッグや詳細なエラーハンドリング向け）
 export { CustomErrorListener } from './customErrorListener.js';

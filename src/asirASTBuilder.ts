@@ -1,108 +1,111 @@
 import { Token, ParserRuleContext, TerminalNode, AbstractParseTreeVisitor } from 'antlr4ng';
 
-import { testVisitor } from './.antlr/testVisitor.js';
-import * as ast from './testAst.js'
+import { asirVisitor } from './.antlr/asirVisitor.js';
+import * as ast from './asirAst.js'
 import { ASTBuilderError, getLoc } from './errors.js';
-import { FactExprContext, ForwardDeclStatementContext, testParser } from './.antlr/testParser.js';
+import { FactExprContext, ForwardDeclStatementContext, asirParser } from './.antlr/asirParser.js';
 
 // Import all context types
-import { ProgContext } from "./.antlr/testParser.js";
-import { ExprStatementContext } from "./.antlr/testParser.js";
-import { EmptyLineStatementContext } from "./.antlr/testParser.js";
-import { DefinitionStatementContext } from "./.antlr/testParser.js";
-import { FormDeclarationContext } from "./.antlr/testParser.js";
-import { IfStatementContext } from "./.antlr/testParser.js";
-import { ForStatementContext } from "./.antlr/testParser.js";
-import { WhileStatementContext } from "./.antlr/testParser.js";
-import { DoStatementContext } from "./.antlr/testParser.js";
-import { ReturnStatementContext } from "./.antlr/testParser.js";
-import { BreakStatementContext } from "./.antlr/testParser.js";
-import { ContinueStatementContext } from "./.antlr/testParser.js";
-import { StructStatementContext } from "./.antlr/testParser.js";
-import { ModuleStatementContext } from "./.antlr/testParser.js";
-import { PreproStatementContext } from "./.antlr/testParser.js";
-import { PreChrContext } from "./.antlr/testParser.js";
-import { PreChrPlusContext } from "./.antlr/testParser.js";
-import { PDefContext } from "./.antlr/testParser.js";
-import { PIfContext } from "./.antlr/testParser.js";
-import { PIncContext } from "./.antlr/testParser.js";
-import { DefContext } from "./.antlr/testParser.js";
-import { FormDeclContext } from "./.antlr/testParser.js";
-import { IfContext } from "./.antlr/testParser.js";
-import { ForContext } from "./.antlr/testParser.js";
-import { WhileContext } from "./.antlr/testParser.js";
-import { DoContext } from "./.antlr/testParser.js";
-import { ReturnContext } from "./.antlr/testParser.js";
-import { ContinueContext } from "./.antlr/testParser.js";
-import { BreakContext } from "./.antlr/testParser.js";
-import { StructContext } from "./.antlr/testParser.js";
-import { FCallExprContext } from "./.antlr/testParser.js";
-import { FunctorCallExprContext } from "./.antlr/testParser.js";
-import { ModuleAssignContext } from "./.antlr/testParser.js";
-import { ModuleStartContext } from "./.antlr/testParser.js";
-import { ModuleEndContext } from "./.antlr/testParser.js";
-import { MainContext } from "./.antlr/testParser.js";
-import { NoAssignmentContext } from "./.antlr/testParser.js";
-import { AssignContext } from "./.antlr/testParser.js";
-import { StructAssignContext } from "./.antlr/testParser.js";
-import { ListAssignContext } from "./.antlr/testParser.js";
-import { TernaryContext } from "./.antlr/testParser.js";
-import { QuoteContext } from "./.antlr/testParser.js";
-import { QEnotContext } from "./.antlr/testParser.js";
-import { QEorContext } from "./.antlr/testParser.js";
-import { QEandContext } from "./.antlr/testParser.js";
-import { QECompareContext } from "./.antlr/testParser.js";
-import { OrContext } from "./.antlr/testParser.js";
-import { AndContext } from "./.antlr/testParser.js";
-import { CompareContext } from "./.antlr/testParser.js";
-import { AddSubContext } from "./.antlr/testParser.js";
-import { MulDivSurContext } from "./.antlr/testParser.js";
-import { UnaryMinusContext } from "./.antlr/testParser.js";
-import { NotExprContext } from "./.antlr/testParser.js";
-import { PowExprContext } from "./.antlr/testParser.js";
-import { PowExContext } from "./.antlr/testParser.js";
-import { FactorialExprContext } from "./.antlr/testParser.js";
-import { PreFixContext } from "./.antlr/testParser.js";
-import { PostFixContext } from "./.antlr/testParser.js";
-import { IndexAccessContext } from "./.antlr/testParser.js";
-import { MemberAccessContext } from "./.antlr/testParser.js";
-import { IndExprContext } from "./.antlr/testParser.js";
-import { RealContext } from "./.antlr/testParser.js";
-import { IdExprContext } from "./.antlr/testParser.js";
-import { ParenContext } from "./.antlr/testParser.js";
-import { StringLiteralContext } from "./.antlr/testParser.js";
-import { ListLiteralContext } from "./.antlr/testParser.js";
-import { DpLiteralContext } from "./.antlr/testParser.js";
-import { PreChrExprContext } from "./.antlr/testParser.js";
-import { DpContext } from "./.antlr/testParser.js";
-import { RatContext } from "./.antlr/testParser.js";
-import { FloatContext } from "./.antlr/testParser.js";
-import { HexNumContext } from "./.antlr/testParser.js";
-import { BitNumContext } from "./.antlr/testParser.js";
-import { RatNumContext } from "./.antlr/testParser.js";
-import { DecNumContext } from "./.antlr/testParser.js";
-import { ImaNumContext } from "./.antlr/testParser.js";
-import { GenNumContext } from "./.antlr/testParser.js";
-import { IdContext } from "./.antlr/testParser.js";
-import { BefContext } from "./.antlr/testParser.js";
-import { BefNContext } from "./.antlr/testParser.js";
-import { V2IdContext } from "./.antlr/testParser.js";
-import { FuncContext } from "./.antlr/testParser.js";
-import { AtFuncContext } from "./.antlr/testParser.js";
-import { ChFuncContext } from "./.antlr/testParser.js";
-import { ListExprContext } from "./.antlr/testParser.js";
-import { SentenceContext } from "./.antlr/testParser.js";
-import { Sentence1Context } from "./.antlr/testParser.js";
-import { ExprlistContext } from "./.antlr/testParser.js";
-import { TerminatorContext } from "./.antlr/testParser.js";
-import { SystemPathContext } from "./.antlr/testParser.js";
-import { ElifClauseContext } from "./.antlr/testParser.js";
-import { ElseClauseContext } from "./.antlr/testParser.js";
-import { OptionPairContext } from "./.antlr/testParser.js";
+import { ProgContext } from "./.antlr/asirParser.js";
+import { ExprStatementContext } from "./.antlr/asirParser.js";
+import { EmptyLineStatementContext } from "./.antlr/asirParser.js";
+import { DefinitionStatementContext } from "./.antlr/asirParser.js";
+import { FormDeclarationContext } from "./.antlr/asirParser.js";
+import { IfStatementContext } from "./.antlr/asirParser.js";
+import { ForStatementContext } from "./.antlr/asirParser.js";
+import { WhileStatementContext } from "./.antlr/asirParser.js";
+import { DoStatementContext } from "./.antlr/asirParser.js";
+import { ReturnStatementContext } from "./.antlr/asirParser.js";
+import { BreakStatementContext } from "./.antlr/asirParser.js";
+import { ContinueStatementContext } from "./.antlr/asirParser.js";
+import { StructStatementContext } from "./.antlr/asirParser.js";
+import { ModuleStatementContext } from "./.antlr/asirParser.js";
+import { PreproStatementContext } from "./.antlr/asirParser.js";
+import { PreChrContext } from "./.antlr/asirParser.js";
+import { PreChrPlusContext } from "./.antlr/asirParser.js";
+import { PDefContext } from "./.antlr/asirParser.js";
+import { PIfContext } from "./.antlr/asirParser.js";
+import { PIncContext } from "./.antlr/asirParser.js";
+import { DefContext } from "./.antlr/asirParser.js";
+import { FormDeclContext } from "./.antlr/asirParser.js";
+import { IfContext } from "./.antlr/asirParser.js";
+import { ForContext } from "./.antlr/asirParser.js";
+import { WhileContext } from "./.antlr/asirParser.js";
+import { DoContext } from "./.antlr/asirParser.js";
+import { ReturnContext } from "./.antlr/asirParser.js";
+import { ContinueContext } from "./.antlr/asirParser.js";
+import { BreakContext } from "./.antlr/asirParser.js";
+import { StructContext } from "./.antlr/asirParser.js";
+import { FCallExprContext } from "./.antlr/asirParser.js";
+import { FunctorCallExprContext } from "./.antlr/asirParser.js";
+import { ModuleAssignContext } from "./.antlr/asirParser.js";
+import { ModuleStartContext } from "./.antlr/asirParser.js";
+import { ModuleEndContext } from "./.antlr/asirParser.js";
+import { MainContext } from "./.antlr/asirParser.js";
+import { NoAssignmentContext } from "./.antlr/asirParser.js";
+import { AssignContext } from "./.antlr/asirParser.js";
+import { StructAssignContext } from "./.antlr/asirParser.js";
+import { ListAssignContext } from "./.antlr/asirParser.js";
+import { TernaryContext } from "./.antlr/asirParser.js";
+import { QuoteContext } from "./.antlr/asirParser.js";
+import { QEImplContext } from "./.antlr/asirParser.js";
+import { QEnotContext } from "./.antlr/asirParser.js";
+import { QEorContext } from "./.antlr/asirParser.js";
+import { QEandContext } from "./.antlr/asirParser.js";
+import { QECompareContext } from "./.antlr/asirParser.js";
+import { OrContext } from "./.antlr/asirParser.js";
+import { AndContext } from "./.antlr/asirParser.js";
+import { CompareContext } from "./.antlr/asirParser.js";
+import { AddSubContext } from "./.antlr/asirParser.js";
+import { MulDivSurContext } from "./.antlr/asirParser.js";
+import { UnaryMinusContext } from "./.antlr/asirParser.js";
+import { NotExprContext } from "./.antlr/asirParser.js";
+import { PowExprContext } from "./.antlr/asirParser.js";
+import { PowExContext } from "./.antlr/asirParser.js";
+import { FactorialExprContext } from "./.antlr/asirParser.js";
+import { PreFixContext } from "./.antlr/asirParser.js";
+import { PostFixContext } from "./.antlr/asirParser.js";
+import { IndexAccessContext } from "./.antlr/asirParser.js";
+import { MemberAccessContext } from "./.antlr/asirParser.js";
+import { IndExprContext } from "./.antlr/asirParser.js";
+import { RealContext } from "./.antlr/asirParser.js";
+import { IdExprContext } from "./.antlr/asirParser.js";
+import { ParenContext } from "./.antlr/asirParser.js";
+import { StringLiteralContext } from "./.antlr/asirParser.js";
+import { ListLiteralContext } from "./.antlr/asirParser.js";
+import { DpLiteralContext } from "./.antlr/asirParser.js";
+import { PreChrExprContext } from "./.antlr/asirParser.js";
+import { DpContext } from "./.antlr/asirParser.js";
+import { RatContext } from "./.antlr/asirParser.js";
+import { FloatContext } from "./.antlr/asirParser.js";
+import { HexNumContext } from "./.antlr/asirParser.js";
+import { BitNumContext } from "./.antlr/asirParser.js";
+import { RatNumContext } from "./.antlr/asirParser.js";
+import { DecNumContext } from "./.antlr/asirParser.js";
+import { ImaNumContext } from "./.antlr/asirParser.js";
+import { GenNumContext } from "./.antlr/asirParser.js";
+import { IdContext } from "./.antlr/asirParser.js";
+import { BefContext } from "./.antlr/asirParser.js";
+import { BefNContext } from "./.antlr/asirParser.js";
+import { V2IdContext } from "./.antlr/asirParser.js";
+import { FuncContext } from "./.antlr/asirParser.js";
+import { AtFuncContext } from "./.antlr/asirParser.js";
+import { ChFuncContext } from "./.antlr/asirParser.js";
+import { ListExprContext } from "./.antlr/asirParser.js";
+import { SentenceContext } from "./.antlr/asirParser.js";
+import { Sentence1Context } from "./.antlr/asirParser.js";
+import { ExprlistContext } from "./.antlr/asirParser.js";
+import { TerminatorContext } from "./.antlr/asirParser.js";
+import { SystemPathContext } from "./.antlr/asirParser.js";
+import { ElifClauseContext } from "./.antlr/asirParser.js";
+import { ElseClauseContext } from "./.antlr/asirParser.js";
+import { OptionPairContext } from "./.antlr/asirParser.js";
+import { QualifiedNameContext } from "./.antlr/asirParser.js";
+import { DottedIdentifierContext } from "./.antlr/asirParser.js";
 
 
 // Custom Visitor Class
-export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undefined> implements testVisitor<ast.ASTNode | undefined> {
+export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undefined> implements asirVisitor<ast.ASTNode | undefined> {
 
     // --- Helper Methods ---
 
@@ -428,7 +431,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
     }
 
     visitQuote(ctx: QuoteContext): ast.ExpressionNode {
-        const operand = this.visitAndCheck<ast.ExpressionNode>(ctx.qeNotExpr()!);
+        const operand = this.visitAndCheck<ast.ExpressionNode>(ctx.qeImplExpr()!);
         if (ctx.BACK()) {
             return {
                 kind: 'UnaryOperation',
@@ -440,6 +443,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         return operand;
     }
 
+    visitQEImpl(ctx: QEImplContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.qeNotExpr(i)); }
     visitQEnot(ctx: QEnotContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.qeOrExpr(i)); }
     visitQEor(ctx: QEorContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.qeAndExpr(i)); }
     visitQEand(ctx: QEandContext): ast.ExpressionNode { return this.visitBinaryOp(ctx, (i) => ctx.qeCompareExpr(i)); }
@@ -741,8 +745,20 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         };
     }
 
+    visitQualifiedName(ctx: QualifiedNameContext): ast.QualifiedNameNode {
+        const funcName = this.visitAndCheck<ast.IndeterminateNode>(ctx._funcName);
+        let moduleNameNode: ast.IndeterminateNode | undefined = undefined;
+        if (ctx._moduleName) { moduleNameNode = this.createIndeterminateNode(ctx._moduleName); }
+        return {
+            kind: 'QualifiedName',
+            moduleName: moduleNameNode,
+            functionName: funcName,
+            loc: getLoc(ctx)
+        };
+    }
+
     visitFCallExpr(ctx: FCallExprContext): ast.FunctionCallNode {
-        const callee = this.visitAndCheck<ast.IndeterminateNode>(ctx._name);
+        const callee = this.visitAndCheck<ast.QualifiedNameNode>(ctx._path);
         const isGlobal = !!ctx._is_global;
 
         let diffOrders: number[] | undefined = undefined;
@@ -838,6 +854,14 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
             kind: 'OptionPair',
             key: keyNode,
             value: valueNode,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitDottedIdentifier(ctx: DottedIdentifierContext): ast.DottedIdentifierNode {
+        return {
+            kind: 'DottedIdentifier',
+            identifiers: ctx.indeterminate().map(idToken => this.visitAndCheck<ast.IndeterminateNode>(idToken)),
             loc: getLoc(ctx)
         };
     }
