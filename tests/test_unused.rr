@@ -1,0 +1,7 @@
+def myFunc(A,B) {
+    return A + B;
+}
+
+UnusedVar = 10; // これは未使用として報告されるはず
+MyVar = 20;
+myFunc(MyVar, 30);

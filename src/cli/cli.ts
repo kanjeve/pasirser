@@ -9,10 +9,14 @@ import * as ast from '../core/ast/asirAst.js';
 import { Validator } from '../semantics/validator.js';
 import { Diagnostic, DiagnosticSeverity } from '../utils/diagnostics.js';
 import { SymbolTable } from '../semantics/symbolTable.js';
-import { Command } from 'commander'; // commanderをインポート
-import { AsirFormatter } from '../features/formatter.js'; // AsirFormatterをインポート
-import { getCompletions } from '../features/completionProvider.js'; // getCompletionsをインポート
-import { getHoverInfo } from '../features/hover/hoverProvider.js'; 
+import { Command } from 'commander'; 
+import { AsirFormatter } from '../features/formatter.js';
+import { getCompletions } from '../features/completionProvider.js'; 
+import { getHoverInfo } from '../features/hoverProvider.js'; 
+import { getDefinitionLocation, DefinitionLocation } from '../features/definitionProvider.js'; 
+import { getRenameEdits, TextEdit } from '../features/renameProvider.js'; 
+import { getDocumentSymbols, DocumentSymbol } from '../features/documentSymbolProvider.js'; 
+import { getSemanticTokens, SemanticToken } from '../features/semanticTokensProvider.js'; 
 
 function parseAndBuildAST(code: string): { ast: ast.ProgramNode | null; syntaxErrors: SyntaxErrorInfo[]; ambiguities: AmbiguityInfo[]; otherDiagnostics: DiagnosticInfo[]; } {
     const chars = CharStream.fromString(code);
@@ -65,8 +69,8 @@ export function analyze(code: string): { ast: ast.ProgramNode | null, diagnostic
     const diagnostics: Diagnostic[] = SyntaxErrorInfos.map(e => ({
         severity: DiagnosticSeverity.Error,
         range: {
-            start: { line: e.line - 1, character: e.column },
-            end: { line: e.endLine - 1, character: e.endColumn }, 
+            start: { line: e.line, character: e.column },
+            end: { line: e.endLine, character: e.endColumn }, 
         },
         message: e.message,
         source: 'Syntax',
@@ -77,8 +81,8 @@ export function analyze(code: string): { ast: ast.ProgramNode | null, diagnostic
         diagnostics.push({
             severity: DiagnosticSeverity.Information, // 曖昧性は情報レベル
             range: {
-                start: { line: a.line - 1, character: a.column },
-                end: { line: a.line - 1, character: a.column + 1 }, // 曖昧なシンボルの長さが不明なため、仮に1文字
+                start: { line: a.line, character: a.column },
+                end: { line: a.line, character: a.column + 1 }, // 曖昧なシンボルの長さが不明なため、仮に1文字
             },
             message: a.message,
             source: 'Ambiguity',
@@ -90,8 +94,8 @@ export function analyze(code: string): { ast: ast.ProgramNode | null, diagnostic
         diagnostics.push({
             severity: DiagnosticSeverity.Hint, // その他の診断はヒントレベル
             range: {
-                start: { line: d.line - 1, character: d.column },
-                end: { line: d.line - 1, character: d.column + 1 }, // 長さ不明のため仮に1文字
+                start: { line: d.line, character: d.column },
+                end: { line: d.line, character: d.column + 1 }, // 長さ不明のため仮に1文字
             },
             message: d.message,
             source: d.type === 'FullContext' ? 'FullContext' : 'ContextSensitivity',
@@ -141,7 +145,7 @@ if (require.main === module) {
                     if (filteredDiagnostics.length > 0) {
                         console.log('\n--- Diagnostics ---');
                         for (const d of filteredDiagnostics) {
-                            console.log(`[${d.source}] L${d.range.start.line + 1}:C${d.range.start.character} - ${d.message} (Severity: ${DiagnosticSeverity[d.severity]})`);
+                            console.log(`[${d.source}] L${d.range.start.line}:C${d.range.start.character} - ${d.message} (Severity: ${DiagnosticSeverity[d.severity]})`);
                         }
                     } else {
                         console.log('No issues found.');
@@ -188,17 +192,17 @@ if (require.main === module) {
                 const line = parseInt(lineStr, 10);
                 const character = parseInt(charStr, 10);
 
-                const { ast, syntaxErrors } = parseAndBuildAST(code);
+                const { ast, diagnostics, symbolTable } = analyze(code);
 
-                if (syntaxErrors.length > 0 || !ast) {
-                    console.error('Completion failed due to syntax errors:');
-                    syntaxErrors.forEach(e => {
-                        console.error(`L${e.line}:C${e.column} - ${e.message}`);
+                const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
+                if (errors.length > 0 || !ast || !symbolTable) {
+                    console.error('Completion failed due to errors or missing AST/SymbolTable:');
+                    errors.forEach(e => {
+                        console.error(`L${e.range.start.line}:C${e.range.start.character} - ${e.message}`);
                     });
                     process.exit(1);
                 }
 
-                const symbolTable = new SymbolTable(ast);
                 const completions = getCompletions(code, { line, character }, ast, symbolTable);
                 console.log(JSON.stringify(completions, null, 2));
 
@@ -217,22 +221,139 @@ if (require.main === module) {
                 const line = parseInt(lineStr, 10);
                 const character = parseInt(charStr, 10);
 
-                const { ast, syntaxErrors } = parseAndBuildAST(code);
+                const { ast, diagnostics, symbolTable } = analyze(code);
 
-                if (syntaxErrors.length > 0 || !ast) {
-                    console.error('Hover failed due to syntax errors:');
-                    syntaxErrors.forEach(e => {
-                        console.error(`L${e.line}:C${e.column} - ${e.message}`);
+                const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
+                if (errors.length > 0 || !ast || !symbolTable) {
+                    console.error('Hover failed due to errors or missing AST/SymbolTable:');
+                    errors.forEach(e => {
+                        console.error(`L${e.range.start.line}:C${e.range.start.character} - ${e.message}`);
                     });
                     process.exit(1);
                 }
 
-                const symbolTable = new SymbolTable(ast);
                 const hoverInfo = getHoverInfo(code, { line, character }, ast, symbolTable);
                 console.log(JSON.stringify(hoverInfo, null, 2));
 
             } catch (e) {
                 console.error(`Error getting hover info: ${e}`);
+                process.exit(1);
+            }
+        });
+
+    program.command('definition <file> <line> <character>')
+        .description('Find the definition of a symbol in an Asir file.')
+        .action((filePath, lineStr, charStr) => {
+            console.log(`Getting definition for: ${filePath} at L${lineStr}:C${charStr}`);
+            try {
+                const code = fs.readFileSync(filePath, 'utf-8');
+                const line = parseInt(lineStr, 10);
+                const character = parseInt(charStr, 10);
+
+                const { ast, diagnostics, symbolTable } = analyze(code); // Use analyze to get ast and symbolTable
+
+                const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
+                if (errors.length > 0 || !ast || !symbolTable) {
+                    errors.forEach(e => {
+                        console.error(`L${e.range.start.line}:C${e.range.start.character} - ${e.message}`);
+                    });
+                    process.exit(1);
+                }
+
+                const definitionLocation = getDefinitionLocation(code, { line, character }, ast, symbolTable, filePath);
+                if (definitionLocation) {
+                    console.log(JSON.stringify(definitionLocation, null, 2));
+                } else {
+                    console.log('Definition not found.');
+                }
+
+            } catch (e) {
+                console.error(`Error getting definition: ${e}`);
+                process.exit(1);
+            }
+        });
+
+    program.command('rename <file> <line> <character> <newName>')
+        .description('Generate text edits to rename a symbol in an Asir file.')
+        .action((filePath, lineStr, charStr, newName) => {
+            console.log(`Generating rename edits for: ${filePath} at L${lineStr}:C${charStr} to new name: ${newName}`);
+            try {
+                const code = fs.readFileSync(filePath, 'utf-8');
+                const line = parseInt(lineStr, 10);
+                const character = parseInt(charStr, 10);
+
+                const { ast, diagnostics, symbolTable } = analyze(code);
+
+                const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
+                if (errors.length > 0 || !ast || !symbolTable) {
+                    console.error('Rename failed due to errors or missing AST/SymbolTable:');
+                    errors.forEach(e => {
+                        console.error(`L${e.range.start.line}:C${e.range.start.character} - ${e.message}`);
+                    });
+                    process.exit(1);
+                }
+
+                const renameEdits = getRenameEdits(code, { line, character }, newName, ast, symbolTable, filePath);
+                if (renameEdits && renameEdits.length > 0) {
+                    console.log(JSON.stringify(renameEdits, null, 2));
+                } else {
+                    console.log('No rename edits generated. Symbol not found or no references.');
+                }
+
+            } catch (e) {
+                console.error(`Error generating rename edits: ${e}`);
+                process.exit(1);
+            }
+        });
+
+    program.command('semantic-tokens <file>')
+        .description('Generate semantic tokens for an Asir file.')
+        .action((filePath) => {
+            console.log(`Generating semantic tokens for: ${filePath}`);
+            try {
+                const code = fs.readFileSync(filePath, 'utf-8');
+                const { ast, diagnostics, symbolTable } = analyze(code);
+
+                const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
+                if (errors.length > 0 || !ast || !symbolTable) {
+                    console.error('Semantic token generation failed due to errors or missing AST/SymbolTable:');
+                    errors.forEach(e => {
+                        console.error(`L${e.range.start.line}:C${e.range.start.character} - ${e.message}`);
+                    });
+                    process.exit(1);
+                }
+
+                const semanticTokens = getSemanticTokens(ast, symbolTable);
+                console.log(JSON.stringify(semanticTokens, null, 2));
+
+            } catch (e) {
+                console.error(`Error generating semantic tokens: ${e}`);
+                process.exit(1);
+            }
+        });
+
+    program.command('outline <file>')
+        .description('Generate document symbols (outline) for an Asir file.')
+        .action((filePath) => {
+            console.log(`Generating document symbols for: ${filePath}`);
+            try {
+                const code = fs.readFileSync(filePath, 'utf-8');
+                const { ast, diagnostics, symbolTable } = analyze(code);
+
+                const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
+                if (errors.length > 0 || !ast || !symbolTable) {
+                    console.error('Document symbol generation failed due to errors or missing AST/SymbolTable:');
+                    errors.forEach(e => {
+                        console.error(`L${e.range.start.line}:C${e.range.start.character} - ${e.message}`);
+                    });
+                    process.exit(1);
+                }
+
+                const documentSymbols = getDocumentSymbols(ast, symbolTable);
+                console.log(JSON.stringify(documentSymbols, null, 2));
+
+            } catch (e) {
+                console.error(`Error generating document symbols: ${e}`);
                 process.exit(1);
             }
         });

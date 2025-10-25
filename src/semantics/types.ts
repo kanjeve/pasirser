@@ -106,6 +106,7 @@ export interface Symbol {
     type: AsirType;
     definedAt: ASTNode['loc'];
     node: ASTNode;
+    isUsed: boolean; // Add this property
 }
 
 export class Scope {

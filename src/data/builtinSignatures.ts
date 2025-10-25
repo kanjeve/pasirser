@@ -1,5 +1,7 @@
 import { FunctionAsirType,OverloadedFunctionType, UnionType,p_type, u_type, l_type, v_type, m_type, stdpoly_type, dpoly_type, dpm_type, rat_type, type_0, type_1, type_0_1, type_m1_0_1, type_0_1_2 } from "../semantics/types";
 
+// p_type('any')ってプリミティブ型じゃね？
+
 // 組み込み関数用のシグネチャ
 export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedFunctionType>([
     [
@@ -263,7 +265,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
         }
     ],
     [
-        'conplot', // 今は二通りしか認めない
+        'conplot', // 今は二通りしか認めない // 2変数用
         {
             kind: 'overloaded_function',
             signatures: [
@@ -328,6 +330,30 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
                 { name: 'list', type: l_type(p_type('any')) }
             ],
             returnType: l_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'cont',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'poly', type: stdpoly_type(p_type('rational')) }],
+                    returnType: stdpoly_type(p_type('rational')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly', type: stdpoly_type(p_type('rational')) },
+                        { name: 'v', type: p_type('pp') }
+                    ],
+                    returnType: stdpoly_type(p_type('rational')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
             behavior: 'callable_and_symbol'
         }
     ],
@@ -1830,7 +1856,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
         }
     ],
     [
-        'any',
+        'functor',
         {
             kind: 'function',
             parameters: [{ name: 'func', type: p_type('form') }],
@@ -2056,7 +2082,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
         }
     ],
     [
-        'ifplot', // 今は二通りしか認めない
+        'ifplot', // 今は二通りしか認めない　// 2変数用
         {
             kind: 'overloaded_function',
             signatures: [
@@ -2558,7 +2584,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
                 { name: 'order', type: u_type([p_type('integer'), l_type(p_type('any')), m_type(p_type('any'))]) }
             ],
             returnType: u_type([l_type(stdpoly_type(p_type('any'))), l_type(dpoly_type(p_type('any')))]),
-            allowesOptions: new Map([ ['homo', type_1], ['dp', type_1], ['nora', type_1] ]),
+            allowesOptions: new Map([ ['homo', type_1], ['dp', type_1], ['nora', type_1] ]), // これ違うかも
             behavior: 'callable_and_symbol'
         }
     ],
@@ -2692,6 +2718,1818 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
             parameters: [{ name: 'name', type: p_type('any') }],
             returnType: p_type('struct'),
             behavior: 'callable_only'
+        }
+    ],
+    [
+        'newvect',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'len', type: p_type('integer') }],
+                    returnType: v_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'len', type: p_type('integer') },
+                        { name: 'list', type: l_type(p_type('any')) }
+                    ],
+                    returnType:l_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'nm',
+        {
+            kind: 'function',
+            parameters: [{ name: 'rat', type: u_type([p_type('rational'), rat_type(p_type('any'))]) }],
+            returnType: u_type([p_type('integer'), stdpoly_type(p_type('any'))]),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'nmono',
+        {
+            kind: 'function',
+            parameters: [{ name: 'rat', type: rat_type(p_type('any')) }],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ntogf2n',
+        {
+            kind: 'function',
+            parameters: [{ name: 'n', type: p_type('integer') }],
+            returnType: p_type('fchar2'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ntoint32',
+        {
+            kind: 'function',
+            parameters: [{ name: 'n', type: p_type('integer') }],
+            returnType: p_type('usint'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ntype',
+        {
+            kind: 'function',
+            parameters: [{ name: 'num', type: p_type('number') }],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'open_canvas',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'id', type: p_type('integer') }],
+                    returnType: type_0,
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'id', type: p_type('integer') },
+                        { name: 'geometry', type: {
+                            kind: 'tuple', 
+                            elements: [
+                                { name: 'x', type: p_type('integer') },
+                                { name: 'y', type: p_type('integer') }
+                            ]
+                        } }
+                    ],
+                    returnType: type_0,
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'open_file',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'filename', type: p_type('string') }],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'filename', type: p_type('string') },
+                        { name: 'mode', type: p_type('string') } // "w", "a"など（fopenのモード）
+                    ],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ord',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: l_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'varlist', type: l_type(p_type('any')) }],
+                    returnType: l_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'output',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: type_1,
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'filename', type: p_type('string') }],
+                    returnType: type_1,
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_cmo_rpc', // 関数によって変わる
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'id', type: p_type('integer') },
+                { name: 'func', type: p_type('string') }
+            ],
+            restParameter: { name: 'args', type: p_type('any') },
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_execute_string', // 何個も送れるの...？
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'id', type: p_type('integer') },
+                { name: 'command', type: p_type('string') }
+            ],
+            restParameter: { name: 'commands', type: p_type('any') },
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_flush',
+        {
+            kind: 'function',
+            parameters: [{ name: 'id', type: p_type('integer') }],
+            returnType: type_1,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_get', // 返り値はスタックされているものによる
+        {
+            kind: 'function',
+            parameters: [{ name: 'id', type: p_type('integer') }],
+            returnType: p_type('any'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_get_serverinfo',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: l_type(p_type('any')), // mathcap がリストになったもの
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'id', type: p_type('integer') }],
+                    returnType: l_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_intr',
+        {
+            kind: 'function',
+            parameters: [{ name: 'id', type: p_type('integer') }],
+            returnType: type_1,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_launch',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: p_type('integer'), 
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'host', type: u_type([p_type('string'), type_0]) },
+                        { name: 'command', type: p_type('string') }
+                    ],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function', // ox_launch(0, "/usr/local/bin", "ox_asir") みたいな
+                    parameters: [
+                        { name: 'host', type: u_type([p_type('string'), type_0]) },
+                        { name: 'dir', type: p_type('string') },
+                        { name: 'command', type: p_type('string') }
+                    ],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_launch_generic',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'host', type: u_type([p_type('string'), type_0]) },
+                { name: 'launch', type: p_type('string') },
+                { name: 'server', type: p_type('string') },
+                { name: 'use_unix', type: type_0_1 },
+                { name: 'use_ssh', type: type_0_1 },
+                { name: 'use_x', type: type_0_1 },
+                { name: 'conn_to_serv', type: type_0_1 },
+            ],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_launch_nox',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: p_type('integer'), 
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'host', type: u_type([p_type('string'), type_0]) },
+                        { name: 'command', type: p_type('string') }
+                    ],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function', // ox_launch_nox(0, "/usr/local/bin", "ox_asir") みたいな
+                    parameters: [
+                        { name: 'host', type: u_type([p_type('string'), type_0]) },
+                        { name: 'dir', type: p_type('string') },
+                        { name: 'command', type: p_type('string') }
+                    ],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_pops',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'id', type: p_type('integer') }],
+                    returnType: type_0, 
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'id', type: p_type('integer') },
+                        { name: 'nitem', type: p_type('integer') }
+                    ],
+                    returnType: type_0,
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_pop_cmo', // 返り値はスタックされているものによる
+        {
+            kind: 'function',
+            parameters: [{ name: 'id', type: p_type('integer') }],
+            returnType: p_type('any'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_pop_local', // 返り値はスタックされているものによる
+        {
+            kind: 'function',
+            parameters: [{ name: 'id', type: p_type('integer') }],
+            returnType: p_type('any'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_push_cmd',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'id', type: p_type('integer') },
+                { name: 'command', type: p_type('integer') } // SMC
+            ],
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_push_cmo',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'id', type: p_type('integer') },
+                { name: 'obj', type: p_type('any') } 
+            ],
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_push_local',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'id', type: p_type('integer') },
+                { name: 'obj', type: p_type('any') } 
+            ],
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_reset',
+        {
+            kind: 'function',
+            parameters: [{ name: 'id', type: p_type('integer') }],
+            returnType: type_1,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_rpc', // 関数によって変わる
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'id', type: p_type('integer') },
+                { name: 'func', type: p_type('string') }
+            ],
+            restParameter: { name: 'args', type: p_type('any') },
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_select',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'nlist', type: l_type(p_type('integer')) }],
+                    returnType: l_type(p_type('integer')), 
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'nlist', type: l_type(p_type('integer')) },
+                        { name: 'timeout', type: p_type('integer') }
+                    ],
+                    returnType: l_type(p_type('integer')), 
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_shutdown',
+        {
+            kind: 'function',
+            parameters: [{ name: 'id', type: p_type('integer') }],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ox_sync',
+        {
+            kind: 'function',
+            parameters: [{ name: 'id', type: p_type('integer') }],
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'pari', // TODO: ox_pariを見れば分かるらしい
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'func', type: p_type('any') },
+                        { name: 'arg', type: p_type('any') }
+                    ],
+                    returnType: p_type('any'),
+                    behavior: 'callable_only'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'func', type: p_type('any') },
+                        { name: 'arg', type: p_type('any') },
+                        { name: 'prec', type: p_type('integer') }
+                    ],
+                    returnType: p_type('any'),
+                    behavior: 'callable_only'
+                },
+            ],
+            behavior: 'callable_only'
+        }
+    ],
+    [
+        'plot', // 今は二通りしか認めない　// 1変数用
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'func', type: stdpoly_type(p_type('any')) }],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'func', type: stdpoly_type(p_type('any')) },
+                        { name: 'geometry', type: {
+                            kind: 'tuple',
+                            elements: [
+                                { name: 'x', type: p_type('integer') },
+                                { name: 'y', type: p_type('integer') }
+                            ]
+                        }},
+                        { name: 'xrange', type: {
+                            kind: 'tuple',
+                            elements: [
+                                { name: 'v', type: p_type('indeterminate') },
+                                { name: 'vmin', type: p_type('integer') },
+                                { name: 'vmax', type: p_type('integer') }
+                            ]
+                        }},
+                        { name: 'id', type: p_type('integer') },
+                        { name: 'name', type: p_type('string') }
+                    ],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'plotover',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'func', type: stdpoly_type(p_type('any')) }, // 2変数多項式
+                { name: 'id', type: p_type('integer') },
+                { name: 'number', type: p_type('integer') } // これ何？
+            ],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'polarplot', // 今は二通りしか認めない　// 極形式　f=r(θ)用
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'func', type: stdpoly_type(p_type('any')) }],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'func', type: stdpoly_type(p_type('any')) },
+                        { name: 'geometry', type: {
+                            kind: 'tuple',
+                            elements: [
+                                { name: 'x', type: p_type('integer') },
+                                { name: 'y', type: p_type('integer') }
+                            ]
+                        }},
+                        { name: 'θrange', type: { // 間違っているかもしれない
+                            kind: 'tuple',
+                            elements: [
+                                { name: 'v', type: p_type('indeterminate') },
+                                { name: 'vmin', type: p_type('integer') },
+                                { name: 'vmax', type: p_type('integer') }
+                            ]
+                        }},
+                        { name: 'id', type: p_type('integer') },
+                        { name: 'name', type: p_type('string') }
+                    ],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'prim',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'poly', type: stdpoly_type(p_type('rational')) }],
+                    returnType: stdpoly_type(p_type('rational')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly', type: stdpoly_type(p_type('rational')) },
+                        { name: 'v', type: p_type('pp') }
+                    ],
+                    returnType: stdpoly_type(p_type('rational')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'primadec',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'plist', type: l_type(stdpoly_type(p_type('rational'))) },
+                { name: 'vlist', type: l_type(p_type('pp')) }
+            ],
+            returnType: l_type(stdpoly_type(p_type('rational'))),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'prime',
+        {
+            kind: 'function',
+            parameters: [{ name: 'index', type: p_type('integer') }],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'primedec',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'plist', type: l_type(stdpoly_type(p_type('rational'))) },
+                { name: 'vlist', type: l_type(p_type('pp')) }
+            ],
+            returnType: l_type(stdpoly_type(p_type('rational'))),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'primedec_mod',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'plist', type: l_type(stdpoly_type(p_type('rational'))) },
+                { name: 'vlist', type: l_type(p_type('pp')) },
+                { name: 'ord', type: u_type([p_type('integer'), l_type(p_type('any')), m_type(p_type('any'))]) },
+                { name: 'mod', type: p_type('integer') },
+                { name: 'strategy', type: type_0_1 }
+            ],
+            returnType: l_type(stdpoly_type(p_type('integer'))),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'print',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'obj', type: p_type('any') }],
+                    returnType: type_0,
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'obj', type: p_type('any') },
+                        { name: 'nl', type: type_0_1_2 }
+                    ],
+                    returnType: type_0,
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'psubst',
+        {
+            kind: 'function',
+            parameters: [{ name: 'rat', type: rat_type(p_type('any')) }], // リストや分散表現多項式もいけるらしい
+            restParameter: { name: 'vars_and_rats', type: u_type([p_type('pp'), rat_type(p_type('any'))]) }, // 本当は v1,r1,v2,r2,...の形
+            returnType: rat_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ptogf2n',
+        {
+            kind: 'function',
+            parameters: [{ name: 'poly', type: stdpoly_type(p_type('any')) }],
+            returnType: p_type('fchar2'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ptosfp',
+        {
+            kind: 'function',
+            parameters: [{ name: 'poly', type: stdpoly_type(p_type('integer')) }], // 整数もとれる
+            returnType: stdpoly_type(p_type('fcharpsmall')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ptozp',
+        {
+            kind: 'function',
+            parameters: [{ name: 'poly', type: stdpoly_type(p_type('rational')) }],
+            returnType: stdpoly_type(p_type('integer')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'put_byte',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'id', type: p_type('integer') },
+                { name: 'c', type: p_type('any') } // 何か分からない
+            ],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'qsort',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'array', type: v_type(p_type('any')) }],
+                    returnType: v_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'array', type: v_type(p_type('any')) },
+                        { name: 'func', type: type_m1_0_1 } // どうする？
+                    ],
+                    returnType: v_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'random',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'seed', type: p_type('integer') }],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'random_ff',
+        {
+            kind: 'function',
+            parameters: [],
+            returnType: p_type('fcharpsmall'), // これ違うかも
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'red',
+        {
+            kind: 'function',
+            parameters: [{ name: 'rat', type: rat_type(p_type('rational')) }],
+            returnType: rat_type(p_type('rational')), 
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'register_handler',
+        {
+            kind: 'function',
+            parameters: [{ name: 'func', type: p_type('any') }], // 0も可
+            returnType: type_1, 
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'register_server',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'control_socket', type: p_type('integer') },
+                { name: 'control_port', type: u_type([p_type('integer'), p_type('string')]) },
+                { name: 'server_socket', type: p_type('integer') },
+                { name: 'server_port', type: u_type([p_type('integer'), p_type('string')]) }
+            ],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        "remove_file",
+        {
+            kind: 'function',
+            parameters: [{ name: 'file', type: p_type('string') }],
+            returnType: type_0_1,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        "remove_module",
+        {
+            kind: 'function',
+            parameters: [{ name: 'name', type: p_type('string') }],
+            returnType: type_0_1,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'res',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'var', type: p_type('pp') },
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) }
+                    ],
+                    returnType: stdpoly_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'var', type: p_type('pp') },
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) },
+                        { name: 'mod', type: p_type('integer') }
+                    ],
+                    returnType: stdpoly_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'reverse',
+        {
+            kind: 'function',
+            parameters: [{ name: 'list', type: l_type(p_type('any')) }],
+            returnType: l_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'rint',
+        {
+            kind: 'function',
+            parameters: [{name: 'num', type: u_type([p_type('rational'), p_type('float'), p_type('bigfloat')]) }],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'rowa', // TODO: こういう形を変える関数（Juliaでいう「!」がつく関数）はどうすればよいのか
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'matrix', type: m_type(p_type('number')) },
+                { name: 'i', type: p_type('integer') },
+                { name: 'j', type: p_type('integer') },
+                { name: 'c', type: p_type('number') }
+            ],
+            returnType: m_type(p_type('number')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'rowm',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'matrix', type: m_type(p_type('number')) },
+                { name: 'i', type: p_type('integer') },
+                { name: 'c', type: p_type('number') }
+            ],
+            returnType: m_type(p_type('number')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'rowx',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'matrix', type: m_type(p_type('number')) },
+                { name: 'i', type: p_type('integer') },
+                { name: 'j', type: p_type('integer') }
+            ],
+            returnType: m_type(p_type('number')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'rtostr',
+        {
+            kind: 'function',
+            parameters: [{ name: 'obj', type: p_type('any') }],
+            returnType: p_type('string'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'sdiv',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) }
+                    ],
+                    returnType: stdpoly_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) },
+                        { name: 'var', type: p_type('pp') }
+                    ],
+                    returnType: stdpoly_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'sdivm',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) },
+                        { name: 'mod', type: p_type('integer') },
+                    ],
+                    returnType: stdpoly_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) },
+                        { name: 'mod', type: p_type('integer') },
+                        { name: 'var', type: p_type('pp') }
+                    ],
+                    returnType: stdpoly_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'setbprec',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'n', type: p_type('integer') }],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'setmod',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'p', type: p_type('integer') }],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'setmod_ff',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: u_type([p_type('integer'), stdpoly_type(p_type('any'))]),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'p', type: p_type('integer') }],
+                    returnType: u_type([p_type('integer'), stdpoly_type(p_type('any'))]),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'defpoly2', type: stdpoly_type(p_type('integer')) }],
+                    returnType: u_type([p_type('integer'), stdpoly_type(p_type('any'))]),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'defpoly', type: stdpoly_type(p_type('integer')) },
+                        { name: 'p', type: p_type('integer') }
+                    ],
+                    returnType: u_type([p_type('integer'), stdpoly_type(p_type('any'))]),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'p', type: p_type('integer') },
+                        { name: 'n', type: p_type('integer') }
+                    ],
+                    returnType: u_type([p_type('integer'), stdpoly_type(p_type('any'))]),
+                    behavior: 'callable_and_symbol'
+                },
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'setprec',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'n', type: p_type('integer') }],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'setround',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [],
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'n', type: p_type('integer') }], // 0,1,2,3
+                    returnType: p_type('integer'),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'set_field',
+        {
+            kind: 'function',
+            parameters: [{ name: 'rootlist', type: l_type(p_type('alg')) }],
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'set_upfft',
+        {
+            kind: 'function',
+            parameters: [{ name: 'threshold', type: p_type('integer') }],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'set_upkara',
+        {
+            kind: 'function',
+            parameters: [{ name: 'threshold', type: p_type('integer') }],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'set_uptkara',
+        {
+            kind: 'function',
+            parameters: [{ name: 'threshold', type: p_type('integer') }],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'sffctr',
+        {
+            kind: 'function',
+            parameters: [{ name: 'poly', type: stdpoly_type(p_type('any')) }],
+            returnType: l_type({ kind: 'tuple', elements: [{ name: 'monic', type: stdpoly_type(p_type('fcharpsmall')) }, { name: 'multiplicity', type: p_type('integer') }] }),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'sfptop',
+        {
+            kind: 'function',
+            parameters: [{ name: 'p', type: stdpoly_type(p_type('fcharpsmall')) }],
+            returnType: stdpoly_type(p_type('integer')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'shell',
+        {
+            kind: 'function',
+            parameters: [{ name: 'command', type: p_type('string') }],
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'simp_ff',
+        {
+            kind: 'function',
+            parameters: [{ name: 'obj', type: stdpoly_type(p_type('integer')) }],
+            returnType: stdpoly_type(p_type('flarge')), // setmod_ff によって違う
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'size',
+        {
+            kind: 'function',
+            parameters: [{ name: 'vect|mat', type: u_type([v_type(p_type('any')), m_type(p_type('any'))]) }],
+            returnType: u_type([
+                { kind: 'tuple', elements: [{ name: 'length', type: p_type('integer') }] },
+                { kind: 'tuple', elements: [{ name: 'row', type: p_type('integer') }, { name: 'col', type: p_type('integer') }] }
+            ]),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'sleep',
+        {
+            kind: 'function',
+            parameters: [{ name: 'interval', type: p_type('integer') }],
+            returnType: type_1,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'sqfr',
+        {
+            kind: 'function',
+            parameters: [{ name: 'poly', type: stdpoly_type(p_type('rational')) }],
+            returnType: l_type(l_type(p_type('any'))), // [[因子, 重複度],...] の形
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'sqr',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) }
+                    ],
+                    returnType: { kind: 'tuple', elements: [{ name: 'quotient', type: stdpoly_type(p_type('any')) }, { name: 'remainder', type: stdpoly_type(p_type('any')) }] },
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) },
+                        { name: 'var', type: p_type('pp') }
+                    ],
+                    returnType: { kind: 'tuple', elements: [{ name: 'quotient', type: stdpoly_type(p_type('any')) }, { name: 'remainder', type: stdpoly_type(p_type('any')) }] },
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'sqrm',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) },
+                        { name: 'mod', type: p_type('integer') },
+                    ],
+                    returnType: { kind: 'tuple', elements: [{ name: 'quotient', type: stdpoly_type(p_type('any')) }, { name: 'remainder', type: stdpoly_type(p_type('any')) }] },
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) },
+                        { name: 'mod', type: p_type('integer') },
+                        { name: 'var', type: p_type('pp') }
+                    ],
+                    returnType: { kind: 'tuple', elements: [{ name: 'quotient', type: stdpoly_type(p_type('any')) }, { name: 'remainder', type: stdpoly_type(p_type('any')) }] },
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'srem',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) }
+                    ],
+                    returnType: stdpoly_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) },
+                        { name: 'var', type: p_type('pp') }
+                    ],
+                    returnType: stdpoly_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'sremm',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) },
+                        { name: 'mod', type: p_type('integer') },
+                    ],
+                    returnType: stdpoly_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                        { name: 'poly2', type: stdpoly_type(p_type('any')) },
+                        { name: 'mod', type: p_type('integer') },
+                        { name: 'var', type: p_type('pp') }
+                    ],
+                    returnType: stdpoly_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'strtoascii',
+        {
+            kind: 'function',
+            parameters: [{ name: 'str', type: p_type('string') }],
+            returnType: l_type(p_type('integer')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'strtov',
+        {
+            kind: 'function',
+            parameters: [{ name: 'str', type: p_type('string') }],
+            returnType: p_type('indeterminate'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'struct_type',
+        {
+            kind: 'function',
+            parameters: [{ name: 'name', type: p_type('string') }], // 実はstruct型もできるが一旦保留
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'str_chr',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'str', type: p_type('string') },
+                { name: 'start', type: p_type('integer') },
+                { name: 'c', type: p_type('string') }
+            ],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'str_len',
+        {
+            kind: 'function',
+            parameters: [{ name: 'str', type: p_type('string') }],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'subst',
+        {
+            kind: 'function',
+            parameters: [{ name: 'rat', type: rat_type(p_type('any')) }], // リストや分散表現多項式もいけるらしい
+            restParameter: { name: 'vars_and_rats', type: u_type([p_type('pp'), rat_type(p_type('any'))]) }, // 本当は v1,r1,v2,r2,...の形
+            returnType: rat_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'sub_str',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'str', type: p_type('string') },
+                { name: 'start', type: p_type('integer') },
+                { name: 'end', type: p_type('integer') }
+            ],
+            returnType: p_type('string'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'tdiv',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'poly1', type: stdpoly_type(p_type('any')) },
+                { name: 'poly2', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'time',
+        {
+            kind: 'function',
+            parameters: [],
+            returnType: { kind: 'tuple', elements: [
+                { name: 'CPU_time', type: p_type('float')},
+                { name: 'GC_time', type: p_type('float')},
+                { name: 'Memory', type: p_type('float')},
+                { name: 'Elapsed_time', type: p_type('float')}
+            ] },
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'timer', // ほぼcall、時間が足りなければvalが返る
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'interval', type: p_type('integer') },
+                { name: 'expr', type: p_type('any') },
+                { name: 'val', type: p_type('any') }
+            ],
+            returnType: p_type('any'),
+            behavior: 'callable_only'
+        }
+    ],
+    [
+        'try_accept',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'socket', type: p_type('integer') },
+                { name: 'port', type: u_type([p_type('integer'), p_type('string')]) },
+            ],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'try_bind_listen',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'port', type: u_type([p_type('integer'), p_type('string')]) },
+            ],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'try_connect',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'host', type: p_type('string') },
+                { name: 'port', type: u_type([p_type('integer'), p_type('string')]) },
+            ],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'tstart',
+        {
+            kind: 'function',
+            parameters: [],
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'tstop',
+        {
+            kind: 'function',
+            parameters: [],
+            returnType: type_0,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'type',
+        {
+            kind: 'function',
+            parameters: [{ name: 'obj', type: p_type('any')}],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'uc',
+        {
+            kind: 'function',
+            parameters: [],
+            returnType: p_type('uc'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'udecomp',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p', type: stdpoly_type(p_type('any')) },
+                { name: 'd', type: p_type('integer') }
+            ],
+            returnType: { kind: 'tuple', elements: [{ name: 'p1', type: stdpoly_type(p_type('any')) }, { name: 'p2', type: stdpoly_type(p_type('any')) }] },
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'udiv',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p1', type: stdpoly_type(p_type('any')) },
+                { name: 'p2', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ufctrhint',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'poly', type: stdpoly_type(p_type('rational')) },
+                { name: 'hint', type: p_type('integer') }
+            ],
+            returnType: l_type(l_type(p_type('any'))), // [[因子, 重複度],...] の形
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ugcd',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p1', type: stdpoly_type(p_type('any')) },
+                { name: 'p2', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'uinv_as_power_series',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p', type: stdpoly_type(p_type('any')) },
+                { name: 'd', type: p_type('integer') }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'umul',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p1', type: stdpoly_type(p_type('any')) },
+                { name: 'p2', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'umul_ff',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p1', type: stdpoly_type(p_type('any')) },
+                { name: 'p2', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'urem',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p1', type: stdpoly_type(p_type('any')) },
+                { name: 'p2', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'urembymul',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p1', type: stdpoly_type(p_type('any')) },
+                { name: 'p2', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'urembymul_precomp',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p1', type: stdpoly_type(p_type('any')) },
+                { name: 'p2', type: stdpoly_type(p_type('any')) },
+                { name: 'inv', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ureverse',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'ureverse_as_power_series',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p', type: stdpoly_type(p_type('any')) },
+                { name: 'd', type: p_type('integer') }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'usquare',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'usquare_ff',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p', type: stdpoly_type(p_type('any')) }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'utmul',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p1', type: stdpoly_type(p_type('any')) },
+                { name: 'p2', type: stdpoly_type(p_type('any')) },
+                { name: 'd', type: p_type('integer') }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'utmul_ff',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p1', type: stdpoly_type(p_type('any')) },
+                { name: 'p2', type: stdpoly_type(p_type('any')) },
+                { name: 'd', type: p_type('integer') }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'utrunc',
+        {
+            kind: 'function',
+            parameters: [
+                { name: 'p', type: stdpoly_type(p_type('any')) },
+                { name: 'd', type: p_type('integer') }
+            ],
+            returnType: stdpoly_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'var',
+        {
+            kind: 'function',
+            parameters: [{ name: 'rat', type: rat_type(p_type('any')) }],
+            returnType: p_type('pp'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'vars',
+        {
+            kind: 'function',
+            parameters: [{ name: 'obj', type: rat_type(p_type('any')) }],
+            returnType: l_type(p_type('pp')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'vect',
+        {
+            kind: 'function',
+            parameters: [],
+            returnType: v_type(p_type('any')),
+            restParameter: { name: 'elements', type: p_type('any') },
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'vector',
+        {
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'len', type: p_type('integer') }],
+                    returnType: v_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [
+                        { name: 'len', type: p_type('integer') },
+                        { name: 'list', type: l_type(p_type('any')) }
+                    ],
+                    returnType:l_type(p_type('any')),
+                    behavior: 'callable_and_symbol'
+                }
+            ],
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'version',
+        {
+            kind: 'function',
+            parameters: [],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'vtol',
+        {
+            kind: 'function',
+            parameters: [{ name: 'vect', type: v_type(p_type('any')) }],
+            returnType: l_type(p_type('any')),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'vtype',
+        {
+            kind: 'function',
+            parameters: [{ name: 'var', type: p_type('pp') }],
+            returnType: p_type('integer'),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    [
+        'which',
+        {
+            kind: 'function',
+            parameters: [{ name: 'filename', type: p_type('string') }],
+            returnType: u_type([p_type('string'), type_0]),
+            behavior: 'callable_and_symbol'
         }
     ]
 ]);

@@ -1,5 +1,5 @@
 import { ASTNode } from '../core/ast/asirAst.js';
-import { Scope } from './types.js';
+import { Scope, Symbol } from './types.js'; // Import Symbol
 import { Position } from '../utils/diagnostics.js';
 
 export class SymbolTable {
@@ -43,10 +43,10 @@ export class SymbolTable {
         }
 
         if (scope.node.loc) {
-            const startLine = scope.node.loc.startLine - 1;
+            const startLine = scope.node.loc.startLine;
             const startChar = scope.node.loc.startColumn;
-            const endLine = (scope.node.loc.endLine ?? scope.node.loc.startLine) - 1;
-            const endChar = scope.node.loc.endColumn ?? 0;
+            const endLine = (scope.node.loc.endLine ?? scope.node.loc.startLine);
+            const endChar = scope.node.loc.endColumn ?? (scope.node.loc.startColumn + 1);
 
             if (position.line >= startLine && position.line <= endLine) {
                 if (position.line === startLine && position.character < startChar) {
@@ -60,5 +60,31 @@ export class SymbolTable {
         }
 
         return null;
+    }
+    
+    public getAllSymbols(): Symbol[] {
+        const allSymbols: Map<string, Symbol> = new Map(); // Use Map to ensure uniqueness by name
+        const visitedScopes: Set<Scope> = new Set();
+
+        const collectSymbolsRecursive = (scope: Scope) => {
+            if (visitedScopes.has(scope)) {
+                return;
+            }
+            visitedScopes.add(scope);
+
+            scope.symbols.forEach(symbol => {
+                // Only add if not already present (e.g., from a parent scope)
+                if (!allSymbols.has(symbol.name)) {
+                    allSymbols.set(symbol.name, symbol);
+                }
+            });
+
+            scope.children.forEach(childScope => {
+                collectSymbolsRecursive(childScope);
+            });
+        };
+
+        collectSymbolsRecursive(this.getRootScope());
+        return Array.from(allSymbols.values());
     }
 }

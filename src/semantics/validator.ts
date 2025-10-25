@@ -7,9 +7,10 @@ import { BUILTIN_SIGNATURES } from '../data/builtinSignatures.js';
 import { BUILTIN_CONSTANTS } from '../data/builtinConstants.js'
 
 // TODO: データフロー解析
+// TODO: load, import, include
 
 // A simple base class for visiting our custom AST
-abstract class AsirASTVisitor<T> {
+export abstract class AsirASTVisitor<T> {
     visit(node: ast.ASTNode): T | undefined {
         switch (node.kind) {
             case 'Program': return this.visitProgram(node as ast.ProgramNode);
@@ -169,7 +170,8 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 name: name,
                 type: funcType,
                 definedAt: undefined,
-                node: {} as ast.ASTNode
+                node: {} as ast.ASTNode,
+                isUsed: false // Add this
             };
             globalScope.define(symbol);
         });
@@ -190,14 +192,32 @@ export class Validator extends AsirASTVisitor<AsirType> {
 
     public analyze(node: ast.ProgramNode): Diagnostic[] {
         this.visit(node);
+
+        // Add post-analysis check for unused symbols
+        this.symbolTable.getAllSymbols().forEach(symbol => {
+            // Exclude built-in functions and parameters from unused check
+            // Also exclude symbols without a definedAt location (e.g., some builtins)
+            if (!symbol.isUsed && symbol.definedAt &&
+                !BUILTIN_SIGNATURES.has(symbol.name) &&
+                !BUILTIN_CONSTANTS.has(symbol.name) &&
+                !(symbol.type.kind === 'primitive' && symbol.type.name === 'parameter') // Exclude function parameters
+            ) {
+                this.addDiagnostic(
+                    symbol.node,
+                    `未使用のシンボル '${symbol.name}' が定義されています。`,
+                    DiagnosticSeverity.Hint // Or Warning
+                );
+            }
+        });
+
         return this.diagnostics;
     }
 
     private addDiagnostic(node: ast.ASTNode, message: string, severity: DiagnosticSeverity) {
         if (node.loc) {
             const range = {
-                start: { line: node.loc.startLine - 1, character: node.loc.startColumn },
-                end: { line: (node.loc.endLine ?? node.loc.startLine) - 1, character: (node.loc.endColumn ?? node.loc.startColumn + 1) }
+                start: { line: node.loc.startLine, character: node.loc.startColumn },
+                end: { line: (node.loc.endLine ?? node.loc.startLine), character: (node.loc.endColumn ?? node.loc.startColumn + 1) }
             };
             this.diagnostics.push({ range, message, severity, source: 'AsirValidator' });
         }
@@ -470,7 +490,8 @@ export class Validator extends AsirASTVisitor<AsirType> {
                             name: varName,
                             type: rightType,
                             definedAt: node.left.loc,
-                            node: node.left
+                            node: node.left,
+                            isUsed: false // Add this
                         });
                     }
                 } else {
@@ -610,8 +631,9 @@ export class Validator extends AsirASTVisitor<AsirType> {
             this.symbolTable.currentScope.define({
                 name: funcName,
                 type: functionType,
-                definedAt: node.loc,
-                node
+                definedAt: node.name.loc,
+                node,
+                isUsed: false // Add this
             });
         }
 
@@ -623,7 +645,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
         node.parameters.forEach((param, i) => {
             if (param.loc) {
                 this.checkVariableNameConvention(param);
-                const paramSymbol: Symbol = { name: param.name, type: functionType.parameters[i].type, definedAt: param.loc, node: param };
+                const paramSymbol: Symbol = { name: param.name, type: functionType.parameters[i].type, definedAt: param.loc, node: param, isUsed: false };
                 this.symbolTable.currentScope.define(paramSymbol);
             }
         });
@@ -668,7 +690,8 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 name: funcName,
                 type: functionType,
                 definedAt: node.loc,
-                node
+                node,
+                isUsed: false // Add this
             });
         }
         return p_type('undefined');
@@ -689,6 +712,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
         const symbol = this.symbolTable.currentScope.lookup(name);
         if (symbol) {
             node.resolvedSymbol = symbol;
+            symbol.isUsed = true; // Add this
             return symbol.type;
         }
         // 組み込み関数をチェック
@@ -732,6 +756,10 @@ export class Validator extends AsirASTVisitor<AsirType> {
         //if (node.callee.kind !== 'Indeterminate') { return p_type('any'); }
         const calleeNode = node.callee;
         const funcName = calleeNode.functionName.name;
+
+        // Ensure resolvedSymbol is set for the function name in the call
+        this.visit(calleeNode.functionName); // <--- ADD THIS LINE
+
         const actualArgs = node.args;
         const actualArgTypes = actualArgs.map(arg => this.visit(arg) || p_type('any'));
         let calleeType: AsirType | undefined;
@@ -1082,6 +1110,8 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 const isRightPoly = this.isPolynomialType(rightType);
                 const isLeftNumeric = leftType.kind === 'primitive' && this.isSubtypeOf(leftType.name, 'number');
                 const isRightNumeric = rightType.kind === 'primitive' && this.isSubtypeOf(rightType.name, 'number');
+                const isLeftParametoric = leftType.kind === 'primitive' && leftType.name === 'parameter';
+                const isRightParametoric = rightType.kind === 'primitive' && rightType.name === 'parameter';
 
                 if ((leftType.kind === 'dmod_polynomial' && rightType.kind !== 'dmod_polynomial') ||
                     (leftType.kind !== 'dmod_polynomial' && rightType.kind === 'dmod_polynomial') ||
@@ -1141,6 +1171,12 @@ export class Validator extends AsirASTVisitor<AsirType> {
                     }
                     return { kind: polyType.kind, coefficientType: resultCoeffType } as PolynomialAsirType;
                 }
+
+                if ((isLeftPoly && isRightParametoric) || (isLeftParametoric && isRightPoly)) {
+                    const polyType = (isLeftPoly ? leftType : rightType) as PolynomialAsirType;
+                    return { kind: polyType.kind, coefficientType: p_type('any') } as PolynomialAsirType;
+                }
+
                 // --- プリミティブ ---
                 if (leftType.kind === 'primitive' && rightType.kind === 'primitive') {
                     const leftMeta = TYPE_METADATA.get(leftType.name);
@@ -1176,7 +1212,21 @@ export class Validator extends AsirASTVisitor<AsirType> {
                     if (operator === '+' && leftMeta.category === 'string' && rightMeta.category === 'string') {
                         return p_type('string');
                     }
+                    // パラメーター系
+                    if (leftType.name === 'parameter' && rightType.name === 'parameter') {
+                        return p_type('any');
+                    }
+                    if (this.isSubtypeOf(leftType.name, 'number') && rightType.name === 'parameter') {
+                        return p_type('any');
+                    }
+                    if (leftType.name === 'parameter' && this.isSubtypeOf(rightType.name, 'number')) {
+                        return p_type('any');
+                    }
+                    if (leftType.name === 'parameter' && rightType.name === 'string') {
+                        return p_type('any');
+                    }
                 }
+                break;
             
             case '%':
                 const isRightInt = rightType.kind === 'primitive' && rightType.name === 'integer';
@@ -1513,7 +1563,8 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 name: structName,
                 type: structType,
                 definedAt: node.loc,
-                node: node
+                node: node,
+                isUsed: false
             });
         }
         return p_type('undefined');
@@ -1535,7 +1586,8 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 name: moduleName,
                 type: moduleType,
                 definedAt: node.loc,
-                node: node
+                node: node,
+                isUsed: false // Add this
             });
         }
 
@@ -1554,7 +1606,8 @@ export class Validator extends AsirASTVisitor<AsirType> {
                 name: varName,
                 type: p_type('any'),
                 definedAt: variableNode.loc,
-                node: variableNode
+                node: variableNode,
+                isUsed: false // Add this
             };
 
             switch (scopeType) {
@@ -1608,7 +1661,7 @@ export class Validator extends AsirASTVisitor<AsirType> {
                             returnType: p_type('any'),
                             behavior: 'callable_and_symbol'
                         };
-                        this.symbolTable.currentScope.define({ name: varName, type: funcType, definedAt: variableNode.loc, node: variableNode });
+                        this.symbolTable.currentScope.define({ name: varName, type: funcType, definedAt: variableNode.loc, node: variableNode, isUsed: false });
                     }
                     break;
                 }

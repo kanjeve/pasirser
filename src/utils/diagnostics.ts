@@ -6,8 +6,8 @@ export enum DiagnosticSeverity {
 }
 
 export interface Position {
-    line: number; // 0-based
-    character: number; // 0-based
+    line: number; // 1-based
+    character: number; // 1-based
 }
 
 export interface Range {
