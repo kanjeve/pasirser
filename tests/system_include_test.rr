@@ -1,0 +1,5 @@
+
+#include <defs.h>
+
+// O_POLY should be defined as 2 in defs.h
+MyType = O_POLY;

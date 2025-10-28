@@ -1,0 +1,6 @@
+
+// This call is valid (number argument)
+A = pari(sqrt, 4);
+
+// This call is invalid (string argument)
+B = pari(sqrt, "a_string");

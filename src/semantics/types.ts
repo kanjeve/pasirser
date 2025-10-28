@@ -106,7 +106,20 @@ export interface Symbol {
     type: AsirType;
     definedAt: ASTNode['loc'];
     node: ASTNode;
-    isUsed: boolean; // Add this property
+    isUsed: boolean;
+    constantValue?: ConstantValue;
+}
+
+// --- Data Flow Analysis Types ---
+
+// A constant value can be a primitive or an array of primitives.
+// null represents a value that is known not to be a constant (e.g. result of a complex expression).
+export type ConstantValue = string | number | (string | number | null)[];
+
+// The result of visiting an expression node.
+export interface EvaluationResult {
+    type: AsirType;
+    constantValue?: ConstantValue;
 }
 
 export class Scope {

@@ -6,8 +6,8 @@ export enum DiagnosticSeverity {
 }
 
 export interface Position {
-    line: number; // 1-based
-    character: number; // 1-based
+    line: number;
+    character: number;
 }
 
 export interface Range {
@@ -19,5 +19,6 @@ export interface Diagnostic {
     severity: DiagnosticSeverity;
     range: Range;
     message: string;
-    source: string; // 必須に変更
+    source: string; 
+    filePath?: string;
 }

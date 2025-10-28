@@ -1,0 +1,20 @@
+
+// tests/ctrl_getter_cons_test.rr
+
+// 1. 初期ロードパスを設定
+ctrl("loadpath", ["/initial/path"]);
+
+// 2. ctrl() をgetterとして呼び出し、現在のパスリストを取得
+CurrentPaths = ctrl("loadpath");
+
+// 3. cons() を使って新しいパスを追加
+NewPaths = cons("tests/new/dynamic/path", CurrentPaths);
+
+// 4. 新しいパスリストをctrl()で設定
+ctrl("loadpath", NewPaths);
+
+// 5. 新しいパスからファイルをロード
+load("dynamic_file.rr");
+
+// 6. ロードされたファイル内の関数を呼び出す
+A = dynamic_func();

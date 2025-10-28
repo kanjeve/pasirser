@@ -1,0 +1,11 @@
+// Initially, this would fail because sub_file.rr is not in the current directory.
+// load("sub_file.rr");
+
+// Change the effective CWD into the subdirectory
+chdir("tests/chdir_test");
+
+// Now, this load should succeed
+load("sub_file.rr");
+
+// Call the function from the loaded file
+A = sub_func();

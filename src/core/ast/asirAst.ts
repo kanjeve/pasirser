@@ -378,7 +378,7 @@ export interface PreprocessorElseNode extends ASTNode {
 }
 
 export interface PreprocessorIncludeNode extends ASTNode {
-    kind: 'PreprocessorIncludeNode';
+    kind: 'PreprocessorInclude';
     pathtype: 'system' | 'local';
     path: string;
 }

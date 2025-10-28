@@ -1,0 +1,4 @@
+
+load("loaded_file.rr");
+
+Y = my_loaded_func(5);

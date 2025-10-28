@@ -1,0 +1,12 @@
+
+// 1. Create a new path by using cons
+NewPaths = cons("tests/ctrl_test", []);
+
+// 2. Set the load path dynamically
+ctrl("loadpath", NewPaths);
+
+// 3. This load should now succeed because the path was set dynamically
+load("ctrl_file.rr");
+
+// 4. Call the function from the loaded file
+A = ctrl_func();

@@ -1,10 +1,6 @@
-import { CharStream, CommonTokenStream } from 'antlr4ng';
-import { asirLexer } from '../.antlr/asirLexer.js';
-import { asirParser } from '../.antlr/asirParser.js';
-import { AsirASTBuilder } from '../core/ast/asirASTBuilder.js';
-import { CustomErrorListener, SyntaxErrorInfo, AmbiguityInfo, DiagnosticInfo } from '../core/parser/customErrorListener.js';
 import * as fs from 'fs';
-import { ASTBuilderError } from '../utils/errors.js';
+import * as path from 'path';
+import { parseAndBuildAST } from '../core/parser/parserUtils.js';
 import * as ast from '../core/ast/asirAst.js';
 import { Validator } from '../semantics/validator.js';
 import { Diagnostic, DiagnosticSeverity } from '../utils/diagnostics.js';
@@ -13,100 +9,21 @@ import { Command } from 'commander';
 import { AsirFormatter } from '../features/formatter.js';
 import { getCompletions } from '../features/completionProvider.js'; 
 import { getHoverInfo } from '../features/hoverProvider.js'; 
-import { getDefinitionLocation, DefinitionLocation } from '../features/definitionProvider.js'; 
-import { getRenameEdits, TextEdit } from '../features/renameProvider.js'; 
-import { getDocumentSymbols, DocumentSymbol } from '../features/documentSymbolProvider.js'; 
-import { getSemanticTokens, SemanticToken } from '../features/semanticTokensProvider.js'; 
+import { getDefinitionLocation } from '../features/definitionProvider.js'; 
+import { getRenameEdits } from '../features/renameProvider.js'; 
+import { getDocumentSymbols } from '../features/documentSymbolProvider.js'; 
+import { getSemanticTokens } from '../features/semanticTokensProvider.js'; 
 
-function parseAndBuildAST(code: string): { ast: ast.ProgramNode | null; syntaxErrors: SyntaxErrorInfo[]; ambiguities: AmbiguityInfo[]; otherDiagnostics: DiagnosticInfo[]; } {
-    const chars = CharStream.fromString(code);
-    const lexer = new asirLexer(chars);
-    const tokens = new CommonTokenStream(lexer);
-    const parser = new asirParser(tokens);
+export function analyze(code: string, filePath: string | null = null, systemIncludePaths: string[] = [], loadPaths: string[] = []): { ast: ast.ProgramNode | null, diagnostics: Diagnostic[], symbolTable: SymbolTable | null } {
+    const { ast, diagnostics: parseDiagnostics } = parseAndBuildAST(code, filePath || 'untitled');
+    
+    const diagnostics: Diagnostic[] = [...parseDiagnostics];
 
-    parser.removeErrorListeners();
-    const errorListener = new CustomErrorListener();
-    parser.addErrorListener(errorListener);
-
-    const tree = parser.prog();
-
-    const syntaxErrors = errorListener.getErrors();
-    const ambiguities = errorListener.getAmbiguities();
-    const otherDiagnostics = errorListener.getDiagnostics();
-
-    if (syntaxErrors.length > 0) {
-        return { ast: null, syntaxErrors, ambiguities, otherDiagnostics };
-    }
-
-    const astBuilder = new AsirASTBuilder();
-    try {
-        const programNode = astBuilder.visit(tree) as ast.ProgramNode;
-        return { ast: programNode, syntaxErrors: [], ambiguities, otherDiagnostics };
-    } catch (e) {
-        if (e instanceof ASTBuilderError) {
-            // Convert ASTBuilderError to a SyntaxErrorInfo so it can be handled uniformly
-            const errorInfo: SyntaxErrorInfo = {
-                line: e.loc?.startLine ?? 0,
-                column: e.loc?.startColumn ?? 0,
-                endLine: e.loc?.endLine ?? e.loc?.startLine ?? 0,
-                endColumn: e.loc?.endColumn ?? e.loc?.startColumn ?? 0, // endColumnを追加
-                message: e.message,
-                offendingSymbol: null,
-                ruleStack: [],
-            };
-            return { ast: null, syntaxErrors: [errorInfo], ambiguities, otherDiagnostics };
-        } else {
-            console.error(`[FATAL] AST構築中に予期せぬエラーが発生しました: ${e}`);
-            const errorInfo: SyntaxErrorInfo = { line: 1, column: 0, endLine: 1, endColumn: 1, message: `致命的なエラー: ${e}`, offendingSymbol: null, ruleStack: [] }; // endColumnを追加
-            return { ast: null, syntaxErrors: [errorInfo], ambiguities, otherDiagnostics };
-        }
-    }
-}
-
-export function analyze(code: string): { ast: ast.ProgramNode | null, diagnostics: Diagnostic[], symbolTable: SymbolTable | null } {
-    const { ast, syntaxErrors: SyntaxErrorInfos, ambiguities, otherDiagnostics } = parseAndBuildAST(code);
-
-    const diagnostics: Diagnostic[] = SyntaxErrorInfos.map(e => ({
-        severity: DiagnosticSeverity.Error,
-        range: {
-            start: { line: e.line, character: e.column },
-            end: { line: e.endLine, character: e.endColumn }, 
-        },
-        message: e.message,
-        source: 'Syntax',
-    }));
-
-    // AmbiguityInfoをDiagnosticに変換して追加
-    ambiguities.forEach(a => {
-        diagnostics.push({
-            severity: DiagnosticSeverity.Information, // 曖昧性は情報レベル
-            range: {
-                start: { line: a.line, character: a.column },
-                end: { line: a.line, character: a.column + 1 }, // 曖昧なシンボルの長さが不明なため、仮に1文字
-            },
-            message: a.message,
-            source: 'Ambiguity',
-        });
-    });
-
-    // DiagnosticInfoをDiagnosticに変換して追加
-    otherDiagnostics.forEach(d => {
-        diagnostics.push({
-            severity: DiagnosticSeverity.Hint, // その他の診断はヒントレベル
-            range: {
-                start: { line: d.line, character: d.column },
-                end: { line: d.line, character: d.column + 1 }, // 長さ不明のため仮に1文字
-            },
-            message: d.message,
-            source: d.type === 'FullContext' ? 'FullContext' : 'ContextSensitivity',
-        });
-    });
-
-    if (SyntaxErrorInfos.length > 0 || !ast) {
+    if (!ast) {
         return { ast: null, diagnostics, symbolTable: null };
     }
 
-    const validator = new Validator(ast);
+    const validator = new Validator(ast, filePath, systemIncludePaths, loadPaths);
     const semanticErrors = validator.analyze(ast);
 
     diagnostics.push(...semanticErrors);
@@ -121,12 +38,15 @@ if (require.main === module) {
     program.command('analyze <file>')
         .description('Analyze an Asir file for diagnostics.')
         .option('-f, --format <type>', 'Output format (text or json)', 'text')
+        .option('-I, --include-path <paths...>', 'Specify system include paths')
+        .option('--load-path <paths...>', 'Specify load paths')
         .option('--min-severity <level>', '表示する診断の最小重要度 (error, warning, info, hint)', 'hint')
         .action((filePath, options) => {
             console.log(`Analyzing: ${filePath}`);
             try {
-                const code = fs.readFileSync(filePath, 'utf-8');
-                const { diagnostics } = analyze(code);
+                const absolutePath = path.resolve(filePath);
+                const code = fs.readFileSync(absolutePath, 'utf-8');
+                const { diagnostics } = analyze(code, absolutePath, options.includePath, options.loadPath);
 
                 const severityLevels = {
                     'error': DiagnosticSeverity.Error,
@@ -145,7 +65,8 @@ if (require.main === module) {
                     if (filteredDiagnostics.length > 0) {
                         console.log('\n--- Diagnostics ---');
                         for (const d of filteredDiagnostics) {
-                            console.log(`[${d.source}] L${d.range.start.line}:C${d.range.start.character} - ${d.message} (Severity: ${DiagnosticSeverity[d.severity]})`);
+                            const filePart = d.filePath ? `${path.basename(d.filePath)}:` : '';
+                            console.log(`[${d.source}] ${filePart}L${d.range.start.line}:C${d.range.start.character} - ${d.message} (Severity: ${DiagnosticSeverity[d.severity]})`);
                         }
                     } else {
                         console.log('No issues found.');
@@ -162,13 +83,14 @@ if (require.main === module) {
         .action((filePath) => {
             console.log(`Formatting: ${filePath}`);
             try {
-                const code = fs.readFileSync(filePath, 'utf-8');
-                const { ast, syntaxErrors } = parseAndBuildAST(code);
+                const absolutePath = path.resolve(filePath);
+                const code = fs.readFileSync(absolutePath, 'utf-8');
+                const { ast, diagnostics } = parseAndBuildAST(code, absolutePath);
 
-                if (syntaxErrors.length > 0 || !ast) {
+                if (diagnostics.length > 0 || !ast) {
                     console.error('Formatting failed due to syntax errors:');
-                    syntaxErrors.forEach(e => {
-                        console.error(`L${e.line}:C${e.column} - ${e.message}`);
+                    diagnostics.forEach(d => {
+                        console.error(`L${d.range.start.line}:C${d.range.start.character} - ${d.message}`);
                     });
                     process.exit(1);
                 }
@@ -188,11 +110,12 @@ if (require.main === module) {
         .action((filePath, lineStr, charStr) => {
             console.log(`Getting completions for: ${filePath} at L${lineStr}:C${charStr}`);
             try {
-                const code = fs.readFileSync(filePath, 'utf-8');
+                const absolutePath = path.resolve(filePath);
+                const code = fs.readFileSync(absolutePath, 'utf-8');
                 const line = parseInt(lineStr, 10);
                 const character = parseInt(charStr, 10);
 
-                const { ast, diagnostics, symbolTable } = analyze(code);
+                const { ast, diagnostics, symbolTable } = analyze(code, absolutePath);
 
                 const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
                 if (errors.length > 0 || !ast || !symbolTable) {
@@ -217,11 +140,12 @@ if (require.main === module) {
         .action((filePath, lineStr, charStr) => {
             console.log(`Getting hover info for: ${filePath} at L${lineStr}:C${charStr}`);
             try {
-                const code = fs.readFileSync(filePath, 'utf-8');
+                const absolutePath = path.resolve(filePath);
+                const code = fs.readFileSync(absolutePath, 'utf-8');
                 const line = parseInt(lineStr, 10);
                 const character = parseInt(charStr, 10);
 
-                const { ast, diagnostics, symbolTable } = analyze(code);
+                const { ast, diagnostics, symbolTable } = analyze(code, absolutePath);
 
                 const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
                 if (errors.length > 0 || !ast || !symbolTable) {
@@ -246,11 +170,12 @@ if (require.main === module) {
         .action((filePath, lineStr, charStr) => {
             console.log(`Getting definition for: ${filePath} at L${lineStr}:C${charStr}`);
             try {
-                const code = fs.readFileSync(filePath, 'utf-8');
+                const absolutePath = path.resolve(filePath);
+                const code = fs.readFileSync(absolutePath, 'utf-8');
                 const line = parseInt(lineStr, 10);
                 const character = parseInt(charStr, 10);
 
-                const { ast, diagnostics, symbolTable } = analyze(code); // Use analyze to get ast and symbolTable
+                const { ast, diagnostics, symbolTable } = analyze(code, absolutePath);
 
                 const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
                 if (errors.length > 0 || !ast || !symbolTable) {
@@ -260,7 +185,7 @@ if (require.main === module) {
                     process.exit(1);
                 }
 
-                const definitionLocation = getDefinitionLocation(code, { line, character }, ast, symbolTable, filePath);
+                const definitionLocation = getDefinitionLocation(code, { line, character }, ast, symbolTable, absolutePath);
                 if (definitionLocation) {
                     console.log(JSON.stringify(definitionLocation, null, 2));
                 } else {
@@ -278,11 +203,12 @@ if (require.main === module) {
         .action((filePath, lineStr, charStr, newName) => {
             console.log(`Generating rename edits for: ${filePath} at L${lineStr}:C${charStr} to new name: ${newName}`);
             try {
-                const code = fs.readFileSync(filePath, 'utf-8');
+                const absolutePath = path.resolve(filePath);
+                const code = fs.readFileSync(absolutePath, 'utf-8');
                 const line = parseInt(lineStr, 10);
                 const character = parseInt(charStr, 10);
 
-                const { ast, diagnostics, symbolTable } = analyze(code);
+                const { ast, diagnostics, symbolTable } = analyze(code, absolutePath);
 
                 const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
                 if (errors.length > 0 || !ast || !symbolTable) {
@@ -293,7 +219,7 @@ if (require.main === module) {
                     process.exit(1);
                 }
 
-                const renameEdits = getRenameEdits(code, { line, character }, newName, ast, symbolTable, filePath);
+                const renameEdits = getRenameEdits(code, { line, character }, newName, ast, symbolTable, absolutePath);
                 if (renameEdits && renameEdits.length > 0) {
                     console.log(JSON.stringify(renameEdits, null, 2));
                 } else {
@@ -311,8 +237,9 @@ if (require.main === module) {
         .action((filePath) => {
             console.log(`Generating semantic tokens for: ${filePath}`);
             try {
-                const code = fs.readFileSync(filePath, 'utf-8');
-                const { ast, diagnostics, symbolTable } = analyze(code);
+                const absolutePath = path.resolve(filePath);
+                const code = fs.readFileSync(absolutePath, 'utf-8');
+                const { ast, diagnostics, symbolTable } = analyze(code, absolutePath);
 
                 const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
                 if (errors.length > 0 || !ast || !symbolTable) {
@@ -337,8 +264,9 @@ if (require.main === module) {
         .action((filePath) => {
             console.log(`Generating document symbols for: ${filePath}`);
             try {
-                const code = fs.readFileSync(filePath, 'utf-8');
-                const { ast, diagnostics, symbolTable } = analyze(code);
+                const absolutePath = path.resolve(filePath);
+                const code = fs.readFileSync(absolutePath, 'utf-8');
+                const { ast, diagnostics, symbolTable } = analyze(code, absolutePath);
 
                 const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
                 if (errors.length > 0 || !ast || !symbolTable) {

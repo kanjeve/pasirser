@@ -1,0 +1,12 @@
+
+// This would fail because the load path is not set yet.
+// load("ctrl_file.rr");
+
+// Dynamically replace the load path list
+ctrl("loadpath", ["tests/ctrl_test"]);
+
+// This load should now succeed
+load("ctrl_file.rr");
+
+// Call the function from the loaded file
+A = ctrl_func();

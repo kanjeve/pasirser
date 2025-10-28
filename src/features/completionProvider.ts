@@ -1,14 +1,17 @@
 import * as ast from '../core/ast/asirAst';
 import { SymbolTable } from '../semantics/symbolTable';
-import { ALL_ASIR_BUILTIN, ASIR_KEYWORDS } from '../data/builtins';
+import { ALL_ASIR_BUILTIN, ASIR_KEYWORDS, functionNames } from '../data/builtins';
 import { BUILTIN_CONSTANTS } from '../data/builtinConstants';
 import { BUILTIN_SIGNATURES } from '../data/builtinSignatures';
 import { Position } from '../utils/diagnostics';
-import { Scope, Symbol } from '../semantics/types'; // ScopeとSymbolをインポート
+import { Scope, Symbol } from '../semantics/types';
+import { ctrlCommandNames } from '../semantics/builtins/ctrl_handlers';
+import { PARI_SIGNATURES } from '../data/pariSignatures';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Command } from 'commander';
 
-// LSPのCompletionItemKindを模倣
+
 export enum CompletionItemKind {
     Text = 1,
     Method = 2,
@@ -48,8 +51,8 @@ export interface CompletionItem {
     kind: CompletionItemKind;
     detail?: string;
     documentation?: string;
-    insertText?: string; // スニペット挿入用
-    insertTextFormat?: InsertTextFormat; // スニペット挿入用
+    insertText?: string; 
+    insertTextFormat?: InsertTextFormat;
 }
 
 interface AsirSnippet {
@@ -79,41 +82,71 @@ function loadSnippets(): { [key: string]: AsirSnippet } {
 export function getCompletions(
     code: string,
     position: Position,
-    ast: ast.ProgramNode,
-    symbolTable: SymbolTable
+    ast: ast.ProgramNode | null,
+    symbolTable: SymbolTable | null
 ): CompletionItem[] {
     const completions: CompletionItem[] = [];
+    const lineContent = code.split('\n')[position.line - 1] || '';
+    const lineUnitilCursor = lineContent.substring(0, position.character);
 
-    // Determine the word being typed by the user
-    const lineContent = code.split('\n')[position.line - 1];
-    let typedPrefix = '';
-    if (lineContent) {
-        const match = lineContent.substring(0, position.character).match(/([a-zA-Z_][a-zA-Z0-9_]*)$/);
-        if (match) {
-            typedPrefix = match[1];
-        }
-    }
-
-    // 1. 現在のスコープ内のシンボルを収集
-    const scope = symbolTable.findScopeAt(position);
-    let currentScope: Scope | null = scope;
-    while (currentScope) {
-        currentScope.symbols.forEach(symbol => {
-            if (symbol.name.startsWith(typedPrefix)) { // Filter by typed prefix
+    // pari補完
+    const pariMatch = lineUnitilCursor.match(/\bpari\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)$/);
+    if (pariMatch) {
+        const typedPrefix = pariMatch[1];
+        PARI_SIGNATURES.forEach((_signature, funcName) => {
+            if (funcName.startsWith(typedPrefix)) {
                 completions.push({
-                    label: symbol.name,
-                    kind: symbol.type.kind === 'function' || symbol.type.kind === 'overloaded_function' ? CompletionItemKind.Function : CompletionItemKind.Variable,
-                    detail: `(${symbol.type.kind}) ${symbol.name}`,
-                    documentation: symbol.definedAt ? `Defined at L${symbol.definedAt.startLine}:C${symbol.definedAt.startColumn}` : undefined,
+                    label: funcName,
+                    kind: CompletionItemKind.Function,
+                    detail: `pari function: ${funcName}`
                 });
             }
         });
-        currentScope = currentScope.parent;
+        return completions;
     }
+
+    // ctrl補完
+    const ctrlMatch = lineUnitilCursor.match(/\bctrl\s*\(\s*"([a-zA-Z0-9_]*)$/);
+    if (ctrlMatch) {
+        const typedPrefix = ctrlMatch[1];
+        ctrlCommandNames.forEach(CommandName => {
+            if (CommandName.startsWith(typedPrefix)) {
+                completions.push({
+                    label: CommandName,
+                    kind: CompletionItemKind.EnumMember,
+                    detail: 'ctrl command'
+                });
+            }
+        });
+        return completions;
+    }
+
+    const identifierMatch =lineUnitilCursor.match(/([a-zA-Z_][a-zA-Z0-9_]*)$/);
+    const typedPrefix = identifierMatch ? identifierMatch[1] : '';
+    if (ast && symbolTable) {
+        // 1. 現在のスコープ内のシンボルを収集
+        const scope = symbolTable.findScopeAt(position);
+        let currentScope: Scope | null = scope;
+        while (currentScope) {
+            currentScope.symbols.forEach(symbol => {
+                if (symbol.name.startsWith(typedPrefix)) {
+                    completions.push({
+                        label: symbol.name,
+                        kind: symbol.type.kind === 'function' || symbol.type.kind === 'overloaded_function' ? CompletionItemKind.Function : CompletionItemKind.Variable,
+                        detail: `(${symbol.type.kind}) ${symbol.name}`,
+                        documentation: symbol.definedAt ? `Defined at L${symbol.definedAt.startLine}:C${symbol.definedAt.startColumn}` : undefined,
+                    });
+                }
+            });
+            currentScope = currentScope.parent;
+        }
+    }
+
+    
 
     // 2. 組み込み関数を収集
     BUILTIN_SIGNATURES.forEach((type, name) => {
-        if (name.startsWith(typedPrefix)) { // Filter by typed prefix
+        if (name.startsWith(typedPrefix)) { 
             completions.push({
                 label: name,
                 kind: CompletionItemKind.Function,
@@ -125,7 +158,7 @@ export function getCompletions(
 
     // 3. 組み込み定数を収集
     BUILTIN_CONSTANTS.forEach((type, name) => {
-        if (name.startsWith(typedPrefix)) { // Filter by typed prefix
+        if (name.startsWith(typedPrefix)) { 
             completions.push({
                 label: name,
                 kind: CompletionItemKind.Constant,
@@ -137,7 +170,7 @@ export function getCompletions(
 
     // 4. キーワードを収集
     ASIR_KEYWORDS.forEach(keyword => {
-        if (keyword.startsWith(typedPrefix)) { // Filter by typed prefix
+        if (keyword.startsWith(typedPrefix)) {
             completions.push({
                 label: keyword,
                 kind: CompletionItemKind.Keyword,
@@ -150,7 +183,7 @@ export function getCompletions(
     const snippets = loadSnippets();
     for (const key in snippets) {
         const snippet = snippets[key];
-        if (snippet.prefix.startsWith(typedPrefix)) { // Filter by typed prefix
+        if (snippet.prefix.startsWith(typedPrefix)) {
             completions.push({
                 label: snippet.prefix,
                 kind: CompletionItemKind.Snippet,

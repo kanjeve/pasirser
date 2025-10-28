@@ -295,7 +295,7 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
         }
 
         return {
-            kind: 'PreprocessorIncludeNode',
+            kind: 'PreprocessorInclude',
             pathtype: pathType,
             path: path,
             loc: getLoc(ctx)

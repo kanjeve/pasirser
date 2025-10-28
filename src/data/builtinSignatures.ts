@@ -1,11 +1,14 @@
 import { FunctionAsirType,OverloadedFunctionType, UnionType,p_type, u_type, l_type, v_type, m_type, stdpoly_type, dpoly_type, dpm_type, rat_type, type_0, type_1, type_0_1, type_m1_0_1, type_0_1_2 } from "../semantics/types";
 
+// 更新後は以下を実行
+// python3 temp_for_review/find_missing_signatures.py src/data/builtins.ts src/data/builtinSignatures.ts > temp_for_review/undefined_builtin_functions.txt
+
 // p_type('any')ってプリミティブ型じゃね？
 
 // 組み込み関数用のシグネチャ
 export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedFunctionType>([
     [
-        "access",
+        'access',
         {
             kind: 'function',
             parameters: [{ name: 'file', type: p_type('string') }],
@@ -13,9 +16,9 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
             behavior: 'callable_and_symbol'
         }
     ],
-    [// メモ：algやnewalgは主係数が有理数の1変数多項式であれば実行されるが、実際には各係数が有理数である必要がある。
-        "alg",
-        {
+    [
+        'alg',
+        { // メモ：algやnewalgは主係数が有理数の1変数多項式であれば実行されるが、実際には各係数が有理数である必要がある。
             kind: 'function',
             parameters: [{ name: 'i', type: p_type('integer') }],
             returnType: p_type('alg'),
@@ -2367,7 +2370,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
         }
     ],
     [
-        'load', // TODO: 最終目標
+        'load', 
         {
             kind: 'function',
             parameters: [{ name: 'filename', type: p_type('string') }],
@@ -3539,7 +3542,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
         }
     ],
     [
-        "remove_file",
+        'remove_file',
         {
             kind: 'function',
             parameters: [{ name: 'file', type: p_type('string') }],
@@ -3548,7 +3551,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
         }
     ],
     [
-        "remove_module",
+        'remove_module',
         {
             kind: 'function',
             parameters: [{ name: 'name', type: p_type('string') }],
@@ -4373,7 +4376,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
         }
     ],
     [
-        'ureverse_as_power_series',
+        'ureverse_inv_as_power_series',
         {
             kind: 'function',
             parameters: [
@@ -4529,6 +4532,26 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
             kind: 'function',
             parameters: [{ name: 'filename', type: p_type('string') }],
             returnType: u_type([p_type('string'), type_0]),
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    // 実験的な関数
+    [
+        'chdir',
+        {
+            kind: 'function',
+            parameters: [{ name: 'directory', type: p_type('string') }],
+            returnType: type_m1_0_1,
+            behavior: 'callable_and_symbol'
+        }
+    ],
+    // その他
+    [
+        'import',
+        {
+            kind: 'function',
+            parameters: [{ name: 'filename', type: p_type('string') }],
+            returnType: type_0_1,
             behavior: 'callable_and_symbol'
         }
     ]

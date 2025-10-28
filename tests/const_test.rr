@@ -1,0 +1,6 @@
+
+MyNum = 123;
+MyStr = "hello";
+
+Test1 = MyNum; // MyNum is used, should log its constant value
+Test2 = MyStr; // MyStr is used, should log its constant value

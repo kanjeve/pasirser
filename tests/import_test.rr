@@ -1,0 +1,8 @@
+
+// First import should succeed
+import("import_target.rr");
+
+// Second import of the same file should be ignored and not cause a re-definition error.
+import("import_target.rr");
+
+A = imported_func();
