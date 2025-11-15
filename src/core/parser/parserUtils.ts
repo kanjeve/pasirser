@@ -43,7 +43,7 @@ export function parseAndBuildAST(code: string, filePathForErrors: string): { ast
 
     ambiguities.forEach(a => {
         diagnostics.push({
-            severity: DiagnosticSeverity.Information,
+            severity: DiagnosticSeverity.Hint,
             range: { start: { line: a.line, character: a.column }, end: { line: a.line, character: a.column + 1 } },
             message: a.message,
             source: 'Ambiguity',

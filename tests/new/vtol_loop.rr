@@ -1,0 +1,9 @@
+def main() {
+    V = [[1,2], [3,4]];
+    V = ltov(V);
+    for (I = 0; I < 2; I++) {
+        V[I] = ltov(V[I]);
+        V[I] = vtol(V[I]);
+    }
+    L = vtol(V);
+}

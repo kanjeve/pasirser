@@ -19,6 +19,9 @@ import { ReturnStatementContext } from "../../.antlr/asirParser.js";
 import { BreakStatementContext } from "../../.antlr/asirParser.js";
 import { ContinueStatementContext } from "../../.antlr/asirParser.js";
 import { StructStatementContext } from "../../.antlr/asirParser.js";
+import { EndStatementContext } from "../../.antlr/asirParser.js";
+import { QuitStatementContext } from "../../.antlr/asirParser.js";
+import { DebugStatementContext } from "../../.antlr/asirParser.js";
 import { ModuleStatementContext } from "../../.antlr/asirParser.js";
 import { PreproStatementContext } from "../../.antlr/asirParser.js";
 import { PreChrContext } from "../../.antlr/asirParser.js";
@@ -35,6 +38,9 @@ import { DoContext } from "../../.antlr/asirParser.js";
 import { ReturnContext } from "../../.antlr/asirParser.js";
 import { ContinueContext } from "../../.antlr/asirParser.js";
 import { BreakContext } from "../../.antlr/asirParser.js";
+import { EndContext } from "../../.antlr/asirParser.js";
+import { QuitContext } from "../../.antlr/asirParser.js";
+import { DebugContext } from "../../.antlr/asirParser.js";
 import { StructContext } from "../../.antlr/asirParser.js";
 import { FCallExprContext } from "../../.antlr/asirParser.js";
 import { FunctorCallExprContext } from "../../.antlr/asirParser.js";
@@ -230,6 +236,18 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
     visitContinueStatement(ctx: ContinueStatementContext): ast.ContinueStatementNode {
         return this.visitAndCheck<ast.ContinueStatementNode>(ctx.functionContinue()!);
+    }
+
+    visitQuitStatement(ctx: QuitStatementContext): ast.QuitStatementNode {
+        return this.visitAndCheck<ast.QuitStatementNode>(ctx.functionQuit()!);
+    }
+
+    visitDebugStatement(ctx: DebugStatementContext): ast.DebugStatementNode {
+        return this.visitAndCheck<ast.DebugStatementNode>(ctx.functionDebug()!);
+    }
+
+    visitEndStatement(ctx: EndStatementContext): ast.EndStatementNode {
+        return this.visitAndCheck<ast.EndStatementNode>(ctx.functionEnd()!);
     }
 
     visitStructStatement(ctx: StructStatementContext): ast.StructStatementNode {
@@ -731,6 +749,9 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode | undef
 
     visitBreak(ctx: BreakContext): ast.BreakStatementNode { return { kind: 'BreakStatement', loc: getLoc(ctx) }; }
     visitContinue(ctx: ContinueContext): ast.ContinueStatementNode { return { kind: 'ContinueStatement', loc: getLoc(ctx) }; }
+    visitEnd(ctx: EndContext): ast.EndStatementNode { return { kind: 'EndStatement', loc: getLoc(ctx) }; }
+    visitQuit(ctx: QuitContext): ast.QuitStatementNode { return { kind: 'QuitStatement', loc: getLoc(ctx) }; }
+    visitDebug(ctx: DebugContext): ast.DebugStatementNode { return { kind: 'DebugStatement', loc: getLoc(ctx) }; }
 
     visitStruct(ctx: StructContext): ast.StructStatementNode {
         const nameNode = this.visitAndCheck<ast.IndeterminateNode>(ctx._name);

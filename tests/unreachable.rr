@@ -1,0 +1,21 @@
+def f(X) {
+    return X + 1;
+    print("This is unreachable.");
+}
+
+def g(Y) {
+    end$
+    print("This is also unreachable.");
+}
+
+def h(Z) {
+    quit$
+    print("And this too.");
+}
+
+def main() {
+    f(1);
+    g(2);
+    h(3);
+    print("This is after quit$.");
+}

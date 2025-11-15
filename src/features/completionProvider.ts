@@ -68,7 +68,7 @@ function loadSnippets(): { [key: string]: AsirSnippet } {
         return cachedSnippets;
     }
 
-    const snippetFilePath = path.join(__dirname, '../../temp_for_review/rr.json');
+    const snippetFilePath = path.join(__dirname, '../snippets/rr.json');
     try {
         const snippetContent = fs.readFileSync(snippetFilePath, 'utf-8');
         cachedSnippets = JSON.parse(snippetContent);

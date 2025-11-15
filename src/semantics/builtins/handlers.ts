@@ -2,13 +2,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { BuiltinFunctionHandler } from './handler';
-import { EvaluationResult, p_type, ConstantValue, TupleType, TupleElement,  AsirType, l_type } from '../types';
+import { EvaluationResult, p_type, ConstantValue, TupleType, TupleElement,  AsirType, l_type, ListAsirType, VectorAsirType, UnionType } from '../types';
 import { DiagnosticSeverity } from '../../utils/diagnostics';
 import { parseAndBuildAST } from '../../core/parser/parserUtils';
 import { Validator } from '../validator';
 import { BUILTIN_SIGNATURES } from '../../data/builtinSignatures';
 import { ctrlSubHandlers } from './ctrl_handlers';
 import { PARI_SIGNATURES } from '../../data/pariSignatures'; 
+import { ListAssignContext } from '../../.antlr/asirParser';
 
 // 各ハンドラーは、Validatorのインスタンス、ASTノード、評価済みの引数を受け取る
 
@@ -191,19 +192,31 @@ const handleCons: BuiltinFunctionHandler = (validator, node, argResults) => {
 
     const itemResult = argResults[0];
     const listResult = argResults[1];
+    const listType = listResult.type;
+
     let newConstantValue: ConstantValue | undefined = undefined;
 
     if (itemResult.constantValue !== undefined && Array.isArray(listResult.constantValue)) {
         newConstantValue = [itemResult.constantValue as (string | number), ...listResult.constantValue];
     }
 
-    const listType = listResult.type;
-    if (listType.kind === 'tuple') {
-        const newElements = [{ type: itemResult.type }, ...listType.elements];
-        return { type: { kind: 'tuple', elements: newElements }, constantValue: newConstantValue };
-    } else if (listType.kind === 'list') {
-        const commonElementType = validator.getCommonSupertype([itemResult.type, listType.elementType]);
-        return { type: { kind: 'list', elementType: commonElementType }, constantValue: newConstantValue };
+    const isListLikeOrUnknown = (type: AsirType): boolean => {
+        return type.kind === 'tuple' || type.kind === 'list' || (type.kind === 'primitive' && (type.name === 'parameter' || type.name === 'any'));
+    };
+
+
+    if (isListLikeOrUnknown(listType)) {
+        if (listType.kind === 'primitive' && (listType.name === 'parameter' || listType.name === 'any')) {
+            return { type: l_type(validator.getCommonSupertype([itemResult.type, p_type('any')])), constantValue: newConstantValue };
+        }
+
+        if (listType.kind === 'tuple') {
+            const newElements = [{ type: itemResult.type }, ...listType.elements];
+            return { type: { kind: 'tuple', elements: newElements }, constantValue: newConstantValue };
+        } else if (listType.kind === 'list') {
+            const commonElementType = validator.getCommonSupertype([itemResult.type, listType.elementType]);
+            return { type: { kind: 'list', elementType: commonElementType }, constantValue: newConstantValue };
+        }
     }
 
     validator.addDiagnostic(node.args[1], `cons() の第二引数はリストである必要があります。`, DiagnosticSeverity.Error);
@@ -279,15 +292,24 @@ const handleAppend: BuiltinFunctionHandler = (validator, node, argResults) => {
         newConstantValue = [...list1Result.constantValue, ...list2Result.constantValue];
     }
 
-    if (list1Type.kind === 'tuple' && list2Type.kind === 'tuple'){
-        const newElements = list1Type.elements.concat(list2Type.elements);
-        return { type: { kind: 'tuple', elements: newElements }, constantValue: newConstantValue };
-    } else if ((list1Type.kind === 'tuple' || list1Type.kind === 'list') && (list2Type.kind === 'tuple' || list2Type.kind === 'list')) {
-        const elem1Type = list1Type.kind === 'list' ? list1Type.elementType : validator.getCommonSupertype(list1Type.elements.map(e => e.type));
-        const elem2Type = list2Type.kind === 'list' ? list2Type.elementType : validator.getCommonSupertype(list2Type.elements.map(e => e.type));
-        return { type: { kind: 'list', elementType: validator.getCommonSupertype([elem1Type, elem2Type]) }, constantValue: newConstantValue };
+    const isList1Ok = list1Type.kind === 'list' || list1Type.kind === 'tuple' || (list1Type.kind === 'primitive' && (list1Type.name === 'parameter' || list1Type.name === 'any'));
+    const isList2Ok = list2Type.kind === 'list' || list2Type.kind === 'tuple' || (list2Type.kind === 'primitive' && (list2Type.name === 'parameter' || list2Type.name === 'any'));
+
+    if (isList1Ok && isList2Ok) {
+        if ((list1Type.kind === 'list' || list1Type.kind === 'tuple') && (list2Type.kind === 'list' || list2Type.kind === 'tuple' )) {
+            if (list1Type.kind === 'tuple' && list2Type.kind === 'tuple'){
+                const newElements = list1Type.elements.concat(list2Type.elements);
+                return { type: { kind: 'tuple', elements: newElements }, constantValue: newConstantValue };
+            } else {
+                const elem1Type = list1Type.kind === 'list' ? list1Type.elementType : validator.getCommonSupertype(list1Type.elements.map(e => e.type));
+                const elem2Type = list2Type.kind === 'list' ? list2Type.elementType : validator.getCommonSupertype(list2Type.elements.map(e => e.type));
+                return { type: { kind: 'list', elementType: validator.getCommonSupertype([elem1Type, elem2Type]) }, constantValue: newConstantValue };
+            }
+        } else {
+            return { type: l_type(p_type('any')), constantValue: newConstantValue };
+        }
     } else {
-        validator.addDiagnostic(node.args[0], `append の引数は両方ともリストでなければなりません。`, DiagnosticSeverity.Error);
+        validator.addDiagnostic(node, `append の引数は両方ともリストでなければなりません。`, DiagnosticSeverity.Error);
         return { type: p_type('any') };
     }
 };
@@ -314,6 +336,52 @@ const handleReverse: BuiltinFunctionHandler = (validator, node, argResults) => {
         validator.addDiagnostic(node.args[0], `reverse の引数はリストでなければなりません。`, DiagnosticSeverity.Error);
         return { type: p_type('any') };
     }
+};
+
+const handleLtov: BuiltinFunctionHandler = (validator, node, argResults) => {
+    if (argResults.length !== 1) {
+        validator.addDiagnostic(node, `ltov は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
+        return { type: p_type('any') };
+    }
+    const argResult = argResults[0];
+    const argType = argResult.type;
+
+    let newConstantValue: ConstantValue | undefined = undefined;
+    if (Array.isArray(argResult.constantValue)) {
+        newConstantValue = [...argResult.constantValue]; // リストからベクトルへの変換では要素の順序は変わらない
+    }
+
+    let actualListType: ListAsirType | TupleType | undefined;
+    if (argType.kind === 'union') {
+        const findListOrTupleInUnion = (unionType: UnionType): ListAsirType | TupleType | undefined => {
+            for (const type of unionType.types) {
+                if (type.kind === 'list' || type.kind === 'tuple') {
+                    return type as ListAsirType | TupleType;
+                }
+                if (type.kind === 'union') {
+                    const nestedListOrTuple = findListOrTupleInUnion(type);
+                    if (nestedListOrTuple) {
+                        return nestedListOrTuple;
+                    }
+                }
+            }
+            return undefined;
+        };
+        actualListType = findListOrTupleInUnion(argType);
+    } else if (argType.kind === 'list' || argType.kind === 'tuple') {
+        actualListType = argType;
+    }
+
+    if (actualListType) {
+        if (actualListType.kind === 'list') {
+            return { type: { kind: 'vector', elementType: (actualListType as ListAsirType).elementType }, constantValue: newConstantValue };
+        } else if (actualListType.kind === 'tuple') {
+            const commonElementType = validator.getCommonSupertype((actualListType as TupleType).elements.map(e => e.type));
+            return { type: { kind: 'vector', elementType: commonElementType }, constantValue: newConstantValue };
+        }
+    }
+    validator.addDiagnostic(node, `ltov の引数はリストまたはタプルでなければなりません。`, DiagnosticSeverity.Error);
+    return { type: p_type('any') };
 };
 
 // その他
@@ -349,6 +417,53 @@ const handleNewstruct: BuiltinFunctionHandler = (validator, node, argResults) =>
     return { type: p_type('any') };
 };
 
+const handleVtol: BuiltinFunctionHandler = (validator, node, argResults) => {
+    console.log(`[DEBUG] handleVtol: argType=${validator.typeToString(argResults[0].type)}`);
+    if (argResults.length !== 1) {
+        validator.addDiagnostic(node, `vtol は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
+        return { type: p_type('any') };
+    }
+    const argResult = argResults[0];
+    const argType = argResult.type;
+
+    let newConstantValue: ConstantValue | undefined = undefined;
+    if (Array.isArray(argResult.constantValue)) {
+        newConstantValue = [...argResult.constantValue]; // ベクトルからリストへの変換では要素の順序は変わらない
+    }
+
+    let actualVectorType: VectorAsirType | undefined;
+    if (argType.kind === 'union') {
+        const findVectorInUnion = (unionType: UnionType): VectorAsirType | undefined => {
+            console.log(`[DEBUG] findVectorInUnion: unionType.types=${unionType.types.map(t => validator.typeToString(t)).join(', ')}`);
+            for (const type of unionType.types) {
+                console.log(`[DEBUG] findVectorInUnion: Checking type:`, type);
+                if (type.kind === 'vector') {
+                    console.log(`[DEBUG] findVectorInUnion: Found vector: ${validator.typeToString(type)}`);
+                    return type as VectorAsirType;
+                }
+                if (type.kind === 'union') {
+                    console.log(`[DEBUG] findVectorInUnion: Recursing into nested union: ${validator.typeToString(type)}`);
+                    const nestedVector = findVectorInUnion(type);
+                    if (nestedVector) {
+                        return nestedVector;
+                    }
+                }
+            }
+            return undefined;
+        };
+        actualVectorType = findVectorInUnion(argType);
+    } else if (argType.kind === 'vector') {
+        actualVectorType = argType;
+    }
+
+    if (actualVectorType) {
+        return { type: { kind: 'list', elementType: (actualVectorType as VectorAsirType).elementType }, constantValue: newConstantValue };
+    } else {
+        validator.addDiagnostic(node, `vtol の引数はベクトルでなければなりません。`, DiagnosticSeverity.Error);
+        return { type: p_type('any') };
+    }
+};
+
 // 組み込み関数ハンドラーの登録簿
 export const builtinHandlers = new Map<string, BuiltinFunctionHandler>([
     ['map', handleMap],
@@ -362,5 +477,7 @@ export const builtinHandlers = new Map<string, BuiltinFunctionHandler>([
     ['cdr', handleCdr],
     ['append', handleAppend],
     ['reverse', handleReverse],
+    ['ltov', handleLtov],
+    ['vtol', handleVtol],
     ['newstruct', handleNewstruct],
 ]);

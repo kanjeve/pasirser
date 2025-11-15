@@ -16,6 +16,9 @@ import { ReturnStatementContext } from "./asirParser.js";
 import { BreakStatementContext } from "./asirParser.js";
 import { ContinueStatementContext } from "./asirParser.js";
 import { StructStatementContext } from "./asirParser.js";
+import { EndStatementContext } from "./asirParser.js";
+import { QuitStatementContext } from "./asirParser.js";
+import { DebugStatementContext } from "./asirParser.js";
 import { ModuleStatementContext } from "./asirParser.js";
 import { PreproStatementContext } from "./asirParser.js";
 import { PreChrContext } from "./asirParser.js";
@@ -33,6 +36,9 @@ import { ReturnContext } from "./asirParser.js";
 import { ContinueContext } from "./asirParser.js";
 import { BreakContext } from "./asirParser.js";
 import { StructContext } from "./asirParser.js";
+import { EndContext } from "./asirParser.js";
+import { QuitContext } from "./asirParser.js";
+import { DebugContext } from "./asirParser.js";
 import { ModuleAssignContext } from "./asirParser.js";
 import { ModuleStartContext } from "./asirParser.js";
 import { ModuleEndContext } from "./asirParser.js";
@@ -260,6 +266,42 @@ export class asirListener implements ParseTreeListener {
      */
     exitStructStatement?: (ctx: StructStatementContext) => void;
     /**
+     * Enter a parse tree produced by the `EndStatement`
+     * labeled alternative in `asirParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterEndStatement?: (ctx: EndStatementContext) => void;
+    /**
+     * Exit a parse tree produced by the `EndStatement`
+     * labeled alternative in `asirParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitEndStatement?: (ctx: EndStatementContext) => void;
+    /**
+     * Enter a parse tree produced by the `QuitStatement`
+     * labeled alternative in `asirParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterQuitStatement?: (ctx: QuitStatementContext) => void;
+    /**
+     * Exit a parse tree produced by the `QuitStatement`
+     * labeled alternative in `asirParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitQuitStatement?: (ctx: QuitStatementContext) => void;
+    /**
+     * Enter a parse tree produced by the `DebugStatement`
+     * labeled alternative in `asirParser.statement`.
+     * @param ctx the parse tree
+     */
+    enterDebugStatement?: (ctx: DebugStatementContext) => void;
+    /**
+     * Exit a parse tree produced by the `DebugStatement`
+     * labeled alternative in `asirParser.statement`.
+     * @param ctx the parse tree
+     */
+    exitDebugStatement?: (ctx: DebugStatementContext) => void;
+    /**
      * Enter a parse tree produced by the `ModuleStatement`
      * labeled alternative in `asirParser.statement`.
      * @param ctx the parse tree
@@ -463,6 +505,42 @@ export class asirListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitStruct?: (ctx: StructContext) => void;
+    /**
+     * Enter a parse tree produced by the `End`
+     * labeled alternative in `asirParser.functionEnd`.
+     * @param ctx the parse tree
+     */
+    enterEnd?: (ctx: EndContext) => void;
+    /**
+     * Exit a parse tree produced by the `End`
+     * labeled alternative in `asirParser.functionEnd`.
+     * @param ctx the parse tree
+     */
+    exitEnd?: (ctx: EndContext) => void;
+    /**
+     * Enter a parse tree produced by the `Quit`
+     * labeled alternative in `asirParser.functionQuit`.
+     * @param ctx the parse tree
+     */
+    enterQuit?: (ctx: QuitContext) => void;
+    /**
+     * Exit a parse tree produced by the `Quit`
+     * labeled alternative in `asirParser.functionQuit`.
+     * @param ctx the parse tree
+     */
+    exitQuit?: (ctx: QuitContext) => void;
+    /**
+     * Enter a parse tree produced by the `Debug`
+     * labeled alternative in `asirParser.functionDebug`.
+     * @param ctx the parse tree
+     */
+    enterDebug?: (ctx: DebugContext) => void;
+    /**
+     * Exit a parse tree produced by the `Debug`
+     * labeled alternative in `asirParser.functionDebug`.
+     * @param ctx the parse tree
+     */
+    exitDebug?: (ctx: DebugContext) => void;
     /**
      * Enter a parse tree produced by the `ModuleAssign`
      * labeled alternative in `asirParser.functionModule`.

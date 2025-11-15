@@ -3,20 +3,18 @@ import * as path from 'path';
 import * as ast from '../core/ast/asirAst.js';
 import { parseAndBuildAST } from '../core/parser/parserUtils.js';
 import { SymbolTable } from './symbolTable.js';
-import { AsirType, FunctionAsirType, OverloadedFunctionType, PrimitiveAsirType, PrimitiveAsirTypeName, Symbol, Scope, TYPE_METADATA, StructAsirType, ModuleAsirType, ListAsirType, VectorAsirType, MatrixAsirType, PolynomialAsirType, TupleType, TupleElement, UnionType, LiteralUnionType, p_type, dpm_type, dpoly_type, rat_type, EvaluationResult, ConstantValue } from './types.js';
+import { AsirType, FunctionAsirType, OverloadedFunctionType, PrimitiveAsirType, PrimitiveAsirTypeName, Symbol, Scope, TYPE_METADATA, StructAsirType, ModuleAsirType, ListAsirType, VectorAsirType, MatrixAsirType, PolynomialAsirType, TupleType, TupleElement, UnionType, LiteralUnionType, p_type, dpm_type, dpoly_type, rat_type, EvaluationResult, IndexAccessResult, ConstantValue, m_type, u_type, l_type, v_type } from './types.js';
 import { Diagnostic, DiagnosticSeverity } from '../utils/diagnostics.js';
 import { ALL_ASIR_BUILTIN, ASIR_KEYWORDS } from '../data/builtins.js';
 import { BUILTIN_SIGNATURES } from '../data/builtinSignatures.js';
 import { BUILTIN_CONSTANTS } from '../data/builtinConstants.js';
 import { builtinHandlers } from './builtins/handlers.js';
-import { ecmaVersion } from 'acorn';
 
 // TODO: データフロー解析
-// TODO: load, import, include
 
 // A simple base class for visiting our custom AST
 export abstract class AsirASTVisitor<T> {
-    visit(node: ast.ASTNode): T | undefined {
+    visit(node: ast.ASTNode): T | IndexAccessResult | undefined {
         switch (node.kind) {
             case 'Program': return this.visitProgram(node as ast.ProgramNode);
             case 'Block': return this.visitBlock(node as ast.BlockNode);
@@ -38,6 +36,9 @@ export abstract class AsirASTVisitor<T> {
             case 'ReturnStatement': return this.visitReturnStatement(node as ast.ReturnStatementNode);
             case 'BreakStatement': return this.visitBreakStatement(node as ast.BreakStatementNode);
             case 'ContinueStatement': return this.visitContinueStatement(node as ast.ContinueStatementNode);
+            case 'EndStatement': return this.visitEndStatement(node as ast.EndStatementNode);
+            case 'QuitStatement': return this.visitQuitStatement(node as ast.QuitStatementNode);
+            case 'DebugStatement': return this.visitDebugStatement(node as ast.DebugStatementNode);
             case 'QualifiedName': return this.visitQualifiedName(node as ast.QualifiedNameNode); 
             case 'FunctionCall': return this.visitFunctionCall(node as ast.FunctionCallNode);
             case 'Indeterminate': return this.visitIndeterminate(node as ast.IndeterminateNode);
@@ -64,12 +65,12 @@ export abstract class AsirASTVisitor<T> {
         return undefined;
     }
 
-    protected aggregateResult(aggregate: T | undefined, nextResult: T | undefined): T | undefined {
+    protected aggregateResult(aggregate: T | IndexAccessResult | undefined, nextResult: T | IndexAccessResult | undefined): T | IndexAccessResult | undefined {
         return nextResult !== undefined ? nextResult : aggregate;
     }
 
-    protected visitChildren(node: ast.ASTNode): T | undefined {
-        let result = this.createDefaultResult();
+    protected visitChildren(node: ast.ASTNode): T | IndexAccessResult | undefined {
+        let result: T | IndexAccessResult | undefined = this.createDefaultResult();
         for (const key in node) {
             if (key === 'loc' || key === 'kind') continue;
 
@@ -90,43 +91,46 @@ export abstract class AsirASTVisitor<T> {
     }
 
     // Define abstract visit methods or provide default implementations
-    visitProgram(node: ast.ProgramNode): T | undefined { return this.visitChildren(node); }
-    visitBlock(node: ast.BlockNode): T | undefined { return this.visitChildren(node); }
-    visitExpressionStatement(node: ast.ExpressionStatementNode): T | undefined { return this.visitChildren(node); }
-    visitFunctionDefinition(node: ast.DefinitionStatementNode): T | undefined { return this.visitChildren(node); }
-    visitFormDeclaration(node: ast.FormDeclarationNode): T | undefined { return this.visitChildren(node); }
-    visitStructStatement(node: ast.StructStatementNode): T | undefined { return this.visitChildren(node); }
-    visitModuleDeclaration(node: ast.ModuleDeclarationNode): T | undefined { return this.visitChildren(node); }
-    visitModuleVariableDeclaration(node: ast.ModuleVariableDeclarationNode): T | undefined { return this.visitChildren(node); }
-    visitLocalFunctionDeclaration(node: ast.LocalFunctionDeclarationNode): T | undefined { return this.visitChildren(node); }
-    visitEndModule(node: ast.EndModuleNode): T | undefined { return this.visitChildren(node); }
-    visitAssignmentExpression(node: ast.AssignmentExpressionNode): T | undefined { return this.visitChildren(node); }
-    visitListDestructuringAssignment(node: ast.ListDestructuringAssignmentNode): T | undefined { return this.visitChildren(node); }
-    visitIfStatement(node: ast.IfStatementNode): T | undefined { return this.visitChildren(node); }
-    visitForStatement(node: ast.ForStatementNode): T | undefined { return this.visitChildren(node); }
-    visitWhileStatement(node: ast.WhileStatementNode): T | undefined { return this.visitChildren(node); }
-    visitDoWhileStatement(node: ast.DoWhileStatementNode): T | undefined { return this.visitChildren(node); }
-    visitReturnStatement(node: ast.ReturnStatementNode): T | undefined { return this.visitChildren(node); }
-    visitBreakStatement(node: ast.BreakStatementNode): T | undefined { return this.visitChildren(node); }
-    visitContinueStatement(node: ast.ContinueStatementNode): T | undefined { return this.visitChildren(node); }
-    visitFunctionCall(node: ast.FunctionCallNode): T | undefined { return this.visitChildren(node); }
-    visitQualifiedName(node: ast.QualifiedNameNode): T | undefined { return this.visitChildren(node); }
-    visitIndeterminate(node: ast.IndeterminateNode): T | undefined { return this.visitChildren(node); }
-    visitBinaryOperation(node: ast.BinaryOperationNode): T | undefined { return this.visitChildren(node); }
-    visitUnaryOperation(node: ast.UnaryOperationNode): T | undefined { return this.visitChildren(node); }
-    visitTernaryOperation(node: ast.TernaryOperationNode): T | undefined { return this.visitChildren(node); }
-    visitPowerOperation(node: ast.PowerOperationNode): T | undefined { return this.visitChildren(node); }
-    visitIndexAccess(node: ast.IndexAccessNode): T | undefined { return this.visitChildren(node); }
-    visitMemberAccess(node: ast.MemberAccessNode): T | undefined { return this.visitChildren(node); }
-    visitParenExpression(node: ast.ParenExpressionNode): T | undefined { return this.visitChildren(node); }
-    visitListLiteral(node: ast.ListLiteralNode): T | undefined { return this.visitChildren(node); }
-    visitStringLiteral(node: ast.StringLiteralNode): T | undefined { return this.visitChildren(node); }
-    visitNumberLiteral(node: ast.NumberLiteralNode): T | undefined { return this.visitChildren(node); }
-    visitDPolyLiteral(node: ast.DistributedPolynomialLiteralNode): T | undefined { return this.visitChildren(node); }
-    visitDottedIdentifier(node: ast.DottedIdentifierNode): T | undefined { return this.visitChildren(node); }
-    visitPDef(node: ast.PreprocessorDefineNode): T | undefined { return this.visitChildren(node); }
-    visitPIf(node: ast.PreprocessorIfNode): T | undefined { return this.visitChildren(node); }
-    visitPInc(node: ast.PreprocessorIncludeNode): T | undefined { return this.visitChildren(node); }
+    visitProgram(node: ast.ProgramNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitBlock(node: ast.BlockNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitExpressionStatement(node: ast.ExpressionStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitFunctionDefinition(node: ast.DefinitionStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitFormDeclaration(node: ast.FormDeclarationNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitStructStatement(node: ast.StructStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitModuleDeclaration(node: ast.ModuleDeclarationNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitModuleVariableDeclaration(node: ast.ModuleVariableDeclarationNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitLocalFunctionDeclaration(node: ast.LocalFunctionDeclarationNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitEndModule(node: ast.EndModuleNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitAssignmentExpression(node: ast.AssignmentExpressionNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitListDestructuringAssignment(node: ast.ListDestructuringAssignmentNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitIfStatement(node: ast.IfStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitForStatement(node: ast.ForStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitWhileStatement(node: ast.WhileStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitDoWhileStatement(node: ast.DoWhileStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitReturnStatement(node: ast.ReturnStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitBreakStatement(node: ast.BreakStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitContinueStatement(node: ast.ContinueStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitEndStatement(node: ast.EndStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitQuitStatement(node: ast.QuitStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitDebugStatement(node: ast.DebugStatementNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitFunctionCall(node: ast.FunctionCallNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitQualifiedName(node: ast.QualifiedNameNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitIndeterminate(node: ast.IndeterminateNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitBinaryOperation(node: ast.BinaryOperationNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitUnaryOperation(node: ast.UnaryOperationNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitTernaryOperation(node: ast.TernaryOperationNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitPowerOperation(node: ast.PowerOperationNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitIndexAccess(node: ast.IndexAccessNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitMemberAccess(node: ast.MemberAccessNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitParenExpression(node: ast.ParenExpressionNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitListLiteral(node: ast.ListLiteralNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitStringLiteral(node: ast.StringLiteralNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitNumberLiteral(node: ast.NumberLiteralNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitDPolyLiteral(node: ast.DistributedPolynomialLiteralNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitDottedIdentifier(node: ast.DottedIdentifierNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitPDef(node: ast.PreprocessorDefineNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitPIf(node: ast.PreprocessorIfNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
+    visitPInc(node: ast.PreprocessorIncludeNode): T | IndexAccessResult | undefined { return this.visitChildren(node); }
 }
 
 export class Validator extends AsirASTVisitor<EvaluationResult> {
@@ -144,6 +148,8 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     public loadPaths: string[];
     public importedFiles: Set<string> = new Set();
     public effectiveCwd: string;
+    private isReachable: boolean = true; // For local block/function reachability
+    private isProgramTerminated: boolean = false; // New flag for global program termination
 
     constructor(programNode: ast.ProgramNode, filePath: string | null = null, systemIncludePaths: string[] = [], loadPaths: string[] = []) {
         super();
@@ -213,7 +219,13 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     }
 
     public analyze(node: ast.ProgramNode): Diagnostic[] {
+        const previousIsReachable = this.isReachable;
+        const previousIsProgramTerminated = this.isProgramTerminated;
+        this.isReachable = true;
+        this.isProgramTerminated = false;
         this.visit(node);
+        this.isReachable = previousIsReachable;
+        this.isProgramTerminated = previousIsProgramTerminated; // Restore global state
 
         // Add post-analysis check for unused symbols
         this.symbolTable.getAllSymbols().forEach(symbol => {
@@ -231,7 +243,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 );
             }
         });
-
         return this.diagnostics;
     }
 
@@ -246,49 +257,97 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     }
 
     public isTypeCompatible(sourceType: AsirType, targetType: AsirType): boolean {
-        if (sourceType.kind === 'primitive' && this.isSubtypeOf(sourceType.name, 'pp') && this.isPolynomialType(targetType)) {
+        // R1: ターゲットとソースがanyなら何でも受け入れる
+        if ((targetType.kind === 'primitive' && targetType.name === 'any') || (sourceType.kind === 'primitive' && sourceType.name === 'any')) {
             return true;
         }
-        if (targetType.kind === 'primitive' && (targetType.name === 'any' || targetType.name === 'parameter')) {
+        // R2: ターゲットとソースがparameterならほとんどの型に代入可能
+        if ((targetType.kind === 'primitive' && targetType.name === 'parameter') || (sourceType.kind === 'primitive' && sourceType.name === 'parameter')) {
             return true;
         }
-        if (sourceType.kind === 'primitive' && (sourceType.name === 'any' || sourceType.name === 'parameter')) {
+        // R3: ppは多項式の一種とみなす
+        if (sourceType.kind === 'primitive' && (this.isSubtypeOf(sourceType.name, 'pp') || sourceType.name === 'indeterminate') && this.isPolynomialType(targetType)) {
             return true;
         }
-        if (sourceType.kind === 'tuple' && targetType.kind === 'list') { // tupleをリストだと思える
-            return sourceType.elements.every(sourceElm =>
-                this.isTypeCompatible(sourceElm.type, targetType.elementType)
-            );
+        // R4: 多項式が期待される場所にnumberが来ることを許可
+        if (this.isPolynomialType(targetType) && sourceType.kind === 'primitive' && this.isSubtypeOf(sourceType.name, 'number')) {
+            return true;
         }
-        // 型の種類ごとの互換性チェック
+        // R4.1: rational_functionはstandard_polynomialと互換性がある
+        if (sourceType.kind === 'rational_function' && targetType.kind === 'standard_polynomial') {
+            return this.isTypeCompatible(sourceType.coefficientType, targetType.coefficientType);
+        }
+        // R5: ターゲットかソースがunionなら、そのうちのどれか一つと互換性があればよい
         if (targetType.kind === 'union') {
             return targetType.types.some(one => this.isTypeCompatible(sourceType, one));
         }
+        if (sourceType.kind === 'union') {
+            return sourceType.types.some(one => this.isTypeCompatible(one, targetType));
+        }
+        // R6: primitive同士ならサブタイプ関係にあれば互換
         if (sourceType.kind === 'primitive' && targetType.kind === 'primitive') {
             return this.isSubtypeOf(sourceType.name, targetType.name);
         }
+        // R7: 多項式同士の互換性チェック
+        if (this.isPolynomialType(sourceType) && this.isPolynomialType(targetType)) {
+            if (sourceType.kind !== targetType.kind) {
+                return false;
+            }
+            return this.isTypeCompatible(sourceType.coefficientType, targetType.coefficientType);
+        }
+        // R8: リストなどの互換性チェック
         if (sourceType.kind === 'list' && targetType.kind === 'list') {
             return this.isTypeCompatible(sourceType.elementType, targetType.elementType);
         }
+        if (sourceType.kind === 'vector' && targetType.kind === 'vector') {
+            return this.isTypeCompatible(sourceType.elementType, targetType.elementType);
+        }
+        if (sourceType.kind === 'matrix' && targetType.kind === 'matrix') {
+            return this.isTypeCompatible(sourceType.elementType, targetType.elementType);
+        }
         if (sourceType.kind === 'struct' && targetType.kind === 'struct') {
-            return sourceType.name === targetType.name;
+            return sourceType.name ===targetType.name;
         }
-        if (sourceType.kind === 'function' && targetType.kind === 'function') {
-            return this.areTypesDeeplyEqual(sourceType, targetType);
-        }
-        if (sourceType.kind === 'overloaded_function' && targetType.kind === 'overloaded_function') {
-            return this.areTypesDeeplyEqual(sourceType, targetType);
-        }
-        // タプル
-        if (targetType.kind === 'tuple') {
-            if (sourceType.kind !== 'tuple') { return false; }
+        // R9: タプル型同士の互換性チェック
+        if (targetType.kind === 'tuple' && sourceType.kind === 'tuple') {
             if (sourceType.elements.length !== targetType.elements.length) { return false; }
             return sourceType.elements.every((sourceElm, i) => {
                 const targetElm = targetType.elements[i];
                 return this.isTypeCompatible(sourceElm.type, targetElm.type);
             });
         }
-        return false;
+        // R10: function同士の互換性チェック
+        if (sourceType.kind === 'function' && targetType.kind === 'function') {
+            if (sourceType.parameters.length !== targetType.parameters.length) {
+                return false;
+            }
+            if (!this.isTypeCompatible(sourceType.returnType, targetType.returnType)) {
+                return false;
+            }
+            return sourceType.parameters.every((sourceParam, i) => {
+                const targetParam = targetType.parameters[i];
+                return this.areTypesDeeplyEqual(sourceParam.type, targetParam.type);
+            });
+        }
+        // R11: overloaded_functionを考える場合
+        if (targetType.kind === 'overloaded_function') {
+            if (sourceType.kind === 'function') {
+                return targetType.signatures.some(sig => this.isTypeCompatible(sourceType, sig));
+            }
+            if (sourceType.kind === 'overloaded_function') {
+                return this.areTypesDeeplyEqual(sourceType, targetType);
+            }
+        }
+        if (sourceType.kind === 'overloaded_function' && targetType.kind === 'function') {
+            return sourceType.signatures.some(sig => this.isTypeCompatible(sig, targetType));
+        }
+        // R12: タプルはリストに代入可能
+        if (sourceType.kind === 'tuple' && targetType.kind === 'list') {
+            return sourceType.elements.every(sourceElm =>
+                this.isTypeCompatible(sourceElm.type, targetType.elementType)
+            );
+        }
+        return this.areTypesDeeplyEqual(sourceType, targetType);
     }
 
     public typeToString(type: AsirType): string {
@@ -354,14 +413,23 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         const funcSymbol = this.symbolTable.currentScope.lookup(this.currentFunction.name.name);
         if (funcSymbol && funcSymbol.type.kind === 'function') {
             const existingReturnType = funcSymbol.type.returnType;
-            funcSymbol.type.returnType = this.getCommonSupertype([existingReturnType, returnType]);
+            if (existingReturnType.kind === 'primitive' && existingReturnType.name === 'any') {
+                funcSymbol.type.returnType = returnType;
+            } else {
+                funcSymbol.type.returnType = this.getCommonSupertype([existingReturnType, returnType]);
+            }
         }
     }
 
     public getCommonSupertype(types: AsirType[]): AsirType {
         if (types.length === 0) { return p_type('any'); }
         const uniqueTypes: AsirType[] = [];
+        let hasAnyOrParameter = false;
         for (const type of types) {
+            if (type.kind === 'primitive' && (type.name === 'any' || type.name === 'parameter')) {
+                hasAnyOrParameter = true;
+                continue;
+            }
             let found = false;
             for (const existingType of uniqueTypes) {
                 if (this.areTypesDeeplyEqual(type, existingType)) {
@@ -373,6 +441,12 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 uniqueTypes.push(type);
             }
         }
+        if (hasAnyOrParameter && uniqueTypes.length > 0) {
+            uniqueTypes.push(p_type('parameter'));
+            return { kind: 'union', types: uniqueTypes };
+        }
+        if (hasAnyOrParameter) { return p_type('parameter'); }
+        if (uniqueTypes.length === 0) { return p_type('any'); }
         if (uniqueTypes.length === 1) { return uniqueTypes[0]; }
         if (uniqueTypes.some(t => t.kind === 'primitive' && t.name === 'any')) { return p_type('any'); }
 
@@ -384,7 +458,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             }
             return p_type(widerTypeName);
         }
-        // 現状はunion型とする
         return { kind: 'union', types: uniqueTypes };
     }
 
@@ -585,7 +658,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 const module2 = type2 as ModuleAsirType;
                 if (module1.name !== module2.name) return false;
                 if (module1.members.size !== module2.members.size) return false;
-                // モジュールのメンバーはSymbol型なので、そのtypeを比較
+
                 for (const [key, symbol1] of module1.members.entries()) {
                     const symbol2 = module2.members.get(key);
                     if (!symbol2 || !this.areTypesDeeplyEqual(symbol1.type, symbol2.type)) return false;
@@ -620,7 +693,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 }
                 return true;
 
-            // 多項式型は coefficientType を比較
             case 'standard_polynomial':
             case 'distributed_polynomial':
             case 'dmod_polynomial':
@@ -628,6 +700,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             case 'rational_function':
                 const poly1 = type1 as PolynomialAsirType;
                 const poly2 = type2 as PolynomialAsirType;
+                if (poly1.kind !== poly2.kind) return false;
                 return this.areTypesDeeplyEqual(poly1.coefficientType, poly2.coefficientType);
 
             default:
@@ -674,14 +747,238 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         return null;
     }
 
+    private isTypeLiteral(node: ast.ASTNode): boolean {
+        if (node.kind === 'NumberLiteral' || node.kind === 'StringLiteral') {
+            return true;
+        }
+        if (node.kind === 'UnaryOperation') {
+            const unaryNode = node as ast.UnaryOperationNode;
+            if (unaryNode.operator === '-' && unaryNode.operand.kind === 'NumberLiteral') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private substractType(unionType: UnionType, typeToSubtract: AsirType): AsirType {
+        const newTypes = unionType.types.filter(t => !this.areTypesDeeplyEqual(t, typeToSubtract));
+
+        if (newTypes.length === 0) {
+            return p_type('any');
+        } else if (newTypes.length === 1) {
+            return newTypes[0];
+        }
+        return { kind: 'union', types: newTypes };
+    }
+
+    private getBinaryOperationResultType(leftType: AsirType, rightType: AsirType, operator: string): AsirType {
+        if ((leftType.kind === 'primitive' && leftType.name === 'parameter') || (rightType.kind === 'primitive' && rightType.name === 'parameter')) {
+            return p_type('parameter');
+        }
+
+        // QE系のロジック
+        if (operator.startsWith('@')) {
+            return p_type('qeformula'); 
+        }
+
+        if (leftType.kind === 'primitive' && this.isSubtypeOf(leftType.name, 'pp')) {
+            return{ kind: 'standard_polynomial', coefficientType: p_type('integer') };
+        }
+        if (rightType.kind === 'primitive' && this.isSubtypeOf(rightType.name, 'pp')) {
+            return { kind: 'standard_polynomial', coefficientType: p_type('integer') };
+        }
+
+        switch (operator) {
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+                // matrix(後で考える)
+                if (leftType.kind === 'matrix' && rightType.kind === 'matrix') {
+                    const elementResultType = this.getCommonSupertype([leftType.elementType, rightType.elementType]);
+                    return { kind: 'matrix', elementType: elementResultType };
+                }
+
+                const isLeftPoly = this.isPolynomialType(leftType);
+                const isRightPoly = this.isPolynomialType(rightType);
+                const isLeftNumeric = leftType.kind === 'primitive' && this.isSubtypeOf(leftType.name, 'number');
+                const isRightNumeric = rightType.kind === 'primitive' && this.isSubtypeOf(rightType.name, 'number');
+                const isLeftParametoric = leftType.kind === 'primitive' && leftType.name === 'parameter';
+                const isRightParametoric = rightType.kind === 'primitive' && rightType.name === 'parameter';
+
+                // --- 多項式 ---
+                if ((leftType.kind === 'dmod_polynomial' && rightType.kind !== 'dmod_polynomial') ||
+                    (leftType.kind !== 'dmod_polynomial' && rightType.kind === 'dmod_polynomial') ||
+                    (leftType.kind === 'non_commutative_polynomial' && rightType.kind !== 'non_commutative_polynomial') ||
+                    (leftType.kind !== 'non_commutative_polynomial' && rightType.kind === 'non_commutative_polynomial')) { 
+                    return p_type('any');
+                }
+
+                if (isLeftPoly && isRightPoly) {
+                    const poly1 = leftType as PolynomialAsirType;
+                    const poly2 = rightType as PolynomialAsirType;
+                    const resultCoeffType = this.getCommonSupertype([poly1.coefficientType, poly2.coefficientType]);
+                    if (resultCoeffType.kind === 'union') {
+                        return p_type('any');
+                    }
+                    const polyPrecedence = ['standard_polynomial', 'rational_function', 'distributed_polynomial'];
+                    const kind1_idx = polyPrecedence.indexOf(poly1.kind);
+                    const kind2_idx = polyPrecedence.indexOf(poly2.kind);
+                    const resultKind = kind1_idx > kind2_idx ? poly1.kind : poly2.kind;
+                    if (operator === '/' ) {
+                        const allowedKinds = ['standard_polynomial', 'rational_function'];
+                        if (allowedKinds.includes(poly1.kind) && allowedKinds.includes(poly2.kind)) {
+                            return { kind: 'rational_function', coefficientType: resultCoeffType };
+                        } else {
+                            return p_type('any');
+                        }
+                    }
+                    if (['+', '-', '*'].includes(operator)) { return { kind: resultKind, coefficientType: resultCoeffType } as PolynomialAsirType; }
+                }
+
+                if ((isLeftPoly && isRightNumeric) || (isLeftNumeric && isRightPoly)) {
+                    const polyType = (isLeftPoly ? leftType : rightType) as PolynomialAsirType;
+                    const numericType = isLeftNumeric ? leftType : rightType;
+                    const resultCoeffType = this.getCommonSupertype([polyType.coefficientType, numericType]);
+                    /*
+                    if (resultCoeffType.kind === 'union') {
+                        return p_type('any');
+                    }
+                    */
+                    return { kind: polyType.kind, coefficientType: resultCoeffType } as PolynomialAsirType;
+                }
+
+                // --- プリミティブ ---
+                if (leftType.kind === 'primitive' && rightType.kind === 'primitive') {
+                    const leftMeta = TYPE_METADATA.get(leftType.name);
+                    const rightMeta = TYPE_METADATA.get(rightType.name);
+
+                    if (!leftMeta || !rightMeta) {
+                        return p_type('any');
+                    }
+
+                     if (leftMeta.category === 'general_numeric' && rightMeta.category === 'general_numeric') {
+                        const resultTempType = this.getWiderNumericType(leftType.name, rightType.name);
+                        return p_type(resultTempType);
+                    }
+                    if (leftType.name === 'rational' && rightMeta.category === 'finite_field') {
+                        return rightType;
+                    }
+                    if (leftMeta.category === 'finite_field' && rightType.name === 'rational') {
+                        return leftType;
+                    }
+                    if (leftMeta.category === 'finite_field' && rightMeta.category === 'finite_field') {
+                        if (leftType.name === rightType.name) { return leftType; }
+                    }
+                    if (leftMeta.category === 'algebric_numeric' && rightMeta.category === 'general_numeric') {
+                        if (rightType.name === 'complex') { return rightType; } else if (rightType.name === 'rational') { return leftType }
+                    }
+                    if (leftMeta.category === 'general_numeric' && rightMeta.category === 'algebric_numeric') {
+                        if (leftType.name === 'complex') { return leftType; } else if (leftType.name === 'rational') { return rightType; }
+                    }
+                    if (leftMeta.category === 'algebric_numeric' && rightMeta.category === 'algebric_numeric') {
+                        if (leftType.name === rightType.name) { return leftType; }
+                    }
+                    if (operator === '+' && leftMeta.category === 'string' && rightMeta.category === 'string') {
+                        return p_type('string');
+                    }
+                }
+                break;
+            
+            case '%':
+                const isRightInt = rightType.kind === 'primitive' && rightType.name === 'integer';
+                if (!isRightInt) {
+                    return p_type('any');
+                }
+                const isLeftInt = leftType.kind === 'primitive' && leftType.name === 'integer';
+                const isLeftPolyOfInt = 
+                    leftType.kind === 'standard_polynomial' &&
+                    leftType.coefficientType.kind === 'primitive' &&
+                    leftType.coefficientType.name === 'integer';
+                if (isLeftInt || isLeftPolyOfInt) {
+                    return leftType;
+                } else {
+                    return p_type('any');
+                }
+
+            case '==':
+            case '!=':
+            case '<':
+            case '>':
+            case '<=':
+            case '>=':
+            case '&&':
+            case '||':
+                return p_type('integer');
+        }
+        return p_type('any');
+    }
+
+    private getIntegerLiteralValue(n: ast.ExpressionNode): number | null {
+        if (n.kind === 'NumberLiteral') {
+            const strVal = String(n.rawText ?? n.value);
+            if (!strVal.includes('.') && !strVal.toLowerCase().includes('e')) {
+                const val = Number(strVal);
+                if (Number.isInteger(val)) return val;
+            }
+        }
+        if (n.kind === 'UnaryOperation' && n.operator === '-' && n.operand.kind === 'NumberLiteral') {
+            const strVal = String((n.operand as ast.NumberLiteralNode).rawText ?? (n.operand as ast.NumberLiteralNode).value);
+            if (!strVal.includes('.') && !strVal.toLowerCase().includes('e')) {
+                const val = Number(strVal);
+                if (Number.isInteger(val)) return -val;
+            }
+        }
+        return null;
+    }
+
     // --- 具体的な意味解析 ---
+
+    override visitProgram(node: ast.ProgramNode): EvaluationResult {
+        for (const stmt of node.statements) {
+            if (!this.isReachable || this.isProgramTerminated) {
+                if (stmt.kind !== 'EmptyStatement') {
+                    this.addDiagnostic(stmt, "到達不能なコードです。", DiagnosticSeverity.Warning);
+                }
+            }
+            const result = this.visit(stmt);
+            if (stmt.kind === 'EndStatement' || stmt.kind === 'QuitStatement') {
+                this.isProgramTerminated = true;
+            }
+        }
+        return { type: p_type('undefined') };
+    }
 
     visitAssignmentExpression(node: ast.AssignmentExpressionNode): EvaluationResult {
         const rightResult = this.visit(node.right) || { type: p_type('any') };
         this.checkUsageAsValue(node.right, rightResult.type);
 
+        let finalType: AsirType;
+        let isCompoundAssignment = node.operator !== '=';
+
+        if (!isCompoundAssignment) {
+            finalType = rightResult.type;
+        } else {
+            const leftResult = this.visit(node.left);
+            if (!leftResult) {
+                finalType = p_type('any');
+            } else {
+                const leftType = 'type' in leftResult ? leftResult.type : p_type('any');
+                const rightType = rightResult.type;
+
+                if ((leftType.kind === 'primitive' && leftType.name === 'parameter') || (rightType.kind === 'primitive' && rightType.name === 'parameter')) {
+                    finalType = p_type('parameter');
+                } else if (leftType.kind === 'primitive' && this.isSubtypeOf(leftType.name, 'number') && rightType.kind === 'primitive' && this.isSubtypeOf(rightType.name, 'number')) {
+                    finalType = p_type(this.getWiderNumericType(leftType.name, rightType.name));
+                } else {
+                    // 多項式など
+                    finalType = p_type('any');
+                }
+            }
+        }
+
         if (this.assignmentsInBranch !== null && node.left.kind === 'Indeterminate') {
-            this.assignmentsInBranch.set(node.left.name, rightResult.type);
+            this.assignmentsInBranch.set(node.left.name, finalType);
         } else {
             if (node.left.kind === 'Indeterminate') {
                 const varName = node.left.name;
@@ -691,7 +988,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                     if (this.currentModuleScope && !this.currentFunction) {
                         this.addDiagnostic(
                             node.left,
-                            `モジュールのトップレベルの変数 '${varName}' は、staticまたはexternで事前に宣言する必要があります。`,
+                            `モジュールのトップレベルの変数 '${varName}' は、static または extern で事前に宣言する必要があります。`,
                             DiagnosticSeverity.Error
                         );
                     } else if (this.currentFunction && this.symbolTable.currentScope.hasLocalDeclaration) {
@@ -704,17 +1001,17 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                     if (node.left.loc) {
                         this.symbolTable.currentScope.define({
                             name: varName,
-                            type: rightResult.type,
+                            type: finalType,
                             definedAt: node.left.loc,
                             node: node.left,
                             isUsed: false,
-                            constantValue: rightResult.constantValue
+                            constantValue: isCompoundAssignment ? undefined : rightResult.constantValue
                         });
                     }
                 } else {
                     const existingType = symbol.type;
                     if (existingType.kind !== 'primitive' || (existingType.name !== 'any' && existingType.name !== 'parameter')) {
-                        if (!this.isTypeCompatible(rightResult.type, existingType)) {
+                        if (!this.isTypeCompatible(finalType, existingType)) {
                             this.addDiagnostic(
                                 node,
                                 `変数の型が変更されました。 '${this.typeToString(existingType)}' から ${this.typeToString(rightResult.type)} に変わっています。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
@@ -722,8 +1019,8 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                             );
                         }
                     }
-                    symbol.type = rightResult.type;
-                    symbol.constantValue = rightResult.constantValue; 
+                    symbol.type = finalType;
+                    symbol.constantValue = isCompoundAssignment ? undefined : rightResult.constantValue; 
                 }
             } else if (node.left.kind === 'IndexAccess' || node.left.kind === 'MemberAccess') {
                 let baseNode: ast.ExpressionNode = node.left;
@@ -735,19 +1032,98 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                     if (baseSymbol) { baseSymbol.constantValue = undefined; }
                 }
                 const leftResult= this.visit(node.left);
-                if (leftResult && !this.isTypeCompatible(rightResult.type, leftResult.type)) {
-                    this.addDiagnostic(node.right, `代入の型が一致しません。型 '${this.typeToString(leftResult.type)}' から型 '${this.typeToString(rightResult.type)}'へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`, DiagnosticSeverity.Error);
+                if (leftResult && !this.isTypeCompatible(finalType, leftResult.type)) {
+                    this.addDiagnostic(node.right, `代入の型が一致しません。型 '${this.typeToString(leftResult.type)}' から型 '${this.typeToString(finalType)}'へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`, DiagnosticSeverity.Warning);
                 }
+                // Update the type of the base collection if it's an IndexAccess
+                if (node.left.kind === 'IndexAccess') {
+                    // let currentBaseNode: ast.ExpressionNode = node.left;
+                    // let lastIndexAccessNode: ast.IndexAccessNode | undefined;
+                    // while (currentBaseNode.kind === 'IndexAccess') {
+                    //     lastIndexAccessNode = currentBaseNode;
+                    //     currentBaseNode = currentBaseNode.base;
+                    // }
+                    // if (currentBaseNode.kind === 'Indeterminate') {
+                    //     const baseSymbol = this.symbolTable.currentScope.lookup(currentBaseNode.name);
+                    //     if (baseSymbol) {
+                    //         // Re-evaluate the type of the collection based on the new element type
+                    //         let newCollectionType = baseSymbol.type;
+                    //         console.log(`[DEBUG] IndexAccess: baseSymbol.type=${this.typeToString(baseSymbol.type)}, finalType=${this.typeToString(finalType)}`);
+                    //         if (newCollectionType.kind === 'list' || newCollectionType.kind === 'vector' || newCollectionType.kind === 'matrix' || newCollectionType.kind === 'tuple') {
+                    //             if (newCollectionType.kind === 'tuple') {
+                    //                 // タプルの場合は要素の型を更新
+                    //                 const updatedElements = newCollectionType.elements.map(elm => ({
+                    //                     ...elm,
+                    //                     type: this.getCommonSupertype([elm.type, finalType])
+                    //                 }));
+                    //                 newCollectionType = { ...newCollectionType, elements: updatedElements };
+                    //             } else {
+                    //                 // リスト、ベクトル、行列の場合は elementType を更新
+                    //                 const existingElementType = newCollectionType.elementType;
+                    //                 const updatedElementType = this.getCommonSupertype([existingElementType, finalType]);
+                    //                 newCollectionType = { ...newCollectionType, elementType: updatedElementType };
+                    //             }
+                    //         }
+                    //         console.log(`[DEBUG] IndexAccess: newCollectionType=${this.typeToString(newCollectionType)}`);
+                    //         baseSymbol.type = newCollectionType;
+                    //     }
+                    // }
+                    const IndexAccessNode = node.left;
+                    const IndexAccessResult = this.visit(IndexAccessNode) as IndexAccessResult;
+
+                    if (IndexAccessResult.baseNode.kind === 'Indeterminate') {
+                        const baseSymbol = this.symbolTable.currentScope.lookup(IndexAccessResult.baseNode.name);
+                        if (baseSymbol) {
+                            if (baseSymbol.name === 'L') {
+                                console.log(`[DEBUG] Before assignment to ${baseSymbol.name}[...], line ${node.loc?.startLine}: L.type = ${this.typeToString(baseSymbol.type)}`);
+                            }
+                            baseSymbol.constantValue = undefined;
+
+                            const updateTypeRecursively = (collectionType: AsirType, indices: ast.ExpressionNode[], newElementType: AsirType): AsirType => {
+                                if (indices.length === 0) { return newElementType; }
+                                const [currentIndex, ...remainingIndices] = indices;
+
+                                if (collectionType.kind === 'vector' || collectionType.kind === 'list' || collectionType.kind === 'matrix') {
+                                    const updatedElementType = updateTypeRecursively(collectionType.elementType, remainingIndices, newElementType);
+                                    return { ...collectionType, elementType: this.getCommonSupertype([collectionType.elementType, updatedElementType])};
+                                } else if (collectionType.kind === 'tuple') {
+                                    const indexValue = this.getIntegerLiteralValue(currentIndex);
+                                    if (indexValue !== null) {
+                                        const updatedElements = [...collectionType.elements];
+                                        if (indexValue >= 0 && indexValue < updatedElements.length) {
+                                            const elementToUpdate = updatedElements[indexValue];
+                                            const updatedElementType = updateTypeRecursively(elementToUpdate.type, remainingIndices, newElementType);
+                                            updatedElements[indexValue] = { ...elementToUpdate, type: updatedElementType };
+                                        }
+                                        return { ...collectionType, elements: updatedElements };
+                                    } else {
+                                        // Index is not a literal. The tuple with known elements becomes a list with a general element type.
+                                        const originalElementType = this.getCommonSupertype(collectionType.elements.map(e => e.type));
+                                        const updatedElementType = updateTypeRecursively(originalElementType, remainingIndices, newElementType);
+                                        
+                                        const newOverallType = this.getCommonSupertype([originalElementType, updatedElementType]);
+                                        return { kind: 'list', elementType: newOverallType };
+                                    }
+                                }
+                                return collectionType;
+                            };
+                            baseSymbol.type = updateTypeRecursively(baseSymbol.type, IndexAccessResult.indices, finalType);
+                            if (baseSymbol.name === 'L') {
+                                console.log(`[DEBUG] After assignment to ${baseSymbol.name}[...], line ${node.loc?.startLine}: L.type = ${this.typeToString(baseSymbol.type)}`);
+                            }
+                        }
+                    }
+                } 
                 if (node.left.kind === 'MemberAccess') {
                     const memberAccessNode = node.left;
                     let currentResult = this.visit(memberAccessNode.base);
-                    if (!currentResult) { return { type: rightResult.type }; }
+                    if (!currentResult) { return { type: finalType }; }
 
                     let currentType = currentResult.type;
                     const membersToTrace = memberAccessNode.members.slice(0,-1);
                     const finalMember = memberAccessNode.members[memberAccessNode.members.length -1];
                     for (const memberIndeterminate of membersToTrace) {
-                        if (!currentType) { return { type: rightResult.type}; }
+                        if (!currentType) { return { type: finalType}; }
                         const memberName = memberIndeterminate.name;
 
                         if (currentType.kind !== 'struct') {
@@ -756,7 +1132,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                                 `'${this.typeToString(currentType)}' 型にメンバー '${memberName}' はありません。`,
                                 DiagnosticSeverity.Error
                             );
-                            return { type: rightResult.type};
+                            return { type: finalType};
                         }
 
                         const memberType = currentType.members.get(memberName);
@@ -766,7 +1142,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                                 `構造体 '${currentType.name}' にメンバー '${memberName}' はありません。`,
                                 DiagnosticSeverity.Error
                             );
-                            return { type: rightResult.type };
+                            return { type: finalType };
                         }
                         currentType = memberType;
                     }
@@ -776,7 +1152,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                             `'${this.typeToString(currentType)}' 型は構造体ではないため、メンバーにアクセスできません。`,
                             DiagnosticSeverity.Error
                         );
-                        return { type: rightResult.type};
+                        return { type: finalType};
                     }
 
                     const finalMemberName = finalMember.name;
@@ -788,27 +1164,38 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                             DiagnosticSeverity.Error
                         );
                     } else {
-                        if (!this.isTypeCompatible(rightResult.type, expecedType)) {
+                        if (!this.isTypeCompatible(finalType, expecedType)) {
                             this.addDiagnostic(
                                 node.right,
-                                `メンバー '${finalMemberName}' の型が一致しません。型 '${this.typeToString(expecedType)}' から型 '${this.typeToString(rightResult.type)}' へ変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
+                                `メンバー '${finalMemberName}' の型が一致しません。型 '${this.typeToString(expecedType)}' から型 '${this.typeToString(finalType)}' へ変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
                                 DiagnosticSeverity.Warning
                             );
                         }
-                        (currentType as StructAsirType).members.set(finalMemberName, rightResult.type);
+                        (currentType as StructAsirType).members.set(finalMemberName, finalType);
                     }
                 }
 
-                if (leftResult!.type && !this.isTypeCompatible(rightResult.type, leftResult!.type)) {
+                if (leftResult!.type && !this.isTypeCompatible(finalType, leftResult!.type)) {
                     this.addDiagnostic(
                         node.right,
-                        `代入の型が一致しません。型 '${this.typeToString(leftResult!.type)}' から型 '${this.typeToString(rightResult.type)}' へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
-                        DiagnosticSeverity.Error
+                        `代入の型が一致しません。型 '${this.typeToString(leftResult!.type)}' から型 '${this.typeToString(finalType)}' へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
+                        DiagnosticSeverity.Warning
                     );
+                }
+
+                if (isCompoundAssignment) {
+                    let baseNode: ast.ExpressionNode = node.left;
+                    while (baseNode.kind === 'IndexAccess' || baseNode.kind === 'MemberAccess') {
+                        baseNode = (baseNode as ast.IndexAccessNode | ast.MemberAccessNode).base;
+                    }
+                    if (baseNode.kind === 'Indeterminate') {
+                        const baseSymbol = this.symbolTable.currentScope.lookup(baseNode.name);
+                        if (baseSymbol) { baseSymbol.constantValue = undefined; }
+                    }
                 }
             }
         }
-        return { type: rightResult.type };
+        return { type: finalType };
     }
 
     visitExpressionStatement(node: ast.ExpressionStatementNode): EvaluationResult {
@@ -867,6 +1254,9 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             });
         }
 
+        // Explicitly visit the function name node to set its resolvedSymbol
+        this.visit(node.name);
+
         // --- 関数ボディの解析 ---
         const oldFunction = this.currentFunction;
         this.currentFunction = node;
@@ -875,8 +1265,10 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         node.parameters.forEach((param, i) => {
             if (param.loc) {
                 this.checkVariableNameConvention(param);
-                const paramSymbol: Symbol = { name: param.name, type: functionType.parameters[i].type, definedAt: param.loc, node: param, isUsed: false };
+                const paramSymbol: Symbol = { name: param.name, type: functionType.parameters[i].type, definedAt: param.loc, node: param, isUsed: false, isFunctionArgument: true };
                 this.symbolTable.currentScope.define(paramSymbol);
+                // Explicitly visit the parameter name node to set its resolvedSymbol
+                this.visit(param);
             }
         });
 
@@ -924,6 +1316,12 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 isUsed: false // Add this
             });
         }
+        this.visit(node.name);
+
+        node.parameters.forEach(param => {
+            this.visit(param);
+        });
+
         return { type: p_type('undefined') };
     }
 
@@ -976,7 +1374,8 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 `未定義の変数 '${name}' が参照されました。暗黙的に 0 として扱われます。`,
                 DiagnosticSeverity.Warning
             );
-            return { type: p_type('integer'), constantValue: 0};
+            // return { type: p_type('integer'), constantValue: 0};
+            return { type: p_type('parameter') };
         } else {
             return { type: p_type('indeterminate')}
         }
@@ -985,17 +1384,21 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     visitFunctionCall(node: ast.FunctionCallNode): EvaluationResult {
         const calleeNode = node.callee;
         const funcName = calleeNode.functionName.name;
-        const argResults = node.args.map(arg => this.visit(arg) || { type: p_type('any') });
+
+        const argResults: EvaluationResult[] = [];
+        for (let i = 0; i < node.args.length; i++) {
+            const arg = node.args[i];
+            const argResult = this.visit(arg) || { type: p_type('any') };
+            argResults.push(argResult);
+        }
         
         if (builtinHandlers.has(funcName)) {
             const handler = builtinHandlers.get(funcName)!;
             return handler(this, node, argResults)
         }
-
         const calleeResult = this.visit(calleeNode.functionName);
         const actualArgTypes = argResults.map(r => r.type);
         let calleeType: AsirType | undefined = calleeResult?.type;
-
         // --- 呼び出し方に応じたロジック ---
         if (node.isGlobal) {
             if (calleeNode.moduleName) {
@@ -1010,7 +1413,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         } else if (calleeNode.moduleName) {
             const moduleName = calleeNode.moduleName.name;
             const moduleSymbol = this.symbolTable.currentScope.lookup(moduleName);
-
             if (!moduleSymbol) {
                 this.addDiagnostic(calleeNode.moduleName, `モジュール '${moduleName}' は定義されていません。`, DiagnosticSeverity.Error);
                 return { type: p_type('any') };
@@ -1028,18 +1430,15 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 calleeType = BUILTIN_SIGNATURES.get(funcName);
             }
         }
-
         // --- 型チェック ---
         if (!calleeType) {
             this.addDiagnostic(calleeNode.functionName, `関数 '${funcName}' は定義されていません。`, DiagnosticSeverity.Error);
             return { type: p_type('any') };
         }
-
         if (calleeType.kind === 'union') {
             const funcPart = calleeType.types.find(t => t.kind === 'function' || t.kind === 'overloaded_function');
             if (funcPart) { calleeType = funcPart; }
         }
-
         // 引数が一定の関数のチェック
         if (calleeType.kind === 'function') {
             // 引数の数チェック
@@ -1054,10 +1453,21 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                     this.addDiagnostic(node,`引数の数が一致しません。 ${expectedParams.length} 個の引数が必要ですが、 ${argResults.length} 個が指定されました。`,DiagnosticSeverity.Error);
                 }
             }
-
             // 各固定引数の型をチェック
             const fixedArgCount = Math.min(actualArgTypes.length, expectedParams.length);
             for (let i = 0; i < fixedArgCount; i++) {
+                // --- Start of type refinement for parameters ---
+                if (node.args[i].kind === 'Indeterminate') {
+                    const argName = (node.args[i] as ast.IndeterminateNode).name;
+                    const symbol = this.symbolTable.currentScope.lookup(argName);
+                    if (symbol && symbol.isFunctionArgument && symbol.type.kind === 'primitive' && symbol.type.name === 'parameter') {
+                        if (!(expectedParams[i].type.kind === 'primitive' && (expectedParams[i].type as PrimitiveAsirType).name === 'any')) {
+                            symbol.type = expectedParams[i].type;
+                            actualArgTypes[i] = symbol.type;
+                        }
+                    }
+                }
+                // --- End of type refinement for parameters ---
                 this.checkUsageAsValue(actualArgTypes[i], actualArgTypes[i]);
                 if (!this.isTypeCompatible(actualArgTypes[i], expectedParams[i].type)) {
                     this.addDiagnostic(
@@ -1079,18 +1489,32 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                     }
                 }
             }
-
             this.validateOptions(funcName, calleeType.allowesOptions, node.options);
             return { type: calleeType.returnType };
         }
-        
         // 引数の数が可変の関数のチェック（Overloaded Function）
         if (calleeType.kind === 'overloaded_function') {
             const matchingSignature = calleeType.signatures.find(sig => {
-                if (sig.parameters.length !== actualArgTypes.length) { return false; }// 引数の数のチェック
-                return sig.parameters.every((expecedParams, i) => {
-                    return this.isTypeCompatible(actualArgTypes[i], expecedParams.type); // 引数の型のチェック
+                // 引数の数チェック
+                if (sig.restParameter) {
+                    if (actualArgTypes.length < sig.parameters.length) { return false; }
+                } else {
+                    if (actualArgTypes.length !== sig.parameters.length) { return false; }
+                }
+                // 固定引数の型チェック
+                const fixedArgsMatch = sig.parameters.every((expectedParam, i) => {
+                    return this.isTypeCompatible(actualArgTypes[i], expectedParam.type);
                 });
+                if (!fixedArgsMatch) { return false; }
+                // 可変長引数の型チェック
+                if (sig.restParameter) {
+                    for (let i = sig.parameters.length; i < actualArgTypes.length; i++) {
+                        if (!this.isTypeCompatible(actualArgTypes[i], sig.restParameter.type)) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
             });
             if (matchingSignature) {
                 this.validateOptions(funcName, matchingSignature.allowesOptions, node.options);
@@ -1122,13 +1546,96 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         const rightType = rightResult.type;
         const operator = node.operator;
 
+        // union型の処理
+        if (leftType.kind === 'union' || rightType.kind === 'union') {
+            const leftTypes = leftType.kind === 'union' ? leftType.types : [leftType];
+            const rightTypes = rightType.kind === 'union' ? rightType.types : [rightType];
+            const possibleResultTypes: AsirType[] = [];
+
+            for (const lType of leftTypes) {
+                for (const rType of rightTypes) {
+                    possibleResultTypes.push(this.getBinaryOperationResultType(lType, rType, operator));
+                }
+            }
+            const finalType = this.getCommonSupertype(possibleResultTypes);
+            if (finalType.kind === 'primitive' && finalType.name === 'any') {
+                this.addDiagnostic(node, `演算子 '${operator}' は、型 '${this.typeToString(leftType)}' と '${this.typeToString(rightType)}' の組み合わせの一部に適用できない可能性があります。`, DiagnosticSeverity.Warning);
+            }
+            return { type: finalType };
+        }
+
         this.checkUsageAsValue(node.left, leftType);
         this.checkUsageAsValue(node.right, rightType);
 
-        let resultType: AsirType = p_type('undefined');
-        let constantValue: ConstantValue | undefined = undefined;
+        if (operator.startsWith('@')) {
+            this.visit(node.left);
+            this.visit(node.right);
+        }
+
+        if (operator === '%') {
+            const isRightInt = rightType.kind === 'primitive' && rightType.name === 'integer';
+            if (!isRightInt) {
+                this.addDiagnostic(
+                    node.right,
+                    `演算子 '%' の右辺は整数である必要がありますが、型 '${this.typeToString(rightType)}' が指定されました。`,
+                    DiagnosticSeverity.Error
+                );
+            }
+
+            const isLeftInt = leftType.kind === 'primitive' && leftType.name === 'integer';
+            const isLeftPolyOfInt = leftType.kind === 'standard_polynomial' && leftType.coefficientType.kind === 'primitive' && leftType.coefficientType.name === 'integer';
+            if (!isLeftInt && !isLeftPolyOfInt) {
+                this.addDiagnostic(
+                    node.left,
+                    `演算子 '%' の左辺は、整数または整数係数多項式である必要がありますが、型 '${this.typeToString(leftType)}' が指定されました。`,
+                    DiagnosticSeverity.Error
+                );
+            }
+        }
+
+        if (['==', '!='].includes(operator)) {
+            const warningDetails = this.checkNumericTypeMismatch(leftType, rightType);
+            if (warningDetails) {
+                this.addDiagnostic(
+                    node,
+                    `${warningDetails} を '${operator}' で比較しています。比較は可能ですが、意図しない問題が発生する可能性があります。`,
+                    DiagnosticSeverity.Warning
+                );
+            }
+        }
+
+        if (['<', '>', '<=', '>=', '&&', '||'].includes(operator)) {
+            if (leftType.kind === 'primitive' && rightType.kind === 'primitive') {
+                const isNumeric = this.isSubtypeOf(leftType.name, 'number') && this.isSubtypeOf(rightType.name, 'number');
+                const isString = leftType.name === 'string' && rightType.name === 'string';
+                if (!isNumeric && !isString) {
+                    this.addDiagnostic(
+                        node,
+                        `この演算は意図しない値を返す可能性があります。型 '${this.typeToString(leftType)}' と型 '${this.typeToString(rightType)}' の間での '${operator}' 演算は意図しない結果になる可能性があります。`,
+                        DiagnosticSeverity.Warning
+                    );
+                }
+            } else {
+                this.addDiagnostic(
+                    node,
+                    `この演算は意図しない値を返す可能性があります。型 '${this.typeToString(leftType)}' と型 '${this.typeToString(rightType)}' の間での '${operator}' 演算は意図しない結果になる可能性があります。`,
+                    DiagnosticSeverity.Warning
+                );
+            }
+        }
+
+        const resultType = this.getBinaryOperationResultType(leftType, rightType, operator);
+
+        if (resultType.kind === 'primitive' && resultType.name === 'any') {
+            this.addDiagnostic(
+                node,
+                `演算子 '${operator}' は、型 '${this.typeToString(leftType)}' と '${this.typeToString(rightType)}' には適用できません。`,
+                DiagnosticSeverity.Error
+            );
+        }
 
         // 定数畳み込み
+        let constantValue: ConstantValue | undefined = undefined;
         const leftConst = leftResult.constantValue;
         const rightConst = rightResult.constantValue;
         if (typeof leftConst === 'number' && typeof rightConst === 'number') {
@@ -1140,227 +1647,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 case '%': if (rightConst !== 0) constantValue = leftConst % rightConst; break;
             }
         }
-
-        // QE系のロジック
-        if (operator.startsWith('@')) {
-            this.visit(node.left);
-            this.visit(node.right);
-            resultType = p_type('qeformula'); 
-        }
-
-        if (leftType.kind === 'primitive' && this.isSubtypeOf(leftType.name, 'pp')) {
-            resultType = { kind: 'standard_polynomial', coefficientType: p_type('integer') };
-        }
-        if (rightType.kind === 'primitive' && this.isSubtypeOf(rightType.name, 'pp')) {
-            resultType = { kind: 'standard_polynomial', coefficientType: p_type('integer') };
-        }
-
-        switch (operator) {
-            case '+':
-            case '-':
-            case '*':
-            case '/':
-                const isLeftPoly = this.isPolynomialType(leftType);
-                const isRightPoly = this.isPolynomialType(rightType);
-                const isLeftNumeric = leftType.kind === 'primitive' && this.isSubtypeOf(leftType.name, 'number');
-                const isRightNumeric = rightType.kind === 'primitive' && this.isSubtypeOf(rightType.name, 'number');
-                const isLeftParametoric = leftType.kind === 'primitive' && leftType.name === 'parameter';
-                const isRightParametoric = rightType.kind === 'primitive' && rightType.name === 'parameter';
-
-                // --- 多項式 ---
-                if ((leftType.kind === 'dmod_polynomial' && rightType.kind !== 'dmod_polynomial') ||
-                    (leftType.kind !== 'dmod_polynomial' && rightType.kind === 'dmod_polynomial') ||
-                    (leftType.kind === 'non_commutative_polynomial' && rightType.kind !== 'non_commutative_polynomial') ||
-                    (leftType.kind !== 'non_commutative_polynomial' && rightType.kind === 'non_commutative_polynomial')) {
-                    this.addDiagnostic(
-                        node,
-                        `型 '${this.typeToString(leftType)}' と '${this.typeToString(rightType)}' の間での '${operator}' 演算はサポートされていません。`,
-                        DiagnosticSeverity.Error
-                    );
-                    resultType = p_type('any');
-                    break;
-                }
-
-                if (isLeftPoly && isRightPoly) {
-                    const poly1 = leftType as PolynomialAsirType;
-                    const poly2 = rightType as PolynomialAsirType;
-                    const resultCoeffType = this.getCommonSupertype([poly1.coefficientType, poly2.coefficientType]);
-                    if (resultCoeffType.kind === 'union') {
-                        this.addDiagnostic(
-                            node,
-                            `互換性のない係数型 (${this.typeToString(resultCoeffType)}) を持つ多項式同士の演算はできません。`,
-                            DiagnosticSeverity.Error
-                        );
-                        resultType = p_type('any');
-                        break;
-                    }
-                    const polyPrecedence = ['standard_polynomial', 'rational_function', 'distributed_polynomial'];
-                    const kind1_idx = polyPrecedence.indexOf(poly1.kind);
-                    const kind2_idx = polyPrecedence.indexOf(poly2.kind);
-                    const resultKind = kind1_idx > kind2_idx ? poly1.kind : poly2.kind;
-                    if (operator === '/' ) {
-                        const allowedKinds = ['standard_polynomial', 'rational_function'];
-                        if (allowedKinds.includes(poly1.kind) && allowedKinds.includes(poly2.kind)) {
-                            resultType = { kind: 'rational_function', coefficientType: resultCoeffType };
-                            break;
-                        } else {
-                            this.addDiagnostic(
-                                node,
-                                `演算子 '${operator}' は、型 '${this.typeToString(leftType)}' と '${this.typeToString(rightType)}' の組み合わせには適用できません。`,
-                                DiagnosticSeverity.Error
-                            );
-                            resultType = p_type('any');
-                            break;
-                        }
-                    }
-                    if (['+', '-', '*'].includes(operator)) { resultType = { kind: resultKind, coefficientType: resultCoeffType } as PolynomialAsirType; break; }
-                }
-
-                if ((isLeftPoly && isRightNumeric) || (isLeftNumeric && isRightPoly)) {
-                    const polyType = (isLeftPoly ? leftType : rightType) as PolynomialAsirType;
-                    const numericType = isLeftNumeric ? leftType : rightType;
-                    const resultCoeffType = this.getCommonSupertype([polyType.coefficientType, numericType]);
-                    if (resultCoeffType.kind === 'union') {
-                        this.addDiagnostic(
-                            node,
-                            `互換性のない係数型 (${this.typeToString(resultCoeffType)}) を持つ多項式同士の演算はできません。`,
-                            DiagnosticSeverity.Error
-                        );
-                        resultType = p_type('any');
-                        break;
-                    }
-                    resultType = { kind: polyType.kind, coefficientType: resultCoeffType } as PolynomialAsirType;
-                    break;
-                }
-
-                if ((isLeftPoly && isRightParametoric) || (isLeftParametoric && isRightPoly)) {
-                    const polyType = (isLeftPoly ? leftType : rightType) as PolynomialAsirType;
-                    resultType = { kind: polyType.kind, coefficientType: p_type('any') } as PolynomialAsirType;
-                    break;
-                }
-
-                // --- プリミティブ ---
-                if (leftType.kind === 'primitive' && rightType.kind === 'primitive') {
-                    const leftMeta = TYPE_METADATA.get(leftType.name);
-                    const rightMeta = TYPE_METADATA.get(rightType.name);
-
-                    if (!leftMeta || !rightMeta) {
-                        this.addDiagnostic(node, `型 '${leftType.name}' または '${rightType.name}' の演算ルールが定義されていません。`, DiagnosticSeverity.Error);
-                        resultType = p_type('any');
-                        break;
-                    }
-
-                     if (leftMeta.category === 'general_numeric' && rightMeta.category === 'general_numeric') {
-                        const resultTempType = this.getWiderNumericType(leftType.name, rightType.name);
-                        resultType = p_type(resultTempType);
-                        break;
-                    }
-                    if (leftType.name === 'rational' && rightMeta.category === 'finite_field') {
-                        resultType = rightType;
-                        break;
-                    }
-                    if (leftMeta.category === 'finite_field' && rightType.name === 'rational') {
-                        resultType = leftType;
-                        break;
-                    }
-                    if (leftMeta.category === 'finite_field' && rightMeta.category === 'finite_field') {
-                        if (leftType.name === rightType.name) { resultType = leftType; break; }
-                    }
-                    if (leftMeta.category === 'algebric_numeric' && rightMeta.category === 'general_numeric') {
-                        if (rightType.name === 'complex') { resultType = rightType; break; } else if (rightType.name === 'rational') { resultType = leftType; break; }
-                    }
-                    if (leftMeta.category === 'general_numeric' && rightMeta.category === 'algebric_numeric') {
-                        if (leftType.name === 'complex') { resultType = leftType; break; } else if (leftType.name === 'rational') { resultType = rightType; break; }
-                    }
-                    if (leftMeta.category === 'algebric_numeric' && rightMeta.category === 'algebric_numeric') {
-                        if (leftType.name === rightType.name) { resultType = leftType; break; }
-                    }
-                    if (operator === '+' && leftMeta.category === 'string' && rightMeta.category === 'string') {
-                        resultType = p_type('string'); break;
-                    }
-                    // パラメーター系
-                    if (leftType.name === 'parameter' && rightType.name === 'parameter') {
-                        resultType = p_type('any'); break;
-                    }
-                    if (this.isSubtypeOf(leftType.name, 'number') && rightType.name === 'parameter') {
-                        resultType = p_type('any'); break;
-                    }
-                    if (leftType.name === 'parameter' && this.isSubtypeOf(rightType.name, 'number')) {
-                        resultType = p_type('any'); break;
-                    }
-                    if (leftType.name === 'parameter' && rightType.name === 'string') {
-                        resultType = p_type('any'); break;
-                    }
-                }
-                break;
-            
-            case '%':
-                const isRightInt = rightType.kind === 'primitive' && rightType.name === 'integer';
-                if (!isRightInt) {
-                    this.addDiagnostic(
-                        node.right,
-                        `演算子 '%' の右辺は整数である必要がありますが、型 '${this.typeToString(rightType)}' が指定されました。`,
-                        DiagnosticSeverity.Error
-                    );
-                    resultType = p_type('any'); break;
-                }
-
-                const isLeftInt = leftType.kind === 'primitive' && leftType.name === 'integer';
-                const isLeftPolyOfInt = 
-                    leftType.kind === 'standard_polynomial' &&
-                    leftType.coefficientType.kind === 'primitive' &&
-                    leftType.coefficientType.name === 'integer';
-                if (isLeftInt || isLeftPolyOfInt) {
-                    resultType = leftType; break;
-                } else {
-                    this.addDiagnostic(
-                        node.left,
-                        `演算子 '%' の左辺は、整数または整数係数多項式である必要がありますが、型 '${this.typeToString(leftType)}' が指定されました。`,
-                        DiagnosticSeverity.Error
-                    );
-                    resultType = p_type('any'); break;
-                }
-
-            case '==':
-            case '!=':
-                const warningDetails = this.checkNumericTypeMismatch(leftType, rightType);
-                if (warningDetails) {
-                    this.addDiagnostic(
-                        node,
-                        `${warningDetails} を '${operator}' で比較しています。比較は可能ですが、意図しない問題が発生する可能性があります。`,
-                        DiagnosticSeverity.Warning
-                    );
-                }
-                resultType = p_type('integer'); break;
-
-            case '<':
-            case '>':
-            case '<=':
-            case '>=':
-            case '&&':
-            case '||':
-                if (leftType.kind === 'primitive' && rightType.kind === 'primitive') {
-                    const isNumeric = this.isSubtypeOf(leftType.name, 'number') && this.isSubtypeOf(rightType.name, 'number');
-                    const isString = leftType.name === 'string' && rightType.name === 'string';
-                    if (isNumeric || isString) {
-                        resultType = p_type('integer'); break;
-                    }
-                }
-                this.addDiagnostic(
-                    node,
-                    `この演算は意図しない値を返す可能性があります。型 '${this.typeToString(leftType)}' と型 '${this.typeToString(rightType)}' の間での '${operator}' 演算は意図しない結果になる可能性があります。`,
-                    DiagnosticSeverity.Warning
-                );
-                resultType = p_type('integer'); break;
-        }
-        if (resultType === p_type('undefined')) {
-            this.addDiagnostic(
-                node,
-                `演算子 '${operator}' は、型 '${this.typeToString(leftType)}' と '${this.typeToString(rightType)}' には適用できません。`,
-                DiagnosticSeverity.Error
-            );
-            resultType = p_type('any')
-        }
         return { type: resultType, constantValue };
     }
 
@@ -1368,6 +1654,10 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         const operandResult = this.visit(node.operand);
         if (!operandResult) {
             return { type: p_type('any') };
+        }
+
+        if (operandResult.type.kind === 'primitive' && operandResult.type.name === 'parameter') {
+            return { type: p_type('parameter') };
         }
         
         this.checkUsageAsValue(node.operand, operandResult.type);
@@ -1467,25 +1757,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             constantValue = Math.pow(baseConst, expConst);
         }
 
-        const getIntegerLiteralValue = (n: ast.ExpressionNode): number | null => {
-            if (n.kind === 'NumberLiteral') {
-                const strVal = String(n.rawText ?? n.value);
-                if (!strVal.includes('.') && !strVal.toLowerCase().includes('e')) {
-                    const val = Number(strVal);
-                    if (Number.isInteger(val)) return val;
-                }
-            }
-            if (n.kind === 'UnaryOperation' && n.operator === '-' && n.operand.kind === 'NumberLiteral') {
-                const strVal = String((n.operand as ast.NumberLiteralNode).rawText ?? (n.operand as ast.NumberLiteralNode).value);
-                if (!strVal.includes('.') && !strVal.toLowerCase().includes('e')) {
-                    const val = Number(strVal);
-                    if (Number.isInteger(val)) return -val;
-                }
-            }
-            return null;
-        };
-
-        const exponentValue = getIntegerLiteralValue(node.exponent);
+        const exponentValue = this.getIntegerLiteralValue(node.exponent);
         const baseNode = node.base;
 
         const isBaseI = (baseNode.kind === 'NumberLiteral' && baseNode.rawText === '@i');
@@ -1542,15 +1814,64 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         return { type: resultType, constantValue };
     }
 
-    visitIndexAccess(node: ast.IndexAccessNode): EvaluationResult {
-        const baseResult = this.visit(node.base) || { type: p_type('any') }
-        let currentResult: EvaluationResult = baseResult;
+    visitIndexAccess(node: ast.IndexAccessNode): IndexAccessResult {
+        if (node.base.kind === 'Indeterminate' && node.base.name === 'L') {
+            const symbol = this.symbolTable.currentScope.lookup('L');
+            if (symbol) {
+                console.log(`[DEBUG] visitIndexAccess for L, line ${node.loc?.startLine}: L.type = ${this.typeToString(symbol.type)}`);
+            }
+        }
+        const baseResult = this.visit(node.base);
+        let currentType: AsirType = p_type('any');
+        let currentConstantValue: ConstantValue | undefined = undefined;
+        let baseNode: ast.ExpressionNode = node.base;
+        let accessPath: ast.IndexAccessNode[] = [];
+
+        if (baseResult && 'baseNode' in baseResult && 'accessPath' in baseResult) {
+            const nestedIndexAccessResult = baseResult as IndexAccessResult;
+            baseNode = nestedIndexAccessResult.baseNode;
+            accessPath = nestedIndexAccessResult.accessPath;
+            currentType = nestedIndexAccessResult.accessedType;
+            currentConstantValue = nestedIndexAccessResult.accessedConstantValue;
+        } else if (baseResult) {
+            currentType = baseResult.type;
+            currentConstantValue = baseResult.constantValue;
+        }
+
+        accessPath.push(node);
+
+        if (baseNode.kind === 'IndexAccess') {
+            // インデックスアクセスのインデックスアクセスで変数の型が不明な場合、行列とする。
+            const innerBaseNode = (baseNode as ast.IndexAccessNode).base;
+            if (innerBaseNode.kind === 'Indeterminate') {
+                const symbol = this.symbolTable.currentScope.lookup(innerBaseNode.name);
+                if (symbol && (symbol.type.kind === 'primitive' && symbol.type.name === 'parameter')) {
+                    symbol.type = m_type(p_type('any'));
+                }
+            }
+        } 
+
+        // インデックスアクセスの変数の型が不明な場合、行列かベクトルか、リストと見なす。
+        if (baseResult!.type.kind === 'primitive' && baseResult!.type.name === 'parameter') {
+            const newType = u_type([m_type(p_type('any')), v_type(p_type('any')), l_type(p_type('any'))]);
+            if (node.base.kind === 'Indeterminate') {
+                const symbol = this.symbolTable.currentScope.lookup((node.base as ast.IndeterminateNode).name);
+                if (symbol && (symbol.type.kind === 'primitive' && symbol.type.name === 'parameter')) {
+                    symbol.type = newType;
+                }
+            }
+            currentType = newType;
+        }
+
+        let currentResult: EvaluationResult = { type: currentType, constantValue: baseResult!.constantValue };
 
         for (const indexNode of node.indices) {
             const indexResult = this.visit(indexNode) || { type: p_type('any') };
             const indexType = indexResult.type;
+            const isParameter = indexType.kind === 'primitive' && indexType.name === 'parameter';
+            const isInteger = indexType.kind === 'primitive' && this.isSubtypeOf(indexType.name, 'integer')
 
-            if (indexType.kind !== 'primitive' || !this.isSubtypeOf(indexType.name, 'integer')) {
+            if (!isInteger && !isParameter) {
                 this.addDiagnostic(indexNode, `インデックスは整数でなければなりません。`, DiagnosticSeverity.Error);
             }
 
@@ -1588,17 +1909,55 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                     }
                     break;
                 }
+                case 'union': {
+                    const possibleResultTypes: AsirType[] = [];
+                    // Filter out non-indexable types from the union before processing
+                    const indexableMemberTypes = currentType.types.filter(memberType => 
+                        memberType.kind === 'matrix' || memberType.kind === 'vector' || memberType.kind === 'list' || memberType.kind === 'tuple'
+                    );
+
+                    if (indexableMemberTypes.length === 0) {
+                        this.addDiagnostic(node.base, `型 '${this.typeToString(currentType)}' のどの要素に対してもインデックスアクセスはできません。`, DiagnosticSeverity.Error);
+                        return { type: p_type('any'), baseNode: baseNode, accessPath: accessPath, accessedType: currentResult.type, indices: node.indices};
+                    }
+
+                    for (const memberType of indexableMemberTypes) {
+                        switch (memberType.kind) {
+                            case 'matrix':
+                                possibleResultTypes.push({ kind: 'vector', elementType: memberType.elementType });
+                                break;
+                            case 'vector':
+                            case 'list':
+                                possibleResultTypes.push(memberType.elementType);
+                                break;
+                            case 'tuple':
+                                const indexValue = (typeof indexResult.constantValue === 'number' && Number.isInteger(indexResult.constantValue)) ? indexResult.constantValue : null;
+
+                                if (indexValue !== null) {
+                                    if (indexValue >= 0 && indexValue < memberType.elements.length) {
+                                        possibleResultTypes.push(memberType.elements[indexValue].type);
+                                    } 
+                                } else {
+                                    const elementTypes = memberType.elements.map(e => e.type);
+                                    possibleResultTypes.push(this.getCommonSupertype(elementTypes));
+                                }
+                                break;
+                        }
+                    }
+                    nextType = this.getCommonSupertype(possibleResultTypes);
+                    break;
+                }
                 default:
                     this.addDiagnostic(
                         node.base,
                         `型 '${this.typeToString(currentType)}' に対してインデックスアクセスはできません。`,
                         DiagnosticSeverity.Error
                     );
-                    return { type: p_type('any') };
+                    return { type: p_type('any'), baseNode: baseNode, accessPath: accessPath, accessedType: currentResult.type, indices: node.indices};
             }
             currentResult = { type: nextType, constantValue: nextConstantValue };
         }
-        return currentResult;
+        return { type: currentResult.type, constantValue: currentResult.constantValue, baseNode: baseNode, accessPath: accessPath, accessedType: currentResult.type, accessedConstantValue: currentResult.constantValue, indices: node.indices};
     }
 
     visitMemberAccess(node: ast.MemberAccessNode): EvaluationResult {
@@ -1621,9 +1980,28 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         return currentResult;
     }
 
-    
-
     // --- 文 ---
+    override visitBlock(node: ast.BlockNode): EvaluationResult {
+        const previousIsReachable = this.isReachable;
+
+        for (const stmt of node.statements) {
+            if (!this.isReachable || this.isProgramTerminated) {
+                if (stmt.kind !== 'EmptyStatement') {
+                    this.addDiagnostic(stmt, "到達不能なコードです。", DiagnosticSeverity.Warning);
+                }
+            }
+            const result = this.visit(stmt);
+            if (stmt.kind === 'EndStatement' || stmt.kind === 'QuitStatement') {
+                this.isProgramTerminated = true;
+                this.isReachable = false; 
+            } else if (stmt.kind === 'ReturnStatement') {
+                this.isReachable = false;
+            }
+        }
+        this.isReachable = previousIsReachable;
+        return { type: p_type('undefined') };
+    }
+
     visitForStatement(node: ast.ForStatementNode): EvaluationResult {
         // for 文の初期化式、条件式、更新式を先に解析
         node.initializers.forEach(init => this.visit(init));
@@ -1633,7 +2011,9 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         const previousInLoop = this.isInLoop;
         this.isInLoop = true;
         try {
+            // this.symbolTable.enterScope(node);
             this.visit(node.body);
+            // this.symbolTable.exitScope();
         } finally {
             this.isInLoop = previousInLoop;
         }
@@ -1643,50 +2023,105 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     visitIfStatement(node: ast.IfStatementNode): EvaluationResult {
         this.visit(node.condition);
 
-        const thenAssignments = new Map<string, AsirType>();
-        this.assignmentsInBranch = thenAssignments;
-        this.visit(node.thenStatement);
-        this.assignmentsInBranch = null;
+        let narrowedVarSymbol: Symbol | undefined = undefined;
+        let originalType: AsirType | undefined = undefined;
+        let thenType: AsirType | undefined = undefined;
+        let elseType: AsirType | undefined = undefined;
 
-        if (node.elseStatement) {
-            const elseAssignments = new Map<string, AsirType>();
-            this.assignmentsInBranch = elseAssignments;
-            this.visit(node.elseStatement);
-            this.assignmentsInBranch = null;
+        if (node.condition.kind === 'BinaryOperation' && (node.condition.operator === '==' || node.condition.operator === '!=')) {
+            const op = node.condition;
+            let varNode: ast.IndeterminateNode | undefined;
+            let literalType: AsirType | undefined;
 
-            const AllAssignedVars = new Set([...thenAssignments.keys(), ...elseAssignments.keys()]);
-
-            for (const name of AllAssignedVars) {
-                const symbol = this.symbolTable.currentScope.lookup(name);
-                if (!symbol) continue;
-
-                const thenType = thenAssignments.get(name);
-                const elseType = elseAssignments.get(name);
-
-                if (thenType && elseType) {
-                    const margedType = this.getCommonSupertype([thenType, elseType]);
-                    symbol.type = margedType;
-                } else if (thenType) {
-                    const margedType = this.getCommonSupertype([symbol.type, thenType]);
-                    symbol.type = margedType;
-                } else if (elseType) {
-                    const margedType = this.getCommonSupertype([symbol.type, elseType]);
-                    symbol.type = margedType;
-                }
+            if (op.left.kind === 'Indeterminate' && this.isTypeLiteral(op.right)) {
+                varNode = op.left;
+                literalType = this.visit(op.right)?.type;
+            } else if (op.right.kind === 'Indeterminate' && this.isTypeLiteral(op.left)) {
+                varNode = op.right;
+                literalType = this.visit(op.left)?.type;
             }
-        } else {
-            for (const [name, thenType] of thenAssignments.entries()) {
-                const symbol = this.symbolTable.currentScope.lookup(name);
-                if (!symbol) continue;
-                const margedType = this.getCommonSupertype([symbol.type, thenType]);
-                symbol.type = margedType;
+
+            if (varNode && literalType) {
+                narrowedVarSymbol = this.symbolTable.currentScope.lookup(varNode.name);
+                if (narrowedVarSymbol && narrowedVarSymbol.type.kind === 'union') {
+                    originalType = narrowedVarSymbol.type;
+                    if (node.condition.operator === '==') {
+                        thenType = literalType;
+                        elseType = this.substractType(originalType, literalType);
+                    } else {
+                        thenType = this.substractType(originalType, literalType);
+                        elseType = literalType;
+                    }
+                }
             }
         }
 
+        const thenAssignments = new Map<string, AsirType>();
+        this.assignmentsInBranch = thenAssignments;
+        if (narrowedVarSymbol && thenType) {
+            narrowedVarSymbol.type = thenType;
+        }
+        this.visit(node.thenStatement);
+        if (narrowedVarSymbol && originalType) {
+            narrowedVarSymbol.type = originalType;
+        }
+        this.assignmentsInBranch = null;
+
+        const elseAssignments = new Map<string, AsirType>();
+        if (node.elseStatement) {
+            this.assignmentsInBranch = elseAssignments;
+            if (narrowedVarSymbol && elseType) {
+                narrowedVarSymbol.type = elseType;
+            }
+            this.visit(node.elseStatement);
+            if (narrowedVarSymbol && originalType) {
+                narrowedVarSymbol.type = originalType;
+            }
+            this.assignmentsInBranch = null;
+        }
+
+        const AllAssignedVars = new Set([...thenAssignments.keys(), ...elseAssignments.keys()]);
+        for (const name of AllAssignedVars) {
+            const symbol = this.symbolTable.currentScope.lookup(name);
+            if (!symbol) continue;
+
+            const thenType = thenAssignments.get(name);
+            const elseType = elseAssignments.get(name);
+
+            if (thenType && elseType) {
+                const margedType = this.getCommonSupertype([thenType, elseType]);
+                symbol.type = margedType;
+            } else if (thenType) {
+                const margedType = this.getCommonSupertype([symbol.type, thenType]);
+                symbol.type = margedType;
+            } else if (elseType) {
+                const margedType = this.getCommonSupertype([symbol.type, elseType]);
+                symbol.type = margedType;
+            }
+        }
         return { type: p_type('undefined') };
     }
 
     visitWhileStatement(node: ast.WhileStatementNode): EvaluationResult {
+        if (node.body.kind === 'Block') { // while の条件式に未定義の関数がある場合に本体を先に確認する
+            for (const stmt of node.body.statements) {
+                if (stmt.kind === 'ExpressionStatement' && stmt.expression.kind === 'AssignmentExpression') {
+                    const assignment = stmt.expression;
+                    if (assignment.left.kind === 'Indeterminate') {
+                        const varName = assignment.left.name;
+                        if (!this.symbolTable.currentScope.lookup(varName)) {
+                            this.symbolTable.currentScope.define({
+                                name: varName,
+                                type: p_type('parameter'),
+                                definedAt: assignment.left.loc,
+                                node: assignment.left,
+                                isUsed: true
+                            });
+                        }
+                    }
+                }
+            }
+        }
         node.conditions.forEach(cond => this.visit(cond));
 
         const previousInLoop = this.isInLoop;
@@ -1696,6 +2131,22 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         } finally {
             this.isInLoop = previousInLoop;
         }
+        return { type: p_type('undefined') };
+    }
+
+    override visitEndStatement(node: ast.EndStatementNode): EvaluationResult {
+        this.isProgramTerminated = true;
+        this.isReachable = false;
+        return { type: p_type('undefined') };
+    }
+
+    override visitQuitStatement(node: ast.QuitStatementNode): EvaluationResult {
+        this.isProgramTerminated = true;
+        this.isReachable = false;
+        return { type: p_type('undefined') };
+    }
+
+    override visitDebugStatement(node: ast.DebugStatementNode): EvaluationResult {
         return { type: p_type('undefined') };
     }
 
@@ -1733,19 +2184,19 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         }
         return { type: p_type('undefined') };
     }
-
-    visitReturnStatement(node: ast.ReturnStatementNode): EvaluationResult {
+    override visitReturnStatement(node: ast.ReturnStatementNode): EvaluationResult {
         const returnType = node.value ? this.visit(node.value) : { type: p_type('undefined') };
         if (node.value && returnType) {
             this.checkUsageAsValue(node.value, returnType.type);
         }
-
         if (!returnType) {
             const safeReturnType = { type: p_type('any') };
             this.handleReturn(node, safeReturnType.type);
+            this.isReachable = false;
             return safeReturnType;
         }
         this.handleReturn(node, returnType.type);
+        this.isReachable = false;
         return returnType;
     }
 

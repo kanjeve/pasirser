@@ -3918,12 +3918,21 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
     [
         'size',
         {
-            kind: 'function',
-            parameters: [{ name: 'vect|mat', type: u_type([v_type(p_type('any')), m_type(p_type('any'))]) }],
-            returnType: u_type([
-                { kind: 'tuple', elements: [{ name: 'length', type: p_type('integer') }] },
-                { kind: 'tuple', elements: [{ name: 'row', type: p_type('integer') }, { name: 'col', type: p_type('integer') }] }
-            ]),
+            kind: 'overloaded_function',
+            signatures: [
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'mat', type: m_type(p_type('any')) }],
+                    returnType: { kind: 'tuple', elements: [{ name: 'row', type: p_type('integer') }, { name: 'col', type: p_type('integer') }] },
+                    behavior: 'callable_and_symbol'
+                },
+                {
+                    kind: 'function',
+                    parameters: [{ name: 'vect', type: v_type(p_type('any')) }],
+                    returnType: { kind: 'tuple', elements: [{ name: 'length', type: p_type('integer') }] },
+                    behavior: 'callable_and_symbol'
+                }
+            ],
             behavior: 'callable_and_symbol'
         }
     ],

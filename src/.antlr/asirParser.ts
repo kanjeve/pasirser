@@ -92,30 +92,33 @@ export class asirParser extends antlr.Parser {
     public static readonly LOCAL = 78;
     public static readonly LOCALF = 79;
     public static readonly FUNCTION = 80;
-    public static readonly ATFUNC = 81;
-    public static readonly VAR_2 = 82;
-    public static readonly ID = 83;
-    public static readonly FLOAT = 84;
-    public static readonly INT = 85;
-    public static readonly DOT = 86;
-    public static readonly NEWLINE = 87;
-    public static readonly WS = 88;
-    public static readonly COMMENT = 89;
-    public static readonly LCOMMENT = 90;
-    public static readonly PCOMMENT = 91;
-    public static readonly PIFDEF = 92;
-    public static readonly PIFNDEF = 93;
-    public static readonly PIF = 94;
-    public static readonly PELSE = 95;
-    public static readonly PELIF = 96;
-    public static readonly PENDIF = 97;
-    public static readonly PINCLUDE = 98;
-    public static readonly PDEFINE = 99;
-    public static readonly CHARPLUS = 100;
-    public static readonly CHAR = 101;
-    public static readonly STRING = 102;
-    public static readonly NOSTRING = 103;
-    public static readonly SYSTEM_PATH_LITERAL = 104;
+    public static readonly END = 81;
+    public static readonly QUIT = 82;
+    public static readonly DEBUG = 83;
+    public static readonly ATFUNC = 84;
+    public static readonly VAR_2 = 85;
+    public static readonly ID = 86;
+    public static readonly FLOAT = 87;
+    public static readonly INT = 88;
+    public static readonly DOT = 89;
+    public static readonly NEWLINE = 90;
+    public static readonly WS = 91;
+    public static readonly COMMENT = 92;
+    public static readonly LCOMMENT = 93;
+    public static readonly PCOMMENT = 94;
+    public static readonly PIFDEF = 95;
+    public static readonly PIFNDEF = 96;
+    public static readonly PIF = 97;
+    public static readonly PELSE = 98;
+    public static readonly PELIF = 99;
+    public static readonly PENDIF = 100;
+    public static readonly PINCLUDE = 101;
+    public static readonly PDEFINE = 102;
+    public static readonly CHARPLUS = 103;
+    public static readonly CHAR = 104;
+    public static readonly STRING = 105;
+    public static readonly NOSTRING = 106;
+    public static readonly SYSTEM_PATH_LITERAL = 107;
     public static readonly RULE_prog = 0;
     public static readonly RULE_statement = 1;
     public static readonly RULE_prechar = 2;
@@ -130,45 +133,48 @@ export class asirParser extends antlr.Parser {
     public static readonly RULE_functionContinue = 11;
     public static readonly RULE_functionBreak = 12;
     public static readonly RULE_functionStruct = 13;
-    public static readonly RULE_functionModule = 14;
-    public static readonly RULE_expr = 15;
-    public static readonly RULE_assignmentExpr = 16;
-    public static readonly RULE_ternaryExpr = 17;
-    public static readonly RULE_quoteExpr = 18;
-    public static readonly RULE_qeImplExpr = 19;
-    public static readonly RULE_qeNotExpr = 20;
-    public static readonly RULE_qeOrExpr = 21;
-    public static readonly RULE_qeAndExpr = 22;
-    public static readonly RULE_qeCompareExpr = 23;
-    public static readonly RULE_orExpr = 24;
-    public static readonly RULE_andExpr = 25;
-    public static readonly RULE_compareExpr = 26;
-    public static readonly RULE_addSubExpr = 27;
-    public static readonly RULE_mulDivSurExpr = 28;
-    public static readonly RULE_unaryExpr = 29;
-    public static readonly RULE_powerExpr = 30;
-    public static readonly RULE_factExpr = 31;
-    public static readonly RULE_prefixExpr = 32;
-    public static readonly RULE_postfixExpr = 33;
-    public static readonly RULE_indexAccessExpr = 34;
-    public static readonly RULE_memberAccessExpr = 35;
-    public static readonly RULE_primaryExpr = 36;
-    public static readonly RULE_dpoly = 37;
-    public static readonly RULE_rational = 38;
-    public static readonly RULE_decimal = 39;
-    public static readonly RULE_num = 40;
-    public static readonly RULE_id = 41;
-    public static readonly RULE_indeterminate = 42;
-    public static readonly RULE_list = 43;
-    public static readonly RULE_block = 44;
-    public static readonly RULE_qualifiedName = 45;
-    public static readonly RULE_dottedIdentifier = 46;
-    public static readonly RULE_exprlist = 47;
-    public static readonly RULE_terminator = 48;
-    public static readonly RULE_systemPath = 49;
-    public static readonly RULE_elifClause = 50;
-    public static readonly RULE_elseClause = 51;
-    public static readonly RULE_optionPair = 52;
+    public static readonly RULE_functionEnd = 14;
+    public static readonly RULE_functionQuit = 15;
+    public static readonly RULE_functionDebug = 16;
+    public static readonly RULE_functionModule = 17;
+    public static readonly RULE_expr = 18;
+    public static readonly RULE_assignmentExpr = 19;
+    public static readonly RULE_ternaryExpr = 20;
+    public static readonly RULE_quoteExpr = 21;
+    public static readonly RULE_qeImplExpr = 22;
+    public static readonly RULE_qeNotExpr = 23;
+    public static readonly RULE_qeOrExpr = 24;
+    public static readonly RULE_qeAndExpr = 25;
+    public static readonly RULE_qeCompareExpr = 26;
+    public static readonly RULE_orExpr = 27;
+    public static readonly RULE_andExpr = 28;
+    public static readonly RULE_compareExpr = 29;
+    public static readonly RULE_addSubExpr = 30;
+    public static readonly RULE_mulDivSurExpr = 31;
+    public static readonly RULE_unaryExpr = 32;
+    public static readonly RULE_powerExpr = 33;
+    public static readonly RULE_factExpr = 34;
+    public static readonly RULE_prefixExpr = 35;
+    public static readonly RULE_postfixExpr = 36;
+    public static readonly RULE_indexAccessExpr = 37;
+    public static readonly RULE_memberAccessExpr = 38;
+    public static readonly RULE_primaryExpr = 39;
+    public static readonly RULE_dpoly = 40;
+    public static readonly RULE_rational = 41;
+    public static readonly RULE_decimal = 42;
+    public static readonly RULE_num = 43;
+    public static readonly RULE_id = 44;
+    public static readonly RULE_indeterminate = 45;
+    public static readonly RULE_list = 46;
+    public static readonly RULE_block = 47;
+    public static readonly RULE_qualifiedName = 48;
+    public static readonly RULE_dottedIdentifier = 49;
+    public static readonly RULE_exprlist = 50;
+    public static readonly RULE_terminator = 51;
+    public static readonly RULE_systemPath = 52;
+    public static readonly RULE_elifClause = 53;
+    public static readonly RULE_elseClause = 54;
+    public static readonly RULE_optionPair = 55;
 
     public static readonly literalNames = [
         null, "'<<'", "'>>'", "'::'", "'++'", "'--'", "'+='", "'-='", "'*='", 
@@ -181,9 +187,10 @@ export class asirParser extends antlr.Parser {
         "'@equiv'", "'def'", "'if'", "'for'", "'while'", "'do'", "'else'", 
         "'return'", "'continue'", "'break'", "'struct'", "'module'", "'endmodule'", 
         "'extern'", "'static'", "'global'", "'local'", "'localf'", "'function'", 
-        null, "'@'", null, null, null, "'.'", "'\\n'", null, null, null, 
-        null, "'#ifdef'", "'#ifndef'", "'#if'", "'#else'", "'#elif'", "'#endif'", 
-        "'#include'", "'#define'", "'##'", "'#'"
+        "'end'", "'quit'", "'denug'", null, "'@'", null, null, null, "'.'", 
+        "'\\n'", null, null, null, null, "'#ifdef'", "'#ifndef'", "'#if'", 
+        "'#else'", "'#elif'", "'#endif'", "'#include'", "'#define'", "'##'", 
+        "'#'"
     ];
 
     public static readonly symbolicNames = [
@@ -197,24 +204,25 @@ export class asirParser extends antlr.Parser {
         "QE_8", "QE_9", "QE_10", "QE_11", "QE_12", "QE_IMPL", "QE_REPL", 
         "QE_EQUIV", "DEF", "IF", "FOR", "WHILE", "DO", "ELSE", "RETURN", 
         "CONTINUE", "BREAK", "STRUCT", "MODULE", "ENDMODULE", "EXTERN", 
-        "STATIC", "GLOBAL", "LOCAL", "LOCALF", "FUNCTION", "ATFUNC", "VAR_2", 
-        "ID", "FLOAT", "INT", "DOT", "NEWLINE", "WS", "COMMENT", "LCOMMENT", 
-        "PCOMMENT", "PIFDEF", "PIFNDEF", "PIF", "PELSE", "PELIF", "PENDIF", 
-        "PINCLUDE", "PDEFINE", "CHARPLUS", "CHAR", "STRING", "NOSTRING", 
-        "SYSTEM_PATH_LITERAL"
+        "STATIC", "GLOBAL", "LOCAL", "LOCALF", "FUNCTION", "END", "QUIT", 
+        "DEBUG", "ATFUNC", "VAR_2", "ID", "FLOAT", "INT", "DOT", "NEWLINE", 
+        "WS", "COMMENT", "LCOMMENT", "PCOMMENT", "PIFDEF", "PIFNDEF", "PIF", 
+        "PELSE", "PELIF", "PENDIF", "PINCLUDE", "PDEFINE", "CHARPLUS", "CHAR", 
+        "STRING", "NOSTRING", "SYSTEM_PATH_LITERAL"
     ];
     public static readonly ruleNames = [
         "prog", "statement", "prechar", "preprocessor", "functionDefinition", 
         "formDeclaration", "functionIf", "functionFor", "functionWhile", 
         "functionDo", "functionReturn", "functionContinue", "functionBreak", 
-        "functionStruct", "functionModule", "expr", "assignmentExpr", "ternaryExpr", 
-        "quoteExpr", "qeImplExpr", "qeNotExpr", "qeOrExpr", "qeAndExpr", 
-        "qeCompareExpr", "orExpr", "andExpr", "compareExpr", "addSubExpr", 
-        "mulDivSurExpr", "unaryExpr", "powerExpr", "factExpr", "prefixExpr", 
-        "postfixExpr", "indexAccessExpr", "memberAccessExpr", "primaryExpr", 
-        "dpoly", "rational", "decimal", "num", "id", "indeterminate", "list", 
-        "block", "qualifiedName", "dottedIdentifier", "exprlist", "terminator", 
-        "systemPath", "elifClause", "elseClause", "optionPair",
+        "functionStruct", "functionEnd", "functionQuit", "functionDebug", 
+        "functionModule", "expr", "assignmentExpr", "ternaryExpr", "quoteExpr", 
+        "qeImplExpr", "qeNotExpr", "qeOrExpr", "qeAndExpr", "qeCompareExpr", 
+        "orExpr", "andExpr", "compareExpr", "addSubExpr", "mulDivSurExpr", 
+        "unaryExpr", "powerExpr", "factExpr", "prefixExpr", "postfixExpr", 
+        "indexAccessExpr", "memberAccessExpr", "primaryExpr", "dpoly", "rational", 
+        "decimal", "num", "id", "indeterminate", "list", "block", "qualifiedName", 
+        "dottedIdentifier", "exprlist", "terminator", "systemPath", "elifClause", 
+        "elseClause", "optionPair",
     ];
 
     public get grammarFileName(): string { return "asir.g4"; }
@@ -238,21 +246,21 @@ export class asirParser extends antlr.Parser {
         try {
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 109;
+            this.state = 115;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 4026539953) !== 0) || ((((_la - 67)) & ~0x1F) === 0 && ((1 << (_la - 67)) & 2382888957) !== 0) || ((((_la - 99)) & ~0x1F) === 0 && ((1 << (_la - 99)) & 29) !== 0)) {
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 4026539953) !== 0) || ((((_la - 67)) & ~0x1F) === 0 && ((1 << (_la - 67)) & 1883242493) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 59) !== 0)) {
                 {
                 {
-                this.state = 106;
+                this.state = 112;
                 this.statement();
                 }
                 }
-                this.state = 111;
+                this.state = 117;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
-            this.state = 112;
+            this.state = 118;
             this.match(asirParser.EOF);
             }
         }
@@ -273,7 +281,7 @@ export class asirParser extends antlr.Parser {
         let localContext = new StatementContext(this.context, this.state);
         this.enterRule(localContext, 2, asirParser.RULE_statement);
         try {
-            this.state = 130;
+            this.state = 139;
             this.errorHandler.sync(this);
             switch (this.tokenStream.LA(1)) {
             case asirParser.LTLT:
@@ -302,9 +310,9 @@ export class asirParser extends antlr.Parser {
                 localContext = new ExprStatementContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 114;
+                this.state = 120;
                 this.expr();
-                this.state = 115;
+                this.state = 121;
                 this.terminator();
                 }
                 break;
@@ -313,7 +321,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new EmptyLineStatementContext(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 117;
+                this.state = 123;
                 this.terminator();
                 }
                 break;
@@ -321,7 +329,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new DefinitionStatementContext(localContext);
                 this.enterOuterAlt(localContext, 3);
                 {
-                this.state = 118;
+                this.state = 124;
                 this.functionDefinition();
                 }
                 break;
@@ -329,7 +337,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new ForwardDeclStatementContext(localContext);
                 this.enterOuterAlt(localContext, 4);
                 {
-                this.state = 119;
+                this.state = 125;
                 this.formDeclaration();
                 }
                 break;
@@ -337,7 +345,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new IfStatementContext(localContext);
                 this.enterOuterAlt(localContext, 5);
                 {
-                this.state = 120;
+                this.state = 126;
                 this.functionIf();
                 }
                 break;
@@ -345,7 +353,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new ForStatementContext(localContext);
                 this.enterOuterAlt(localContext, 6);
                 {
-                this.state = 121;
+                this.state = 127;
                 this.functionFor();
                 }
                 break;
@@ -353,7 +361,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new WhileStatementContext(localContext);
                 this.enterOuterAlt(localContext, 7);
                 {
-                this.state = 122;
+                this.state = 128;
                 this.functionWhile();
                 }
                 break;
@@ -361,7 +369,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new DoStatementContext(localContext);
                 this.enterOuterAlt(localContext, 8);
                 {
-                this.state = 123;
+                this.state = 129;
                 this.functionDo();
                 }
                 break;
@@ -369,7 +377,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new ReturnStatementContext(localContext);
                 this.enterOuterAlt(localContext, 9);
                 {
-                this.state = 124;
+                this.state = 130;
                 this.functionReturn();
                 }
                 break;
@@ -377,7 +385,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new BreakStatementContext(localContext);
                 this.enterOuterAlt(localContext, 10);
                 {
-                this.state = 125;
+                this.state = 131;
                 this.functionBreak();
                 }
                 break;
@@ -385,7 +393,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new ContinueStatementContext(localContext);
                 this.enterOuterAlt(localContext, 11);
                 {
-                this.state = 126;
+                this.state = 132;
                 this.functionContinue();
                 }
                 break;
@@ -393,8 +401,32 @@ export class asirParser extends antlr.Parser {
                 localContext = new StructStatementContext(localContext);
                 this.enterOuterAlt(localContext, 12);
                 {
-                this.state = 127;
+                this.state = 133;
                 this.functionStruct();
+                }
+                break;
+            case asirParser.END:
+                localContext = new EndStatementContext(localContext);
+                this.enterOuterAlt(localContext, 13);
+                {
+                this.state = 134;
+                this.functionEnd();
+                }
+                break;
+            case asirParser.QUIT:
+                localContext = new QuitStatementContext(localContext);
+                this.enterOuterAlt(localContext, 14);
+                {
+                this.state = 135;
+                this.functionQuit();
+                }
+                break;
+            case asirParser.DEBUG:
+                localContext = new DebugStatementContext(localContext);
+                this.enterOuterAlt(localContext, 15);
+                {
+                this.state = 136;
+                this.functionDebug();
                 }
                 break;
             case asirParser.MODULE:
@@ -405,9 +437,9 @@ export class asirParser extends antlr.Parser {
             case asirParser.LOCAL:
             case asirParser.LOCALF:
                 localContext = new ModuleStatementContext(localContext);
-                this.enterOuterAlt(localContext, 13);
+                this.enterOuterAlt(localContext, 16);
                 {
-                this.state = 128;
+                this.state = 137;
                 this.functionModule();
                 }
                 break;
@@ -417,9 +449,9 @@ export class asirParser extends antlr.Parser {
             case asirParser.PINCLUDE:
             case asirParser.PDEFINE:
                 localContext = new PreproStatementContext(localContext);
-                this.enterOuterAlt(localContext, 14);
+                this.enterOuterAlt(localContext, 17);
                 {
-                this.state = 129;
+                this.state = 138;
                 this.preprocessor();
                 }
                 break;
@@ -444,16 +476,16 @@ export class asirParser extends antlr.Parser {
         let localContext = new PrecharContext(this.context, this.state);
         this.enterRule(localContext, 4, asirParser.RULE_prechar);
         try {
-            this.state = 137;
+            this.state = 146;
             this.errorHandler.sync(this);
             switch (this.tokenStream.LA(1)) {
             case asirParser.CHAR:
                 localContext = new PreChrContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 132;
+                this.state = 141;
                 this.match(asirParser.CHAR);
-                this.state = 133;
+                this.state = 142;
                 this.match(asirParser.ID);
                 }
                 break;
@@ -461,11 +493,11 @@ export class asirParser extends antlr.Parser {
                 localContext = new PreChrPlusContext(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 134;
+                this.state = 143;
                 this.match(asirParser.ID);
-                this.state = 135;
+                this.state = 144;
                 this.match(asirParser.CHARPLUS);
-                this.state = 136;
+                this.state = 145;
                 this.match(asirParser.ID);
                 }
                 break;
@@ -491,58 +523,58 @@ export class asirParser extends antlr.Parser {
         this.enterRule(localContext, 6, asirParser.RULE_preprocessor);
         let _la: number;
         try {
-            this.state = 180;
+            this.state = 189;
             this.errorHandler.sync(this);
             switch (this.tokenStream.LA(1)) {
             case asirParser.PDEFINE:
                 localContext = new PDefContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 139;
+                this.state = 148;
                 this.match(asirParser.PDEFINE);
-                this.state = 140;
+                this.state = 149;
                 (localContext as PDefContext)._name = this.match(asirParser.ID);
-                this.state = 153;
+                this.state = 162;
                 this.errorHandler.sync(this);
                 switch (this.interpreter.adaptivePredict(this.tokenStream, 5, this.context) ) {
                 case 1:
                     {
-                    this.state = 141;
-                    this.match(asirParser.LPAREN);
                     this.state = 150;
+                    this.match(asirParser.LPAREN);
+                    this.state = 159;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
-                    if (_la === 83) {
+                    if (_la === 86) {
                         {
-                        this.state = 142;
+                        this.state = 151;
                         (localContext as PDefContext)._ID = this.match(asirParser.ID);
                         (localContext as PDefContext)._params.push((localContext as PDefContext)._ID!);
-                        this.state = 147;
+                        this.state = 156;
                         this.errorHandler.sync(this);
                         _la = this.tokenStream.LA(1);
                         while (_la === 41) {
                             {
                             {
-                            this.state = 143;
+                            this.state = 152;
                             this.match(asirParser.COMMA);
-                            this.state = 144;
+                            this.state = 153;
                             (localContext as PDefContext)._ID = this.match(asirParser.ID);
                             (localContext as PDefContext)._params.push((localContext as PDefContext)._ID!);
                             }
                             }
-                            this.state = 149;
+                            this.state = 158;
                             this.errorHandler.sync(this);
                             _la = this.tokenStream.LA(1);
                         }
                         }
                     }
 
-                    this.state = 152;
+                    this.state = 161;
                     this.match(asirParser.RPAREN);
                     }
                     break;
                 }
-                this.state = 155;
+                this.state = 164;
                 (localContext as PDefContext)._body = this.expr();
                 }
                 break;
@@ -552,59 +584,59 @@ export class asirParser extends antlr.Parser {
                 localContext = new PIfContext(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 156;
+                this.state = 165;
                 (localContext as PIfContext)._directive = this.tokenStream.LT(1);
                 _la = this.tokenStream.LA(1);
-                if(!(((((_la - 92)) & ~0x1F) === 0 && ((1 << (_la - 92)) & 7) !== 0))) {
+                if(!(((((_la - 95)) & ~0x1F) === 0 && ((1 << (_la - 95)) & 7) !== 0))) {
                     (localContext as PIfContext)._directive = this.errorHandler.recoverInline(this);
                 }
                 else {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 157;
+                this.state = 166;
                 (localContext as PIfContext)._condition = this.expr();
-                this.state = 161;
+                this.state = 170;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 4026539953) !== 0) || ((((_la - 67)) & ~0x1F) === 0 && ((1 << (_la - 67)) & 2382888957) !== 0) || ((((_la - 99)) & ~0x1F) === 0 && ((1 << (_la - 99)) & 29) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 4026539953) !== 0) || ((((_la - 67)) & ~0x1F) === 0 && ((1 << (_la - 67)) & 1883242493) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 59) !== 0)) {
                     {
                     {
-                    this.state = 158;
+                    this.state = 167;
                     (localContext as PIfContext)._statement = this.statement();
                     (localContext as PIfContext)._thenSymts.push((localContext as PIfContext)._statement!);
                     }
                     }
-                    this.state = 163;
+                    this.state = 172;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                 }
-                this.state = 167;
+                this.state = 176;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while (_la === 96) {
+                while (_la === 99) {
                     {
                     {
-                    this.state = 164;
+                    this.state = 173;
                     (localContext as PIfContext)._elifClause = this.elifClause();
                     (localContext as PIfContext)._elifs.push((localContext as PIfContext)._elifClause!);
                     }
                     }
-                    this.state = 169;
+                    this.state = 178;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                 }
-                this.state = 171;
+                this.state = 180;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                if (_la === 95) {
+                if (_la === 98) {
                     {
-                    this.state = 170;
+                    this.state = 179;
                     (localContext as PIfContext)._elseBlk = this.elseClause();
                     }
                 }
 
-                this.state = 173;
+                this.state = 182;
                 this.match(asirParser.PENDIF);
                 }
                 break;
@@ -612,20 +644,20 @@ export class asirParser extends antlr.Parser {
                 localContext = new PIncContext(localContext);
                 this.enterOuterAlt(localContext, 3);
                 {
-                this.state = 175;
+                this.state = 184;
                 this.match(asirParser.PINCLUDE);
-                this.state = 178;
+                this.state = 187;
                 this.errorHandler.sync(this);
                 switch (this.tokenStream.LA(1)) {
                 case asirParser.SYSTEM_PATH_LITERAL:
                     {
-                    this.state = 176;
+                    this.state = 185;
                     (localContext as PIncContext)._path_sys = this.systemPath();
                     }
                     break;
                 case asirParser.STRING:
                     {
-                    this.state = 177;
+                    this.state = 186;
                     (localContext as PIncContext)._path_loc = this.match(asirParser.STRING);
                     }
                     break;
@@ -659,43 +691,43 @@ export class asirParser extends antlr.Parser {
             localContext = new DefContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 182;
+            this.state = 191;
             this.match(asirParser.DEF);
-            this.state = 183;
+            this.state = 192;
             (localContext as DefContext)._name = this.indeterminate();
-            this.state = 184;
-            this.match(asirParser.LPAREN);
             this.state = 193;
+            this.match(asirParser.LPAREN);
+            this.state = 202;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if (_la === 83) {
+            if (_la === 86) {
                 {
-                this.state = 185;
+                this.state = 194;
                 (localContext as DefContext)._ID = this.match(asirParser.ID);
                 (localContext as DefContext)._params.push((localContext as DefContext)._ID!);
-                this.state = 190;
+                this.state = 199;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 while (_la === 41) {
                     {
                     {
-                    this.state = 186;
+                    this.state = 195;
                     this.match(asirParser.COMMA);
-                    this.state = 187;
+                    this.state = 196;
                     (localContext as DefContext)._ID = this.match(asirParser.ID);
                     (localContext as DefContext)._params.push((localContext as DefContext)._ID!);
                     }
                     }
-                    this.state = 192;
+                    this.state = 201;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                 }
                 }
             }
 
-            this.state = 195;
+            this.state = 204;
             this.match(asirParser.RPAREN);
-            this.state = 196;
+            this.state = 205;
             (localContext as DefContext)._body = this.block();
             }
         }
@@ -720,43 +752,43 @@ export class asirParser extends antlr.Parser {
             localContext = new FormDeclContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 198;
+            this.state = 207;
             this.match(asirParser.FUNCTION);
-            this.state = 199;
+            this.state = 208;
             (localContext as FormDeclContext)._name = this.indeterminate();
-            this.state = 200;
-            this.match(asirParser.LPAREN);
             this.state = 209;
+            this.match(asirParser.LPAREN);
+            this.state = 218;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if (((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 4194309) !== 0)) {
+            if (((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & 4194309) !== 0)) {
                 {
-                this.state = 201;
+                this.state = 210;
                 (localContext as FormDeclContext)._indeterminate = this.indeterminate();
                 (localContext as FormDeclContext)._params.push((localContext as FormDeclContext)._indeterminate!);
-                this.state = 206;
+                this.state = 215;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 while (_la === 41) {
                     {
                     {
-                    this.state = 202;
+                    this.state = 211;
                     this.match(asirParser.COMMA);
-                    this.state = 203;
+                    this.state = 212;
                     (localContext as FormDeclContext)._indeterminate = this.indeterminate();
                     (localContext as FormDeclContext)._params.push((localContext as FormDeclContext)._indeterminate!);
                     }
                     }
-                    this.state = 208;
+                    this.state = 217;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                 }
                 }
             }
 
-            this.state = 211;
+            this.state = 220;
             this.match(asirParser.RPAREN);
-            this.state = 212;
+            this.state = 221;
             this.terminator();
             }
         }
@@ -780,24 +812,24 @@ export class asirParser extends antlr.Parser {
             localContext = new IfContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 214;
+            this.state = 223;
             this.match(asirParser.IF);
-            this.state = 215;
+            this.state = 224;
             this.match(asirParser.LPAREN);
-            this.state = 216;
+            this.state = 225;
             (localContext as IfContext)._condition = this.expr();
-            this.state = 217;
+            this.state = 226;
             this.match(asirParser.RPAREN);
-            this.state = 218;
+            this.state = 227;
             (localContext as IfContext)._thenBlock = this.block();
-            this.state = 221;
+            this.state = 230;
             this.errorHandler.sync(this);
             switch (this.interpreter.adaptivePredict(this.tokenStream, 15, this.context) ) {
             case 1:
                 {
-                this.state = 219;
+                this.state = 228;
                 this.match(asirParser.ELSE);
-                this.state = 220;
+                this.state = 229;
                 (localContext as IfContext)._elseBlock = this.block();
                 }
                 break;
@@ -825,47 +857,47 @@ export class asirParser extends antlr.Parser {
             localContext = new ForContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 223;
+            this.state = 232;
             this.match(asirParser.FOR);
-            this.state = 224;
+            this.state = 233;
             this.match(asirParser.LPAREN);
-            this.state = 226;
+            this.state = 235;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 7340063) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & 7340063) !== 0)) {
                 {
-                this.state = 225;
+                this.state = 234;
                 (localContext as ForContext)._init = this.exprlist();
                 }
             }
 
-            this.state = 228;
+            this.state = 237;
             this.match(asirParser.SEMI);
-            this.state = 230;
+            this.state = 239;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 7340063) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & 7340063) !== 0)) {
                 {
-                this.state = 229;
+                this.state = 238;
                 (localContext as ForContext)._cond = this.exprlist();
                 }
             }
 
-            this.state = 232;
+            this.state = 241;
             this.match(asirParser.SEMI);
-            this.state = 234;
+            this.state = 243;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 7340063) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & 7340063) !== 0)) {
                 {
-                this.state = 233;
+                this.state = 242;
                 (localContext as ForContext)._update = this.exprlist();
                 }
             }
 
-            this.state = 236;
+            this.state = 245;
             this.match(asirParser.RPAREN);
-            this.state = 237;
+            this.state = 246;
             this.block();
             }
         }
@@ -890,23 +922,23 @@ export class asirParser extends antlr.Parser {
             localContext = new WhileContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 239;
+            this.state = 248;
             this.match(asirParser.WHILE);
-            this.state = 240;
+            this.state = 249;
             this.match(asirParser.LPAREN);
-            this.state = 242;
+            this.state = 251;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 7340063) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & 7340063) !== 0)) {
                 {
-                this.state = 241;
+                this.state = 250;
                 this.exprlist();
                 }
             }
 
-            this.state = 244;
+            this.state = 253;
             this.match(asirParser.RPAREN);
-            this.state = 245;
+            this.state = 254;
             this.block();
             }
         }
@@ -931,27 +963,27 @@ export class asirParser extends antlr.Parser {
             localContext = new DoContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 247;
+            this.state = 256;
             this.match(asirParser.DO);
-            this.state = 248;
+            this.state = 257;
             this.block();
-            this.state = 249;
+            this.state = 258;
             this.match(asirParser.WHILE);
-            this.state = 250;
+            this.state = 259;
             this.match(asirParser.LPAREN);
-            this.state = 252;
+            this.state = 261;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 7340063) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & 7340063) !== 0)) {
                 {
-                this.state = 251;
+                this.state = 260;
                 this.exprlist();
                 }
             }
 
-            this.state = 254;
+            this.state = 263;
             this.match(asirParser.RPAREN);
-            this.state = 255;
+            this.state = 264;
             this.match(asirParser.SEMI);
             }
         }
@@ -976,19 +1008,19 @@ export class asirParser extends antlr.Parser {
             localContext = new ReturnContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 257;
+            this.state = 266;
             this.match(asirParser.RETURN);
-            this.state = 259;
+            this.state = 268;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 7340063) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & 7340063) !== 0)) {
                 {
-                this.state = 258;
+                this.state = 267;
                 this.expr();
                 }
             }
 
-            this.state = 261;
+            this.state = 270;
             this.terminator();
             }
         }
@@ -1012,9 +1044,9 @@ export class asirParser extends antlr.Parser {
             localContext = new ContinueContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 263;
+            this.state = 272;
             this.match(asirParser.CONTINUE);
-            this.state = 264;
+            this.state = 273;
             this.terminator();
             }
         }
@@ -1038,9 +1070,9 @@ export class asirParser extends antlr.Parser {
             localContext = new BreakContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 266;
+            this.state = 275;
             this.match(asirParser.BREAK);
-            this.state = 267;
+            this.state = 276;
             this.terminator();
             }
         }
@@ -1065,35 +1097,113 @@ export class asirParser extends antlr.Parser {
             localContext = new StructContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 269;
+            this.state = 278;
             this.match(asirParser.STRUCT);
-            this.state = 270;
+            this.state = 279;
             (localContext as StructContext)._name = this.indeterminate();
-            this.state = 271;
+            this.state = 280;
             this.match(asirParser.LBRANCE);
-            this.state = 272;
+            this.state = 281;
             (localContext as StructContext)._indeterminate = this.indeterminate();
             (localContext as StructContext)._members.push((localContext as StructContext)._indeterminate!);
-            this.state = 277;
+            this.state = 286;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while (_la === 41) {
                 {
                 {
-                this.state = 273;
+                this.state = 282;
                 this.match(asirParser.COMMA);
-                this.state = 274;
+                this.state = 283;
                 (localContext as StructContext)._indeterminate = this.indeterminate();
                 (localContext as StructContext)._members.push((localContext as StructContext)._indeterminate!);
                 }
                 }
-                this.state = 279;
+                this.state = 288;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
-            this.state = 280;
+            this.state = 289;
             this.match(asirParser.RBRANCE);
-            this.state = 281;
+            this.state = 290;
+            this.terminator();
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
+    public functionEnd(): FunctionEndContext {
+        let localContext = new FunctionEndContext(this.context, this.state);
+        this.enterRule(localContext, 28, asirParser.RULE_functionEnd);
+        try {
+            localContext = new EndContext(localContext);
+            this.enterOuterAlt(localContext, 1);
+            {
+            this.state = 292;
+            this.match(asirParser.END);
+            this.state = 293;
+            this.terminator();
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
+    public functionQuit(): FunctionQuitContext {
+        let localContext = new FunctionQuitContext(this.context, this.state);
+        this.enterRule(localContext, 30, asirParser.RULE_functionQuit);
+        try {
+            localContext = new QuitContext(localContext);
+            this.enterOuterAlt(localContext, 1);
+            {
+            this.state = 295;
+            this.match(asirParser.QUIT);
+            this.state = 296;
+            this.terminator();
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
+    public functionDebug(): FunctionDebugContext {
+        let localContext = new FunctionDebugContext(this.context, this.state);
+        this.enterRule(localContext, 32, asirParser.RULE_functionDebug);
+        try {
+            localContext = new DebugContext(localContext);
+            this.enterOuterAlt(localContext, 1);
+            {
+            this.state = 298;
+            this.match(asirParser.DEBUG);
+            this.state = 299;
             this.terminator();
             }
         }
@@ -1112,10 +1222,10 @@ export class asirParser extends antlr.Parser {
     }
     public functionModule(): FunctionModuleContext {
         let localContext = new FunctionModuleContext(this.context, this.state);
-        this.enterRule(localContext, 28, asirParser.RULE_functionModule);
+        this.enterRule(localContext, 34, asirParser.RULE_functionModule);
         let _la: number;
         try {
-            this.state = 300;
+            this.state = 318;
             this.errorHandler.sync(this);
             switch (this.tokenStream.LA(1)) {
             case asirParser.EXTERN:
@@ -1126,7 +1236,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new ModuleAssignContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 283;
+                this.state = 301;
                 _la = this.tokenStream.LA(1);
                 if(!(((((_la - 75)) & ~0x1F) === 0 && ((1 << (_la - 75)) & 31) !== 0))) {
                 this.errorHandler.recoverInline(this);
@@ -1135,25 +1245,25 @@ export class asirParser extends antlr.Parser {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 284;
+                this.state = 302;
                 this.indeterminate();
-                this.state = 289;
+                this.state = 307;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 while (_la === 41) {
                     {
                     {
-                    this.state = 285;
+                    this.state = 303;
                     this.match(asirParser.COMMA);
-                    this.state = 286;
+                    this.state = 304;
                     this.indeterminate();
                     }
                     }
-                    this.state = 291;
+                    this.state = 309;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                 }
-                this.state = 292;
+                this.state = 310;
                 this.terminator();
                 }
                 break;
@@ -1161,11 +1271,11 @@ export class asirParser extends antlr.Parser {
                 localContext = new ModuleStartContext(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 294;
+                this.state = 312;
                 this.match(asirParser.MODULE);
-                this.state = 295;
+                this.state = 313;
                 this.indeterminate();
-                this.state = 296;
+                this.state = 314;
                 this.terminator();
                 }
                 break;
@@ -1173,9 +1283,9 @@ export class asirParser extends antlr.Parser {
                 localContext = new ModuleEndContext(localContext);
                 this.enterOuterAlt(localContext, 3);
                 {
-                this.state = 298;
+                this.state = 316;
                 this.match(asirParser.ENDMODULE);
-                this.state = 299;
+                this.state = 317;
                 this.terminator();
                 }
                 break;
@@ -1198,12 +1308,12 @@ export class asirParser extends antlr.Parser {
     }
     public expr(): ExprContext {
         let localContext = new ExprContext(this.context, this.state);
-        this.enterRule(localContext, 30, asirParser.RULE_expr);
+        this.enterRule(localContext, 36, asirParser.RULE_expr);
         try {
             localContext = new MainContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 302;
+            this.state = 320;
             this.assignmentExpr();
             }
         }
@@ -1222,17 +1332,17 @@ export class asirParser extends antlr.Parser {
     }
     public assignmentExpr(): AssignmentExprContext {
         let localContext = new AssignmentExprContext(this.context, this.state);
-        this.enterRule(localContext, 32, asirParser.RULE_assignmentExpr);
+        this.enterRule(localContext, 38, asirParser.RULE_assignmentExpr);
         let _la: number;
         try {
-            this.state = 339;
+            this.state = 357;
             this.errorHandler.sync(this);
             switch (this.interpreter.adaptivePredict(this.tokenStream, 28, this.context) ) {
             case 1:
                 localContext = new NoAssignmentContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 304;
+                this.state = 322;
                 this.ternaryExpr();
                 }
                 break;
@@ -1240,28 +1350,28 @@ export class asirParser extends antlr.Parser {
                 localContext = new AssignContext(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 305;
+                this.state = 323;
                 (localContext as AssignContext)._left = this.match(asirParser.ID);
-                this.state = 312;
+                this.state = 330;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 while (_la === 35) {
                     {
                     {
-                    this.state = 306;
+                    this.state = 324;
                     this.match(asirParser.LBRACKET);
-                    this.state = 307;
+                    this.state = 325;
                     (localContext as AssignContext)._expr = this.expr();
                     (localContext as AssignContext)._indices.push((localContext as AssignContext)._expr!);
-                    this.state = 308;
+                    this.state = 326;
                     this.match(asirParser.RBRACKET);
                     }
                     }
-                    this.state = 314;
+                    this.state = 332;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                 }
-                this.state = 315;
+                this.state = 333;
                 (localContext as AssignContext)._op = this.tokenStream.LT(1);
                 _la = this.tokenStream.LA(1);
                 if(!((((_la) & ~0x1F) === 0 && ((1 << _la) & 268439488) !== 0))) {
@@ -1271,7 +1381,7 @@ export class asirParser extends antlr.Parser {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 316;
+                this.state = 334;
                 (localContext as AssignContext)._right = this.assignmentExpr();
                 }
                 break;
@@ -1279,25 +1389,25 @@ export class asirParser extends antlr.Parser {
                 localContext = new StructAssignContext(localContext);
                 this.enterOuterAlt(localContext, 3);
                 {
-                this.state = 317;
+                this.state = 335;
                 this.match(asirParser.ID);
-                this.state = 320;
+                this.state = 338;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 do {
                     {
                     {
-                    this.state = 318;
+                    this.state = 336;
                     this.match(asirParser.ARROW);
-                    this.state = 319;
+                    this.state = 337;
                     this.indeterminate();
                     }
                     }
-                    this.state = 322;
+                    this.state = 340;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                 } while (_la === 12);
-                this.state = 324;
+                this.state = 342;
                 _la = this.tokenStream.LA(1);
                 if(!((((_la) & ~0x1F) === 0 && ((1 << _la) & 268439488) !== 0))) {
                 this.errorHandler.recoverInline(this);
@@ -1306,7 +1416,7 @@ export class asirParser extends antlr.Parser {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 325;
+                this.state = 343;
                 this.assignmentExpr();
                 }
                 break;
@@ -1314,29 +1424,29 @@ export class asirParser extends antlr.Parser {
                 localContext = new ListAssignContext(localContext);
                 this.enterOuterAlt(localContext, 4);
                 {
-                this.state = 327;
+                this.state = 345;
                 this.match(asirParser.LBRACKET);
-                this.state = 328;
+                this.state = 346;
                 this.match(asirParser.ID);
-                this.state = 333;
+                this.state = 351;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 while (_la === 41) {
                     {
                     {
-                    this.state = 329;
+                    this.state = 347;
                     this.match(asirParser.COMMA);
-                    this.state = 330;
+                    this.state = 348;
                     this.match(asirParser.ID);
                     }
                     }
-                    this.state = 335;
+                    this.state = 353;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                 }
-                this.state = 336;
+                this.state = 354;
                 this.match(asirParser.RBRACKET);
-                this.state = 337;
+                this.state = 355;
                 _la = this.tokenStream.LA(1);
                 if(!((((_la) & ~0x1F) === 0 && ((1 << _la) & 268439488) !== 0))) {
                 this.errorHandler.recoverInline(this);
@@ -1345,7 +1455,7 @@ export class asirParser extends antlr.Parser {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 338;
+                this.state = 356;
                 this.assignmentExpr();
                 }
                 break;
@@ -1366,26 +1476,26 @@ export class asirParser extends antlr.Parser {
     }
     public ternaryExpr(): TernaryExprContext {
         let localContext = new TernaryExprContext(this.context, this.state);
-        this.enterRule(localContext, 34, asirParser.RULE_ternaryExpr);
+        this.enterRule(localContext, 40, asirParser.RULE_ternaryExpr);
         let _la: number;
         try {
             localContext = new TernaryContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 341;
+            this.state = 359;
             (localContext as TernaryContext)._condition = this.quoteExpr();
-            this.state = 347;
+            this.state = 365;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             if (_la === 37) {
                 {
-                this.state = 342;
+                this.state = 360;
                 this.match(asirParser.QUESTION);
-                this.state = 343;
+                this.state = 361;
                 (localContext as TernaryContext)._consequence = this.expr();
-                this.state = 344;
+                this.state = 362;
                 this.match(asirParser.COLON);
-                this.state = 345;
+                this.state = 363;
                 (localContext as TernaryContext)._alternative = this.expr();
                 }
             }
@@ -1407,23 +1517,23 @@ export class asirParser extends antlr.Parser {
     }
     public quoteExpr(): QuoteExprContext {
         let localContext = new QuoteExprContext(this.context, this.state);
-        this.enterRule(localContext, 36, asirParser.RULE_quoteExpr);
+        this.enterRule(localContext, 42, asirParser.RULE_quoteExpr);
         let _la: number;
         try {
             localContext = new QuoteContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 350;
+            this.state = 368;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             if (_la === 29) {
                 {
-                this.state = 349;
+                this.state = 367;
                 this.match(asirParser.BACK);
                 }
             }
 
-            this.state = 352;
+            this.state = 370;
             this.qeImplExpr();
             }
         }
@@ -1442,34 +1552,34 @@ export class asirParser extends antlr.Parser {
     }
     public qeImplExpr(): QeImplExprContext {
         let localContext = new QeImplExprContext(this.context, this.state);
-        this.enterRule(localContext, 38, asirParser.RULE_qeImplExpr);
+        this.enterRule(localContext, 44, asirParser.RULE_qeImplExpr);
         let _la: number;
         try {
             localContext = new QEImplContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 354;
+            this.state = 372;
             this.qeNotExpr();
-            this.state = 359;
+            this.state = 377;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            while (_la === 61 || _la === 62) {
+            while (((((_la - 60)) & ~0x1F) === 0 && ((1 << (_la - 60)) & 7) !== 0)) {
                 {
                 {
-                this.state = 355;
+                this.state = 373;
                 _la = this.tokenStream.LA(1);
-                if(!(_la === 61 || _la === 62)) {
+                if(!(((((_la - 60)) & ~0x1F) === 0 && ((1 << (_la - 60)) & 7) !== 0))) {
                 this.errorHandler.recoverInline(this);
                 }
                 else {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 356;
+                this.state = 374;
                 this.qeNotExpr();
                 }
                 }
-                this.state = 361;
+                this.state = 379;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -1490,27 +1600,27 @@ export class asirParser extends antlr.Parser {
     }
     public qeNotExpr(): QeNotExprContext {
         let localContext = new QeNotExprContext(this.context, this.state);
-        this.enterRule(localContext, 40, asirParser.RULE_qeNotExpr);
+        this.enterRule(localContext, 46, asirParser.RULE_qeNotExpr);
         let _la: number;
         try {
             localContext = new QEnotContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 362;
+            this.state = 380;
             this.qeOrExpr();
-            this.state = 367;
+            this.state = 385;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while (_la === 55) {
                 {
                 {
-                this.state = 363;
+                this.state = 381;
                 this.match(asirParser.QE_8);
-                this.state = 364;
+                this.state = 382;
                 this.qeOrExpr();
                 }
                 }
-                this.state = 369;
+                this.state = 387;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -1531,21 +1641,21 @@ export class asirParser extends antlr.Parser {
     }
     public qeOrExpr(): QeOrExprContext {
         let localContext = new QeOrExprContext(this.context, this.state);
-        this.enterRule(localContext, 42, asirParser.RULE_qeOrExpr);
+        this.enterRule(localContext, 48, asirParser.RULE_qeOrExpr);
         let _la: number;
         try {
             localContext = new QEorContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 370;
+            this.state = 388;
             this.qeAndExpr();
-            this.state = 375;
+            this.state = 393;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while (_la === 58 || _la === 59) {
                 {
                 {
-                this.state = 371;
+                this.state = 389;
                 _la = this.tokenStream.LA(1);
                 if(!(_la === 58 || _la === 59)) {
                 this.errorHandler.recoverInline(this);
@@ -1554,11 +1664,11 @@ export class asirParser extends antlr.Parser {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 372;
+                this.state = 390;
                 this.qeAndExpr();
                 }
                 }
-                this.state = 377;
+                this.state = 395;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -1579,21 +1689,21 @@ export class asirParser extends antlr.Parser {
     }
     public qeAndExpr(): QeAndExprContext {
         let localContext = new QeAndExprContext(this.context, this.state);
-        this.enterRule(localContext, 44, asirParser.RULE_qeAndExpr);
+        this.enterRule(localContext, 50, asirParser.RULE_qeAndExpr);
         let _la: number;
         try {
             localContext = new QEandContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 378;
+            this.state = 396;
             this.qeCompareExpr();
-            this.state = 383;
+            this.state = 401;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while (_la === 56 || _la === 57) {
                 {
                 {
-                this.state = 379;
+                this.state = 397;
                 _la = this.tokenStream.LA(1);
                 if(!(_la === 56 || _la === 57)) {
                 this.errorHandler.recoverInline(this);
@@ -1602,11 +1712,11 @@ export class asirParser extends antlr.Parser {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 380;
+                this.state = 398;
                 this.qeCompareExpr();
                 }
                 }
-                this.state = 385;
+                this.state = 403;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -1627,21 +1737,21 @@ export class asirParser extends antlr.Parser {
     }
     public qeCompareExpr(): QeCompareExprContext {
         let localContext = new QeCompareExprContext(this.context, this.state);
-        this.enterRule(localContext, 46, asirParser.RULE_qeCompareExpr);
+        this.enterRule(localContext, 52, asirParser.RULE_qeCompareExpr);
         let _la: number;
         try {
             localContext = new QECompareContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 386;
+            this.state = 404;
             this.orExpr();
-            this.state = 391;
+            this.state = 409;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while (((((_la - 48)) & ~0x1F) === 0 && ((1 << (_la - 48)) & 127) !== 0)) {
                 {
                 {
-                this.state = 387;
+                this.state = 405;
                 _la = this.tokenStream.LA(1);
                 if(!(((((_la - 48)) & ~0x1F) === 0 && ((1 << (_la - 48)) & 127) !== 0))) {
                 this.errorHandler.recoverInline(this);
@@ -1650,11 +1760,11 @@ export class asirParser extends antlr.Parser {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 388;
+                this.state = 406;
                 this.orExpr();
                 }
                 }
-                this.state = 393;
+                this.state = 411;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -1675,27 +1785,27 @@ export class asirParser extends antlr.Parser {
     }
     public orExpr(): OrExprContext {
         let localContext = new OrExprContext(this.context, this.state);
-        this.enterRule(localContext, 48, asirParser.RULE_orExpr);
+        this.enterRule(localContext, 54, asirParser.RULE_orExpr);
         let _la: number;
         try {
             localContext = new OrContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 394;
+            this.state = 412;
             this.andExpr();
-            this.state = 399;
+            this.state = 417;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while (_la === 20) {
                 {
                 {
-                this.state = 395;
+                this.state = 413;
                 this.match(asirParser.OR);
-                this.state = 396;
+                this.state = 414;
                 this.andExpr();
                 }
                 }
-                this.state = 401;
+                this.state = 419;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -1716,27 +1826,27 @@ export class asirParser extends antlr.Parser {
     }
     public andExpr(): AndExprContext {
         let localContext = new AndExprContext(this.context, this.state);
-        this.enterRule(localContext, 50, asirParser.RULE_andExpr);
+        this.enterRule(localContext, 56, asirParser.RULE_andExpr);
         let _la: number;
         try {
             localContext = new AndContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 402;
+            this.state = 420;
             this.compareExpr();
-            this.state = 407;
+            this.state = 425;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while (_la === 19) {
                 {
                 {
-                this.state = 403;
+                this.state = 421;
                 this.match(asirParser.AND);
-                this.state = 404;
+                this.state = 422;
                 this.compareExpr();
                 }
                 }
-                this.state = 409;
+                this.state = 427;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -1757,21 +1867,21 @@ export class asirParser extends antlr.Parser {
     }
     public compareExpr(): CompareExprContext {
         let localContext = new CompareExprContext(this.context, this.state);
-        this.enterRule(localContext, 52, asirParser.RULE_compareExpr);
+        this.enterRule(localContext, 58, asirParser.RULE_compareExpr);
         let _la: number;
         try {
             localContext = new CompareContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 410;
+            this.state = 428;
             this.addSubExpr();
-            this.state = 415;
+            this.state = 433;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 516096) !== 0)) {
                 {
                 {
-                this.state = 411;
+                this.state = 429;
                 _la = this.tokenStream.LA(1);
                 if(!((((_la) & ~0x1F) === 0 && ((1 << _la) & 516096) !== 0))) {
                 this.errorHandler.recoverInline(this);
@@ -1780,11 +1890,11 @@ export class asirParser extends antlr.Parser {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 412;
+                this.state = 430;
                 this.addSubExpr();
                 }
                 }
-                this.state = 417;
+                this.state = 435;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -1805,23 +1915,23 @@ export class asirParser extends antlr.Parser {
     }
     public addSubExpr(): AddSubExprContext {
         let localContext = new AddSubExprContext(this.context, this.state);
-        this.enterRule(localContext, 54, asirParser.RULE_addSubExpr);
+        this.enterRule(localContext, 60, asirParser.RULE_addSubExpr);
         let _la: number;
         try {
             let alternative: number;
             localContext = new AddSubContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 418;
+            this.state = 436;
             this.mulDivSurExpr();
-            this.state = 423;
+            this.state = 441;
             this.errorHandler.sync(this);
             alternative = this.interpreter.adaptivePredict(this.tokenStream, 39, this.context);
             while (alternative !== 2 && alternative !== antlr.ATN.INVALID_ALT_NUMBER) {
                 if (alternative === 1) {
                     {
                     {
-                    this.state = 419;
+                    this.state = 437;
                     _la = this.tokenStream.LA(1);
                     if(!(_la === 22 || _la === 23)) {
                     this.errorHandler.recoverInline(this);
@@ -1830,12 +1940,12 @@ export class asirParser extends antlr.Parser {
                         this.errorHandler.reportMatch(this);
                         this.consume();
                     }
-                    this.state = 420;
+                    this.state = 438;
                     this.mulDivSurExpr();
                     }
                     }
                 }
-                this.state = 425;
+                this.state = 443;
                 this.errorHandler.sync(this);
                 alternative = this.interpreter.adaptivePredict(this.tokenStream, 39, this.context);
             }
@@ -1856,21 +1966,21 @@ export class asirParser extends antlr.Parser {
     }
     public mulDivSurExpr(): MulDivSurExprContext {
         let localContext = new MulDivSurExprContext(this.context, this.state);
-        this.enterRule(localContext, 56, asirParser.RULE_mulDivSurExpr);
+        this.enterRule(localContext, 62, asirParser.RULE_mulDivSurExpr);
         let _la: number;
         try {
             localContext = new MulDivSurContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 426;
+            this.state = 444;
             this.unaryExpr();
-            this.state = 431;
+            this.state = 449;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 117440512) !== 0)) {
                 {
                 {
-                this.state = 427;
+                this.state = 445;
                 _la = this.tokenStream.LA(1);
                 if(!((((_la) & ~0x1F) === 0 && ((1 << _la) & 117440512) !== 0))) {
                 this.errorHandler.recoverInline(this);
@@ -1879,11 +1989,11 @@ export class asirParser extends antlr.Parser {
                     this.errorHandler.reportMatch(this);
                     this.consume();
                 }
-                this.state = 428;
+                this.state = 446;
                 this.unaryExpr();
                 }
                 }
-                this.state = 433;
+                this.state = 451;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -1904,18 +2014,18 @@ export class asirParser extends antlr.Parser {
     }
     public unaryExpr(): UnaryExprContext {
         let localContext = new UnaryExprContext(this.context, this.state);
-        this.enterRule(localContext, 58, asirParser.RULE_unaryExpr);
+        this.enterRule(localContext, 64, asirParser.RULE_unaryExpr);
         try {
-            this.state = 439;
+            this.state = 457;
             this.errorHandler.sync(this);
             switch (this.interpreter.adaptivePredict(this.tokenStream, 41, this.context) ) {
             case 1:
                 localContext = new UnaryMinusContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 434;
+                this.state = 452;
                 this.match(asirParser.MINUS);
-                this.state = 435;
+                this.state = 453;
                 this.unaryExpr();
                 }
                 break;
@@ -1923,9 +2033,9 @@ export class asirParser extends antlr.Parser {
                 localContext = new NotExprContext(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 436;
+                this.state = 454;
                 this.match(asirParser.NOT);
-                this.state = 437;
+                this.state = 455;
                 this.unaryExpr();
                 }
                 break;
@@ -1933,7 +2043,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new PowExprContext(localContext);
                 this.enterOuterAlt(localContext, 3);
                 {
-                this.state = 438;
+                this.state = 456;
                 this.powerExpr();
                 }
                 break;
@@ -1954,22 +2064,22 @@ export class asirParser extends antlr.Parser {
     }
     public powerExpr(): PowerExprContext {
         let localContext = new PowerExprContext(this.context, this.state);
-        this.enterRule(localContext, 60, asirParser.RULE_powerExpr);
+        this.enterRule(localContext, 66, asirParser.RULE_powerExpr);
         let _la: number;
         try {
             localContext = new PowExContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 441;
+            this.state = 459;
             (localContext as PowExContext)._base = this.factExpr();
-            this.state = 444;
+            this.state = 462;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             if (_la === 27) {
                 {
-                this.state = 442;
+                this.state = 460;
                 this.match(asirParser.POWER);
-                this.state = 443;
+                this.state = 461;
                 (localContext as PowExContext)._exponent = this.unaryExpr();
                 }
             }
@@ -1991,39 +2101,39 @@ export class asirParser extends antlr.Parser {
     }
     public factExpr(): FactExprContext {
         let localContext = new FactExprContext(this.context, this.state);
-        this.enterRule(localContext, 62, asirParser.RULE_factExpr);
+        this.enterRule(localContext, 68, asirParser.RULE_factExpr);
         try {
             localContext = new FactorialExprContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 449;
+            this.state = 467;
             this.errorHandler.sync(this);
             switch (this.interpreter.adaptivePredict(this.tokenStream, 43, this.context) ) {
             case 1:
                 {
-                this.state = 446;
+                this.state = 464;
                 this.postfixExpr();
                 }
                 break;
             case 2:
                 {
-                this.state = 447;
+                this.state = 465;
                 this.prefixExpr();
                 }
                 break;
             case 3:
                 {
-                this.state = 448;
+                this.state = 466;
                 this.indexAccessExpr();
                 }
                 break;
             }
-            this.state = 452;
+            this.state = 470;
             this.errorHandler.sync(this);
             switch (this.interpreter.adaptivePredict(this.tokenStream, 44, this.context) ) {
             case 1:
                 {
-                this.state = 451;
+                this.state = 469;
                 this.match(asirParser.NOT);
                 }
                 break;
@@ -2045,13 +2155,13 @@ export class asirParser extends antlr.Parser {
     }
     public prefixExpr(): PrefixExprContext {
         let localContext = new PrefixExprContext(this.context, this.state);
-        this.enterRule(localContext, 64, asirParser.RULE_prefixExpr);
+        this.enterRule(localContext, 70, asirParser.RULE_prefixExpr);
         let _la: number;
         try {
             localContext = new PreFixContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 454;
+            this.state = 472;
             _la = this.tokenStream.LA(1);
             if(!(_la === 4 || _la === 5)) {
             this.errorHandler.recoverInline(this);
@@ -2060,7 +2170,7 @@ export class asirParser extends antlr.Parser {
                 this.errorHandler.reportMatch(this);
                 this.consume();
             }
-            this.state = 455;
+            this.state = 473;
             this.indexAccessExpr();
             }
         }
@@ -2079,15 +2189,15 @@ export class asirParser extends antlr.Parser {
     }
     public postfixExpr(): PostfixExprContext {
         let localContext = new PostfixExprContext(this.context, this.state);
-        this.enterRule(localContext, 66, asirParser.RULE_postfixExpr);
+        this.enterRule(localContext, 72, asirParser.RULE_postfixExpr);
         let _la: number;
         try {
             localContext = new PostFixContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 457;
+            this.state = 475;
             this.indexAccessExpr();
-            this.state = 458;
+            this.state = 476;
             _la = this.tokenStream.LA(1);
             if(!(_la === 4 || _la === 5)) {
             this.errorHandler.recoverInline(this);
@@ -2113,31 +2223,31 @@ export class asirParser extends antlr.Parser {
     }
     public indexAccessExpr(): IndexAccessExprContext {
         let localContext = new IndexAccessExprContext(this.context, this.state);
-        this.enterRule(localContext, 68, asirParser.RULE_indexAccessExpr);
+        this.enterRule(localContext, 74, asirParser.RULE_indexAccessExpr);
         try {
             let alternative: number;
             localContext = new IndexAccessContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 460;
+            this.state = 478;
             this.memberAccessExpr();
-            this.state = 467;
+            this.state = 485;
             this.errorHandler.sync(this);
             alternative = this.interpreter.adaptivePredict(this.tokenStream, 45, this.context);
             while (alternative !== 2 && alternative !== antlr.ATN.INVALID_ALT_NUMBER) {
                 if (alternative === 1) {
                     {
                     {
-                    this.state = 461;
+                    this.state = 479;
                     this.match(asirParser.LBRACKET);
-                    this.state = 462;
+                    this.state = 480;
                     this.expr();
-                    this.state = 463;
+                    this.state = 481;
                     this.match(asirParser.RBRACKET);
                     }
                     }
                 }
-                this.state = 469;
+                this.state = 487;
                 this.errorHandler.sync(this);
                 alternative = this.interpreter.adaptivePredict(this.tokenStream, 45, this.context);
             }
@@ -2158,27 +2268,27 @@ export class asirParser extends antlr.Parser {
     }
     public memberAccessExpr(): MemberAccessExprContext {
         let localContext = new MemberAccessExprContext(this.context, this.state);
-        this.enterRule(localContext, 70, asirParser.RULE_memberAccessExpr);
+        this.enterRule(localContext, 76, asirParser.RULE_memberAccessExpr);
         let _la: number;
         try {
             localContext = new MemberAccessContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 470;
+            this.state = 488;
             this.primaryExpr();
-            this.state = 475;
+            this.state = 493;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while (_la === 12) {
                 {
                 {
-                this.state = 471;
+                this.state = 489;
                 this.match(asirParser.ARROW);
-                this.state = 472;
+                this.state = 490;
                 this.indeterminate();
                 }
                 }
-                this.state = 477;
+                this.state = 495;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -2199,17 +2309,17 @@ export class asirParser extends antlr.Parser {
     }
     public primaryExpr(): PrimaryExprContext {
         let localContext = new PrimaryExprContext(this.context, this.state);
-        this.enterRule(localContext, 72, asirParser.RULE_primaryExpr);
+        this.enterRule(localContext, 78, asirParser.RULE_primaryExpr);
         let _la: number;
         try {
-            this.state = 543;
+            this.state = 561;
             this.errorHandler.sync(this);
             switch (this.interpreter.adaptivePredict(this.tokenStream, 56, this.context) ) {
             case 1:
                 localContext = new IndExprContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 478;
+                this.state = 496;
                 this.indeterminate();
                 }
                 break;
@@ -2217,7 +2327,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new RealContext(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 479;
+                this.state = 497;
                 this.num();
                 }
                 break;
@@ -2225,7 +2335,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new IdExprContext(localContext);
                 this.enterOuterAlt(localContext, 3);
                 {
-                this.state = 480;
+                this.state = 498;
                 this.id();
                 }
                 break;
@@ -2233,93 +2343,93 @@ export class asirParser extends antlr.Parser {
                 localContext = new FCallExprContext(localContext);
                 this.enterOuterAlt(localContext, 4);
                 {
-                this.state = 482;
+                this.state = 500;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 if (_la === 3) {
                     {
-                    this.state = 481;
+                    this.state = 499;
                     (localContext as FCallExprContext)._is_global = this.match(asirParser.COLON2);
                     }
                 }
 
-                this.state = 484;
+                this.state = 502;
                 (localContext as FCallExprContext)._path = this.qualifiedName();
-                this.state = 495;
+                this.state = 513;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 if (_la === 33) {
                     {
-                    this.state = 485;
+                    this.state = 503;
                     this.match(asirParser.LBRANCE);
-                    this.state = 486;
+                    this.state = 504;
                     (localContext as FCallExprContext)._INT = this.match(asirParser.INT);
                     (localContext as FCallExprContext)._diffOrders.push((localContext as FCallExprContext)._INT!);
-                    this.state = 491;
+                    this.state = 509;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                     while (_la === 41) {
                         {
                         {
-                        this.state = 487;
+                        this.state = 505;
                         this.match(asirParser.COMMA);
-                        this.state = 488;
+                        this.state = 506;
                         (localContext as FCallExprContext)._INT = this.match(asirParser.INT);
                         (localContext as FCallExprContext)._diffOrders.push((localContext as FCallExprContext)._INT!);
                         }
                         }
-                        this.state = 493;
+                        this.state = 511;
                         this.errorHandler.sync(this);
                         _la = this.tokenStream.LA(1);
                     }
-                    this.state = 494;
+                    this.state = 512;
                     this.match(asirParser.RBRANCE);
                     }
                 }
 
-                this.state = 497;
+                this.state = 515;
                 this.match(asirParser.LPAREN);
-                this.state = 499;
+                this.state = 517;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 7340063) !== 0)) {
+                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & 7340063) !== 0)) {
                     {
-                    this.state = 498;
+                    this.state = 516;
                     (localContext as FCallExprContext)._args = this.exprlist();
                     }
                 }
 
-                this.state = 510;
+                this.state = 528;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 if (_la === 30) {
                     {
-                    this.state = 501;
+                    this.state = 519;
                     this.match(asirParser.MID);
-                    this.state = 502;
+                    this.state = 520;
                     (localContext as FCallExprContext)._optionPair = this.optionPair();
                     (localContext as FCallExprContext)._options.push((localContext as FCallExprContext)._optionPair!);
-                    this.state = 507;
+                    this.state = 525;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                     while (_la === 41) {
                         {
                         {
-                        this.state = 503;
+                        this.state = 521;
                         this.match(asirParser.COMMA);
-                        this.state = 504;
+                        this.state = 522;
                         (localContext as FCallExprContext)._optionPair = this.optionPair();
                         (localContext as FCallExprContext)._options.push((localContext as FCallExprContext)._optionPair!);
                         }
                         }
-                        this.state = 509;
+                        this.state = 527;
                         this.errorHandler.sync(this);
                         _la = this.tokenStream.LA(1);
                     }
                     }
                 }
 
-                this.state = 512;
+                this.state = 530;
                 this.match(asirParser.RPAREN);
                 }
                 break;
@@ -2327,57 +2437,57 @@ export class asirParser extends antlr.Parser {
                 localContext = new FunctorCallExprContext(localContext);
                 this.enterOuterAlt(localContext, 5);
                 {
-                this.state = 514;
+                this.state = 532;
                 this.match(asirParser.LPAREN);
-                this.state = 515;
+                this.state = 533;
                 this.match(asirParser.MULT);
-                this.state = 516;
+                this.state = 534;
                 (localContext as FunctorCallExprContext)._callee = this.expr();
-                this.state = 517;
+                this.state = 535;
                 this.match(asirParser.RPAREN);
-                this.state = 518;
+                this.state = 536;
                 this.match(asirParser.LPAREN);
-                this.state = 520;
+                this.state = 538;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 7340063) !== 0)) {
+                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & 7340063) !== 0)) {
                     {
-                    this.state = 519;
+                    this.state = 537;
                     (localContext as FunctorCallExprContext)._args = this.exprlist();
                     }
                 }
 
-                this.state = 531;
+                this.state = 549;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
                 if (_la === 30) {
                     {
-                    this.state = 522;
+                    this.state = 540;
                     this.match(asirParser.MID);
-                    this.state = 523;
+                    this.state = 541;
                     (localContext as FunctorCallExprContext)._optionPair = this.optionPair();
                     (localContext as FunctorCallExprContext)._options.push((localContext as FunctorCallExprContext)._optionPair!);
-                    this.state = 528;
+                    this.state = 546;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                     while (_la === 41) {
                         {
                         {
-                        this.state = 524;
+                        this.state = 542;
                         this.match(asirParser.COMMA);
-                        this.state = 525;
+                        this.state = 543;
                         (localContext as FunctorCallExprContext)._optionPair = this.optionPair();
                         (localContext as FunctorCallExprContext)._options.push((localContext as FunctorCallExprContext)._optionPair!);
                         }
                         }
-                        this.state = 530;
+                        this.state = 548;
                         this.errorHandler.sync(this);
                         _la = this.tokenStream.LA(1);
                     }
                     }
                 }
 
-                this.state = 533;
+                this.state = 551;
                 this.match(asirParser.RPAREN);
                 }
                 break;
@@ -2385,11 +2495,11 @@ export class asirParser extends antlr.Parser {
                 localContext = new ParenContext(localContext);
                 this.enterOuterAlt(localContext, 6);
                 {
-                this.state = 535;
+                this.state = 553;
                 this.match(asirParser.LPAREN);
-                this.state = 536;
+                this.state = 554;
                 this.expr();
-                this.state = 537;
+                this.state = 555;
                 this.match(asirParser.RPAREN);
                 }
                 break;
@@ -2397,7 +2507,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new StringLiteralContext(localContext);
                 this.enterOuterAlt(localContext, 7);
                 {
-                this.state = 539;
+                this.state = 557;
                 this.match(asirParser.STRING);
                 }
                 break;
@@ -2405,7 +2515,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new ListLiteralContext(localContext);
                 this.enterOuterAlt(localContext, 8);
                 {
-                this.state = 540;
+                this.state = 558;
                 this.list();
                 }
                 break;
@@ -2413,7 +2523,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new DpLiteralContext(localContext);
                 this.enterOuterAlt(localContext, 9);
                 {
-                this.state = 541;
+                this.state = 559;
                 this.dpoly();
                 }
                 break;
@@ -2421,7 +2531,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new PreChrExprContext(localContext);
                 this.enterOuterAlt(localContext, 10);
                 {
-                this.state = 542;
+                this.state = 560;
                 this.prechar();
                 }
                 break;
@@ -2442,45 +2552,45 @@ export class asirParser extends antlr.Parser {
     }
     public dpoly(): DpolyContext {
         let localContext = new DpolyContext(this.context, this.state);
-        this.enterRule(localContext, 74, asirParser.RULE_dpoly);
+        this.enterRule(localContext, 80, asirParser.RULE_dpoly);
         let _la: number;
         try {
             localContext = new DpContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 545;
+            this.state = 563;
             this.match(asirParser.LTLT);
-            this.state = 546;
+            this.state = 564;
             this.match(asirParser.INT);
-            this.state = 551;
+            this.state = 569;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while (_la === 41) {
                 {
                 {
-                this.state = 547;
+                this.state = 565;
                 this.match(asirParser.COMMA);
-                this.state = 548;
+                this.state = 566;
                 this.match(asirParser.INT);
                 }
                 }
-                this.state = 553;
+                this.state = 571;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
-            this.state = 556;
+            this.state = 574;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             if (_la === 38) {
                 {
-                this.state = 554;
+                this.state = 572;
                 this.match(asirParser.COLON);
-                this.state = 555;
+                this.state = 573;
                 this.match(asirParser.INT);
                 }
             }
 
-            this.state = 558;
+            this.state = 576;
             this.match(asirParser.GTGT);
             }
         }
@@ -2499,37 +2609,37 @@ export class asirParser extends antlr.Parser {
     }
     public rational(): RationalContext {
         let localContext = new RationalContext(this.context, this.state);
-        this.enterRule(localContext, 76, asirParser.RULE_rational);
+        this.enterRule(localContext, 82, asirParser.RULE_rational);
         let _la: number;
         try {
             localContext = new RatContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 561;
+            this.state = 579;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             if (_la === 23) {
                 {
-                this.state = 560;
+                this.state = 578;
                 this.match(asirParser.MINUS);
                 }
             }
 
-            this.state = 563;
+            this.state = 581;
             this.match(asirParser.INT);
-            this.state = 564;
+            this.state = 582;
             this.match(asirParser.DIV);
-            this.state = 566;
+            this.state = 584;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             if (_la === 23) {
                 {
-                this.state = 565;
+                this.state = 583;
                 this.match(asirParser.MINUS);
                 }
             }
 
-            this.state = 568;
+            this.state = 586;
             this.match(asirParser.INT);
             }
         }
@@ -2548,15 +2658,15 @@ export class asirParser extends antlr.Parser {
     }
     public decimal(): DecimalContext {
         let localContext = new DecimalContext(this.context, this.state);
-        this.enterRule(localContext, 78, asirParser.RULE_decimal);
+        this.enterRule(localContext, 84, asirParser.RULE_decimal);
         let _la: number;
         try {
             localContext = new FloatContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 570;
+            this.state = 588;
             _la = this.tokenStream.LA(1);
-            if(!(_la === 84 || _la === 85)) {
+            if(!(_la === 87 || _la === 88)) {
             this.errorHandler.recoverInline(this);
             }
             else {
@@ -2580,16 +2690,16 @@ export class asirParser extends antlr.Parser {
     }
     public num(): NumContext {
         let localContext = new NumContext(this.context, this.state);
-        this.enterRule(localContext, 80, asirParser.RULE_num);
+        this.enterRule(localContext, 86, asirParser.RULE_num);
         try {
-            this.state = 578;
+            this.state = 596;
             this.errorHandler.sync(this);
             switch (this.interpreter.adaptivePredict(this.tokenStream, 61, this.context) ) {
             case 1:
                 localContext = new HexNumContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 572;
+                this.state = 590;
                 this.match(asirParser.HEX);
                 }
                 break;
@@ -2597,7 +2707,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new BitNumContext(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 573;
+                this.state = 591;
                 this.match(asirParser.BIT);
                 }
                 break;
@@ -2605,7 +2715,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new RatNumContext(localContext);
                 this.enterOuterAlt(localContext, 3);
                 {
-                this.state = 574;
+                this.state = 592;
                 this.rational();
                 }
                 break;
@@ -2613,7 +2723,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new DecNumContext(localContext);
                 this.enterOuterAlt(localContext, 4);
                 {
-                this.state = 575;
+                this.state = 593;
                 this.decimal();
                 }
                 break;
@@ -2621,7 +2731,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new ImaNumContext(localContext);
                 this.enterOuterAlt(localContext, 5);
                 {
-                this.state = 576;
+                this.state = 594;
                 this.match(asirParser.IMAGINARY);
                 }
                 break;
@@ -2629,7 +2739,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new GenNumContext(localContext);
                 this.enterOuterAlt(localContext, 6);
                 {
-                this.state = 577;
+                this.state = 595;
                 this.match(asirParser.AEGEN);
                 }
                 break;
@@ -2650,16 +2760,16 @@ export class asirParser extends antlr.Parser {
     }
     public id(): IdContext {
         let localContext = new IdContext(this.context, this.state);
-        this.enterRule(localContext, 82, asirParser.RULE_id);
+        this.enterRule(localContext, 88, asirParser.RULE_id);
         try {
-            this.state = 583;
+            this.state = 601;
             this.errorHandler.sync(this);
             switch (this.tokenStream.LA(1)) {
             case asirParser.BEFORE:
                 localContext = new BefContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 580;
+                this.state = 598;
                 this.match(asirParser.BEFORE);
                 }
                 break;
@@ -2667,7 +2777,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new BefNContext(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 581;
+                this.state = 599;
                 this.match(asirParser.BEFORE_N);
                 }
                 break;
@@ -2675,7 +2785,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new V2IdContext(localContext);
                 this.enterOuterAlt(localContext, 3);
                 {
-                this.state = 582;
+                this.state = 600;
                 this.match(asirParser.VAR_2);
                 }
                 break;
@@ -2698,16 +2808,16 @@ export class asirParser extends antlr.Parser {
     }
     public indeterminate(): IndeterminateContext {
         let localContext = new IndeterminateContext(this.context, this.state);
-        this.enterRule(localContext, 84, asirParser.RULE_indeterminate);
+        this.enterRule(localContext, 90, asirParser.RULE_indeterminate);
         try {
-            this.state = 588;
+            this.state = 606;
             this.errorHandler.sync(this);
             switch (this.tokenStream.LA(1)) {
             case asirParser.ID:
                 localContext = new FuncContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 585;
+                this.state = 603;
                 this.match(asirParser.ID);
                 }
                 break;
@@ -2715,7 +2825,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new AtFuncContext(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 586;
+                this.state = 604;
                 this.match(asirParser.ATFUNC);
                 }
                 break;
@@ -2723,7 +2833,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new ChFuncContext(localContext);
                 this.enterOuterAlt(localContext, 3);
                 {
-                this.state = 587;
+                this.state = 605;
                 this.match(asirParser.NOSTRING);
                 }
                 break;
@@ -2746,25 +2856,25 @@ export class asirParser extends antlr.Parser {
     }
     public list(): ListContext {
         let localContext = new ListContext(this.context, this.state);
-        this.enterRule(localContext, 86, asirParser.RULE_list);
+        this.enterRule(localContext, 92, asirParser.RULE_list);
         let _la: number;
         try {
             localContext = new ListExprContext(localContext);
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 590;
+            this.state = 608;
             this.match(asirParser.LBRACKET);
-            this.state = 592;
+            this.state = 610;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 81)) & ~0x1F) === 0 && ((1 << (_la - 81)) & 7340063) !== 0)) {
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 8065) !== 0) || ((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & 7340063) !== 0)) {
                 {
-                this.state = 591;
+                this.state = 609;
                 this.exprlist();
                 }
             }
 
-            this.state = 594;
+            this.state = 612;
             this.match(asirParser.RBRACKET);
             }
         }
@@ -2783,33 +2893,33 @@ export class asirParser extends antlr.Parser {
     }
     public block(): BlockContext {
         let localContext = new BlockContext(this.context, this.state);
-        this.enterRule(localContext, 88, asirParser.RULE_block);
+        this.enterRule(localContext, 94, asirParser.RULE_block);
         let _la: number;
         try {
-            this.state = 605;
+            this.state = 623;
             this.errorHandler.sync(this);
             switch (this.tokenStream.LA(1)) {
             case asirParser.LBRANCE:
                 localContext = new SentenceContext(localContext);
                 this.enterOuterAlt(localContext, 1);
                 {
-                this.state = 596;
+                this.state = 614;
                 this.match(asirParser.LBRANCE);
-                this.state = 600;
+                this.state = 618;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 4026539953) !== 0) || ((((_la - 67)) & ~0x1F) === 0 && ((1 << (_la - 67)) & 2382888957) !== 0) || ((((_la - 99)) & ~0x1F) === 0 && ((1 << (_la - 99)) & 29) !== 0)) {
+                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 4026539953) !== 0) || ((((_la - 67)) & ~0x1F) === 0 && ((1 << (_la - 67)) & 1883242493) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 59) !== 0)) {
                     {
                     {
-                    this.state = 597;
+                    this.state = 615;
                     this.statement();
                     }
                     }
-                    this.state = 602;
+                    this.state = 620;
                     this.errorHandler.sync(this);
                     _la = this.tokenStream.LA(1);
                 }
-                this.state = 603;
+                this.state = 621;
                 this.match(asirParser.RBRANCE);
                 }
                 break;
@@ -2847,6 +2957,9 @@ export class asirParser extends antlr.Parser {
             case asirParser.LOCAL:
             case asirParser.LOCALF:
             case asirParser.FUNCTION:
+            case asirParser.END:
+            case asirParser.QUIT:
+            case asirParser.DEBUG:
             case asirParser.ATFUNC:
             case asirParser.VAR_2:
             case asirParser.ID:
@@ -2863,7 +2976,7 @@ export class asirParser extends antlr.Parser {
                 localContext = new Sentence1Context(localContext);
                 this.enterOuterAlt(localContext, 2);
                 {
-                this.state = 604;
+                this.state = 622;
                 this.statement();
                 }
                 break;
@@ -2886,23 +2999,23 @@ export class asirParser extends antlr.Parser {
     }
     public qualifiedName(): QualifiedNameContext {
         let localContext = new QualifiedNameContext(this.context, this.state);
-        this.enterRule(localContext, 90, asirParser.RULE_qualifiedName);
+        this.enterRule(localContext, 96, asirParser.RULE_qualifiedName);
         try {
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 609;
+            this.state = 627;
             this.errorHandler.sync(this);
             switch (this.interpreter.adaptivePredict(this.tokenStream, 67, this.context) ) {
             case 1:
                 {
-                this.state = 607;
+                this.state = 625;
                 localContext._moduleName = this.match(asirParser.ID);
-                this.state = 608;
+                this.state = 626;
                 this.match(asirParser.DOT);
                 }
                 break;
             }
-            this.state = 611;
+            this.state = 629;
             localContext._funcName = this.indeterminate();
             }
         }
@@ -2921,29 +3034,29 @@ export class asirParser extends antlr.Parser {
     }
     public dottedIdentifier(): DottedIdentifierContext {
         let localContext = new DottedIdentifierContext(this.context, this.state);
-        this.enterRule(localContext, 92, asirParser.RULE_dottedIdentifier);
+        this.enterRule(localContext, 98, asirParser.RULE_dottedIdentifier);
         let _la: number;
         try {
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 613;
+            this.state = 631;
             this.indeterminate();
-            this.state = 616;
+            this.state = 634;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             do {
                 {
                 {
-                this.state = 614;
+                this.state = 632;
                 this.match(asirParser.DOT);
-                this.state = 615;
+                this.state = 633;
                 this.indeterminate();
                 }
                 }
-                this.state = 618;
+                this.state = 636;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
-            } while (_la === 86);
+            } while (_la === 89);
             }
         }
         catch (re) {
@@ -2961,26 +3074,26 @@ export class asirParser extends antlr.Parser {
     }
     public exprlist(): ExprlistContext {
         let localContext = new ExprlistContext(this.context, this.state);
-        this.enterRule(localContext, 94, asirParser.RULE_exprlist);
+        this.enterRule(localContext, 100, asirParser.RULE_exprlist);
         let _la: number;
         try {
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 620;
+            this.state = 638;
             this.expr();
-            this.state = 625;
+            this.state = 643;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
             while (_la === 41) {
                 {
                 {
-                this.state = 621;
+                this.state = 639;
                 this.match(asirParser.COMMA);
-                this.state = 622;
+                this.state = 640;
                 this.expr();
                 }
                 }
-                this.state = 627;
+                this.state = 645;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -3001,12 +3114,12 @@ export class asirParser extends antlr.Parser {
     }
     public terminator(): TerminatorContext {
         let localContext = new TerminatorContext(this.context, this.state);
-        this.enterRule(localContext, 96, asirParser.RULE_terminator);
+        this.enterRule(localContext, 102, asirParser.RULE_terminator);
         let _la: number;
         try {
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 628;
+            this.state = 646;
             _la = this.tokenStream.LA(1);
             if(!(_la === 39 || _la === 40)) {
             this.errorHandler.recoverInline(this);
@@ -3032,11 +3145,11 @@ export class asirParser extends antlr.Parser {
     }
     public systemPath(): SystemPathContext {
         let localContext = new SystemPathContext(this.context, this.state);
-        this.enterRule(localContext, 98, asirParser.RULE_systemPath);
+        this.enterRule(localContext, 104, asirParser.RULE_systemPath);
         try {
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 630;
+            this.state = 648;
             this.match(asirParser.SYSTEM_PATH_LITERAL);
             }
         }
@@ -3055,27 +3168,27 @@ export class asirParser extends antlr.Parser {
     }
     public elifClause(): ElifClauseContext {
         let localContext = new ElifClauseContext(this.context, this.state);
-        this.enterRule(localContext, 100, asirParser.RULE_elifClause);
+        this.enterRule(localContext, 106, asirParser.RULE_elifClause);
         let _la: number;
         try {
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 632;
+            this.state = 650;
             this.match(asirParser.PELIF);
-            this.state = 633;
+            this.state = 651;
             localContext._condition = this.expr();
-            this.state = 637;
+            this.state = 655;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 4026539953) !== 0) || ((((_la - 67)) & ~0x1F) === 0 && ((1 << (_la - 67)) & 2382888957) !== 0) || ((((_la - 99)) & ~0x1F) === 0 && ((1 << (_la - 99)) & 29) !== 0)) {
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 4026539953) !== 0) || ((((_la - 67)) & ~0x1F) === 0 && ((1 << (_la - 67)) & 1883242493) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 59) !== 0)) {
                 {
                 {
-                this.state = 634;
+                this.state = 652;
                 localContext._statement = this.statement();
                 localContext._statements.push(localContext._statement!);
                 }
                 }
-                this.state = 639;
+                this.state = 657;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -3096,25 +3209,25 @@ export class asirParser extends antlr.Parser {
     }
     public elseClause(): ElseClauseContext {
         let localContext = new ElseClauseContext(this.context, this.state);
-        this.enterRule(localContext, 102, asirParser.RULE_elseClause);
+        this.enterRule(localContext, 108, asirParser.RULE_elseClause);
         let _la: number;
         try {
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 640;
+            this.state = 658;
             this.match(asirParser.PELSE);
-            this.state = 644;
+            this.state = 662;
             this.errorHandler.sync(this);
             _la = this.tokenStream.LA(1);
-            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 4026539953) !== 0) || ((((_la - 67)) & ~0x1F) === 0 && ((1 << (_la - 67)) & 2382888957) !== 0) || ((((_la - 99)) & ~0x1F) === 0 && ((1 << (_la - 99)) & 29) !== 0)) {
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2694840378) !== 0) || ((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & 4026539953) !== 0) || ((((_la - 67)) & ~0x1F) === 0 && ((1 << (_la - 67)) & 1883242493) !== 0) || ((((_la - 101)) & ~0x1F) === 0 && ((1 << (_la - 101)) & 59) !== 0)) {
                 {
                 {
-                this.state = 641;
+                this.state = 659;
                 localContext._statement = this.statement();
                 localContext._statements.push(localContext._statement!);
                 }
                 }
-                this.state = 646;
+                this.state = 664;
                 this.errorHandler.sync(this);
                 _la = this.tokenStream.LA(1);
             }
@@ -3135,15 +3248,15 @@ export class asirParser extends antlr.Parser {
     }
     public optionPair(): OptionPairContext {
         let localContext = new OptionPairContext(this.context, this.state);
-        this.enterRule(localContext, 104, asirParser.RULE_optionPair);
+        this.enterRule(localContext, 110, asirParser.RULE_optionPair);
         try {
             this.enterOuterAlt(localContext, 1);
             {
-            this.state = 647;
+            this.state = 665;
             localContext._key = this.indeterminate();
-            this.state = 648;
+            this.state = 666;
             this.match(asirParser.ASSIGN);
-            this.state = 649;
+            this.state = 667;
             localContext._value = this.expr();
             }
         }
@@ -3162,7 +3275,7 @@ export class asirParser extends antlr.Parser {
     }
 
     public static readonly _serializedATN: number[] = [
-        4,1,104,652,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,
+        4,1,107,670,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,
         7,6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,
         13,2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,
         20,7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,
@@ -3170,240 +3283,247 @@ export class asirParser extends antlr.Parser {
         33,7,33,2,34,7,34,2,35,7,35,2,36,7,36,2,37,7,37,2,38,7,38,2,39,7,
         39,2,40,7,40,2,41,7,41,2,42,7,42,2,43,7,43,2,44,7,44,2,45,7,45,2,
         46,7,46,2,47,7,47,2,48,7,48,2,49,7,49,2,50,7,50,2,51,7,51,2,52,7,
-        52,1,0,5,0,108,8,0,10,0,12,0,111,9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,
-        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,131,8,1,1,2,1,2,
-        1,2,1,2,1,2,3,2,138,8,2,1,3,1,3,1,3,1,3,1,3,1,3,5,3,146,8,3,10,3,
-        12,3,149,9,3,3,3,151,8,3,1,3,3,3,154,8,3,1,3,1,3,1,3,1,3,5,3,160,
-        8,3,10,3,12,3,163,9,3,1,3,5,3,166,8,3,10,3,12,3,169,9,3,1,3,3,3,
-        172,8,3,1,3,1,3,1,3,1,3,1,3,3,3,179,8,3,3,3,181,8,3,1,4,1,4,1,4,
-        1,4,1,4,1,4,5,4,189,8,4,10,4,12,4,192,9,4,3,4,194,8,4,1,4,1,4,1,
-        4,1,5,1,5,1,5,1,5,1,5,1,5,5,5,205,8,5,10,5,12,5,208,9,5,3,5,210,
-        8,5,1,5,1,5,1,5,1,6,1,6,1,6,1,6,1,6,1,6,1,6,3,6,222,8,6,1,7,1,7,
-        1,7,3,7,227,8,7,1,7,1,7,3,7,231,8,7,1,7,1,7,3,7,235,8,7,1,7,1,7,
-        1,7,1,8,1,8,1,8,3,8,243,8,8,1,8,1,8,1,8,1,9,1,9,1,9,1,9,1,9,3,9,
-        253,8,9,1,9,1,9,1,9,1,10,1,10,3,10,260,8,10,1,10,1,10,1,11,1,11,
-        1,11,1,12,1,12,1,12,1,13,1,13,1,13,1,13,1,13,1,13,5,13,276,8,13,
-        10,13,12,13,279,9,13,1,13,1,13,1,13,1,14,1,14,1,14,1,14,5,14,288,
-        8,14,10,14,12,14,291,9,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,
-        3,14,301,8,14,1,15,1,15,1,16,1,16,1,16,1,16,1,16,1,16,5,16,311,8,
-        16,10,16,12,16,314,9,16,1,16,1,16,1,16,1,16,1,16,4,16,321,8,16,11,
-        16,12,16,322,1,16,1,16,1,16,1,16,1,16,1,16,1,16,5,16,332,8,16,10,
-        16,12,16,335,9,16,1,16,1,16,1,16,3,16,340,8,16,1,17,1,17,1,17,1,
-        17,1,17,1,17,3,17,348,8,17,1,18,3,18,351,8,18,1,18,1,18,1,19,1,19,
-        1,19,5,19,358,8,19,10,19,12,19,361,9,19,1,20,1,20,1,20,5,20,366,
-        8,20,10,20,12,20,369,9,20,1,21,1,21,1,21,5,21,374,8,21,10,21,12,
-        21,377,9,21,1,22,1,22,1,22,5,22,382,8,22,10,22,12,22,385,9,22,1,
-        23,1,23,1,23,5,23,390,8,23,10,23,12,23,393,9,23,1,24,1,24,1,24,5,
-        24,398,8,24,10,24,12,24,401,9,24,1,25,1,25,1,25,5,25,406,8,25,10,
-        25,12,25,409,9,25,1,26,1,26,1,26,5,26,414,8,26,10,26,12,26,417,9,
-        26,1,27,1,27,1,27,5,27,422,8,27,10,27,12,27,425,9,27,1,28,1,28,1,
-        28,5,28,430,8,28,10,28,12,28,433,9,28,1,29,1,29,1,29,1,29,1,29,3,
-        29,440,8,29,1,30,1,30,1,30,3,30,445,8,30,1,31,1,31,1,31,3,31,450,
-        8,31,1,31,3,31,453,8,31,1,32,1,32,1,32,1,33,1,33,1,33,1,34,1,34,
-        1,34,1,34,1,34,5,34,466,8,34,10,34,12,34,469,9,34,1,35,1,35,1,35,
-        5,35,474,8,35,10,35,12,35,477,9,35,1,36,1,36,1,36,1,36,3,36,483,
-        8,36,1,36,1,36,1,36,1,36,1,36,5,36,490,8,36,10,36,12,36,493,9,36,
-        1,36,3,36,496,8,36,1,36,1,36,3,36,500,8,36,1,36,1,36,1,36,1,36,5,
-        36,506,8,36,10,36,12,36,509,9,36,3,36,511,8,36,1,36,1,36,1,36,1,
-        36,1,36,1,36,1,36,1,36,3,36,521,8,36,1,36,1,36,1,36,1,36,5,36,527,
-        8,36,10,36,12,36,530,9,36,3,36,532,8,36,1,36,1,36,1,36,1,36,1,36,
-        1,36,1,36,1,36,1,36,1,36,3,36,544,8,36,1,37,1,37,1,37,1,37,5,37,
-        550,8,37,10,37,12,37,553,9,37,1,37,1,37,3,37,557,8,37,1,37,1,37,
-        1,38,3,38,562,8,38,1,38,1,38,1,38,3,38,567,8,38,1,38,1,38,1,39,1,
-        39,1,40,1,40,1,40,1,40,1,40,1,40,3,40,579,8,40,1,41,1,41,1,41,3,
-        41,584,8,41,1,42,1,42,1,42,3,42,589,8,42,1,43,1,43,3,43,593,8,43,
-        1,43,1,43,1,44,1,44,5,44,599,8,44,10,44,12,44,602,9,44,1,44,1,44,
-        3,44,606,8,44,1,45,1,45,3,45,610,8,45,1,45,1,45,1,46,1,46,1,46,4,
-        46,617,8,46,11,46,12,46,618,1,47,1,47,1,47,5,47,624,8,47,10,47,12,
-        47,627,9,47,1,48,1,48,1,49,1,49,1,50,1,50,1,50,5,50,636,8,50,10,
-        50,12,50,639,9,50,1,51,1,51,5,51,643,8,51,10,51,12,51,646,9,51,1,
-        52,1,52,1,52,1,52,1,52,0,0,53,0,2,4,6,8,10,12,14,16,18,20,22,24,
-        26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,
-        70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,0,13,1,
-        0,92,94,1,0,75,79,2,0,6,11,28,28,1,0,61,62,1,0,58,59,1,0,56,57,1,
-        0,48,54,1,0,13,18,1,0,22,23,1,0,24,26,1,0,4,5,1,0,84,85,1,0,39,40,
-        702,0,109,1,0,0,0,2,130,1,0,0,0,4,137,1,0,0,0,6,180,1,0,0,0,8,182,
-        1,0,0,0,10,198,1,0,0,0,12,214,1,0,0,0,14,223,1,0,0,0,16,239,1,0,
-        0,0,18,247,1,0,0,0,20,257,1,0,0,0,22,263,1,0,0,0,24,266,1,0,0,0,
-        26,269,1,0,0,0,28,300,1,0,0,0,30,302,1,0,0,0,32,339,1,0,0,0,34,341,
-        1,0,0,0,36,350,1,0,0,0,38,354,1,0,0,0,40,362,1,0,0,0,42,370,1,0,
-        0,0,44,378,1,0,0,0,46,386,1,0,0,0,48,394,1,0,0,0,50,402,1,0,0,0,
-        52,410,1,0,0,0,54,418,1,0,0,0,56,426,1,0,0,0,58,439,1,0,0,0,60,441,
-        1,0,0,0,62,449,1,0,0,0,64,454,1,0,0,0,66,457,1,0,0,0,68,460,1,0,
-        0,0,70,470,1,0,0,0,72,543,1,0,0,0,74,545,1,0,0,0,76,561,1,0,0,0,
-        78,570,1,0,0,0,80,578,1,0,0,0,82,583,1,0,0,0,84,588,1,0,0,0,86,590,
-        1,0,0,0,88,605,1,0,0,0,90,609,1,0,0,0,92,613,1,0,0,0,94,620,1,0,
-        0,0,96,628,1,0,0,0,98,630,1,0,0,0,100,632,1,0,0,0,102,640,1,0,0,
-        0,104,647,1,0,0,0,106,108,3,2,1,0,107,106,1,0,0,0,108,111,1,0,0,
-        0,109,107,1,0,0,0,109,110,1,0,0,0,110,112,1,0,0,0,111,109,1,0,0,
-        0,112,113,5,0,0,1,113,1,1,0,0,0,114,115,3,30,15,0,115,116,3,96,48,
-        0,116,131,1,0,0,0,117,131,3,96,48,0,118,131,3,8,4,0,119,131,3,10,
-        5,0,120,131,3,12,6,0,121,131,3,14,7,0,122,131,3,16,8,0,123,131,3,
-        18,9,0,124,131,3,20,10,0,125,131,3,24,12,0,126,131,3,22,11,0,127,
-        131,3,26,13,0,128,131,3,28,14,0,129,131,3,6,3,0,130,114,1,0,0,0,
-        130,117,1,0,0,0,130,118,1,0,0,0,130,119,1,0,0,0,130,120,1,0,0,0,
-        130,121,1,0,0,0,130,122,1,0,0,0,130,123,1,0,0,0,130,124,1,0,0,0,
-        130,125,1,0,0,0,130,126,1,0,0,0,130,127,1,0,0,0,130,128,1,0,0,0,
-        130,129,1,0,0,0,131,3,1,0,0,0,132,133,5,101,0,0,133,138,5,83,0,0,
-        134,135,5,83,0,0,135,136,5,100,0,0,136,138,5,83,0,0,137,132,1,0,
-        0,0,137,134,1,0,0,0,138,5,1,0,0,0,139,140,5,99,0,0,140,153,5,83,
-        0,0,141,150,5,31,0,0,142,147,5,83,0,0,143,144,5,41,0,0,144,146,5,
-        83,0,0,145,143,1,0,0,0,146,149,1,0,0,0,147,145,1,0,0,0,147,148,1,
-        0,0,0,148,151,1,0,0,0,149,147,1,0,0,0,150,142,1,0,0,0,150,151,1,
-        0,0,0,151,152,1,0,0,0,152,154,5,32,0,0,153,141,1,0,0,0,153,154,1,
-        0,0,0,154,155,1,0,0,0,155,181,3,30,15,0,156,157,7,0,0,0,157,161,
-        3,30,15,0,158,160,3,2,1,0,159,158,1,0,0,0,160,163,1,0,0,0,161,159,
-        1,0,0,0,161,162,1,0,0,0,162,167,1,0,0,0,163,161,1,0,0,0,164,166,
-        3,100,50,0,165,164,1,0,0,0,166,169,1,0,0,0,167,165,1,0,0,0,167,168,
-        1,0,0,0,168,171,1,0,0,0,169,167,1,0,0,0,170,172,3,102,51,0,171,170,
-        1,0,0,0,171,172,1,0,0,0,172,173,1,0,0,0,173,174,5,97,0,0,174,181,
-        1,0,0,0,175,178,5,98,0,0,176,179,3,98,49,0,177,179,5,102,0,0,178,
-        176,1,0,0,0,178,177,1,0,0,0,179,181,1,0,0,0,180,139,1,0,0,0,180,
-        156,1,0,0,0,180,175,1,0,0,0,181,7,1,0,0,0,182,183,5,63,0,0,183,184,
-        3,84,42,0,184,193,5,31,0,0,185,190,5,83,0,0,186,187,5,41,0,0,187,
-        189,5,83,0,0,188,186,1,0,0,0,189,192,1,0,0,0,190,188,1,0,0,0,190,
-        191,1,0,0,0,191,194,1,0,0,0,192,190,1,0,0,0,193,185,1,0,0,0,193,
-        194,1,0,0,0,194,195,1,0,0,0,195,196,5,32,0,0,196,197,3,88,44,0,197,
-        9,1,0,0,0,198,199,5,80,0,0,199,200,3,84,42,0,200,209,5,31,0,0,201,
-        206,3,84,42,0,202,203,5,41,0,0,203,205,3,84,42,0,204,202,1,0,0,0,
-        205,208,1,0,0,0,206,204,1,0,0,0,206,207,1,0,0,0,207,210,1,0,0,0,
-        208,206,1,0,0,0,209,201,1,0,0,0,209,210,1,0,0,0,210,211,1,0,0,0,
-        211,212,5,32,0,0,212,213,3,96,48,0,213,11,1,0,0,0,214,215,5,64,0,
-        0,215,216,5,31,0,0,216,217,3,30,15,0,217,218,5,32,0,0,218,221,3,
-        88,44,0,219,220,5,68,0,0,220,222,3,88,44,0,221,219,1,0,0,0,221,222,
-        1,0,0,0,222,13,1,0,0,0,223,224,5,65,0,0,224,226,5,31,0,0,225,227,
-        3,94,47,0,226,225,1,0,0,0,226,227,1,0,0,0,227,228,1,0,0,0,228,230,
-        5,39,0,0,229,231,3,94,47,0,230,229,1,0,0,0,230,231,1,0,0,0,231,232,
-        1,0,0,0,232,234,5,39,0,0,233,235,3,94,47,0,234,233,1,0,0,0,234,235,
-        1,0,0,0,235,236,1,0,0,0,236,237,5,32,0,0,237,238,3,88,44,0,238,15,
-        1,0,0,0,239,240,5,66,0,0,240,242,5,31,0,0,241,243,3,94,47,0,242,
-        241,1,0,0,0,242,243,1,0,0,0,243,244,1,0,0,0,244,245,5,32,0,0,245,
-        246,3,88,44,0,246,17,1,0,0,0,247,248,5,67,0,0,248,249,3,88,44,0,
-        249,250,5,66,0,0,250,252,5,31,0,0,251,253,3,94,47,0,252,251,1,0,
-        0,0,252,253,1,0,0,0,253,254,1,0,0,0,254,255,5,32,0,0,255,256,5,39,
-        0,0,256,19,1,0,0,0,257,259,5,69,0,0,258,260,3,30,15,0,259,258,1,
-        0,0,0,259,260,1,0,0,0,260,261,1,0,0,0,261,262,3,96,48,0,262,21,1,
-        0,0,0,263,264,5,70,0,0,264,265,3,96,48,0,265,23,1,0,0,0,266,267,
-        5,71,0,0,267,268,3,96,48,0,268,25,1,0,0,0,269,270,5,72,0,0,270,271,
-        3,84,42,0,271,272,5,33,0,0,272,277,3,84,42,0,273,274,5,41,0,0,274,
-        276,3,84,42,0,275,273,1,0,0,0,276,279,1,0,0,0,277,275,1,0,0,0,277,
-        278,1,0,0,0,278,280,1,0,0,0,279,277,1,0,0,0,280,281,5,34,0,0,281,
-        282,3,96,48,0,282,27,1,0,0,0,283,284,7,1,0,0,284,289,3,84,42,0,285,
-        286,5,41,0,0,286,288,3,84,42,0,287,285,1,0,0,0,288,291,1,0,0,0,289,
-        287,1,0,0,0,289,290,1,0,0,0,290,292,1,0,0,0,291,289,1,0,0,0,292,
-        293,3,96,48,0,293,301,1,0,0,0,294,295,5,73,0,0,295,296,3,84,42,0,
-        296,297,3,96,48,0,297,301,1,0,0,0,298,299,5,74,0,0,299,301,3,96,
-        48,0,300,283,1,0,0,0,300,294,1,0,0,0,300,298,1,0,0,0,301,29,1,0,
-        0,0,302,303,3,32,16,0,303,31,1,0,0,0,304,340,3,34,17,0,305,312,5,
-        83,0,0,306,307,5,35,0,0,307,308,3,30,15,0,308,309,5,36,0,0,309,311,
-        1,0,0,0,310,306,1,0,0,0,311,314,1,0,0,0,312,310,1,0,0,0,312,313,
-        1,0,0,0,313,315,1,0,0,0,314,312,1,0,0,0,315,316,7,2,0,0,316,340,
-        3,32,16,0,317,320,5,83,0,0,318,319,5,12,0,0,319,321,3,84,42,0,320,
-        318,1,0,0,0,321,322,1,0,0,0,322,320,1,0,0,0,322,323,1,0,0,0,323,
-        324,1,0,0,0,324,325,7,2,0,0,325,326,3,32,16,0,326,340,1,0,0,0,327,
-        328,5,35,0,0,328,333,5,83,0,0,329,330,5,41,0,0,330,332,5,83,0,0,
-        331,329,1,0,0,0,332,335,1,0,0,0,333,331,1,0,0,0,333,334,1,0,0,0,
-        334,336,1,0,0,0,335,333,1,0,0,0,336,337,5,36,0,0,337,338,7,2,0,0,
-        338,340,3,32,16,0,339,304,1,0,0,0,339,305,1,0,0,0,339,317,1,0,0,
-        0,339,327,1,0,0,0,340,33,1,0,0,0,341,347,3,36,18,0,342,343,5,37,
-        0,0,343,344,3,30,15,0,344,345,5,38,0,0,345,346,3,30,15,0,346,348,
-        1,0,0,0,347,342,1,0,0,0,347,348,1,0,0,0,348,35,1,0,0,0,349,351,5,
-        29,0,0,350,349,1,0,0,0,350,351,1,0,0,0,351,352,1,0,0,0,352,353,3,
-        38,19,0,353,37,1,0,0,0,354,359,3,40,20,0,355,356,7,3,0,0,356,358,
-        3,40,20,0,357,355,1,0,0,0,358,361,1,0,0,0,359,357,1,0,0,0,359,360,
-        1,0,0,0,360,39,1,0,0,0,361,359,1,0,0,0,362,367,3,42,21,0,363,364,
-        5,55,0,0,364,366,3,42,21,0,365,363,1,0,0,0,366,369,1,0,0,0,367,365,
-        1,0,0,0,367,368,1,0,0,0,368,41,1,0,0,0,369,367,1,0,0,0,370,375,3,
-        44,22,0,371,372,7,4,0,0,372,374,3,44,22,0,373,371,1,0,0,0,374,377,
-        1,0,0,0,375,373,1,0,0,0,375,376,1,0,0,0,376,43,1,0,0,0,377,375,1,
-        0,0,0,378,383,3,46,23,0,379,380,7,5,0,0,380,382,3,46,23,0,381,379,
-        1,0,0,0,382,385,1,0,0,0,383,381,1,0,0,0,383,384,1,0,0,0,384,45,1,
-        0,0,0,385,383,1,0,0,0,386,391,3,48,24,0,387,388,7,6,0,0,388,390,
-        3,48,24,0,389,387,1,0,0,0,390,393,1,0,0,0,391,389,1,0,0,0,391,392,
-        1,0,0,0,392,47,1,0,0,0,393,391,1,0,0,0,394,399,3,50,25,0,395,396,
-        5,20,0,0,396,398,3,50,25,0,397,395,1,0,0,0,398,401,1,0,0,0,399,397,
-        1,0,0,0,399,400,1,0,0,0,400,49,1,0,0,0,401,399,1,0,0,0,402,407,3,
-        52,26,0,403,404,5,19,0,0,404,406,3,52,26,0,405,403,1,0,0,0,406,409,
-        1,0,0,0,407,405,1,0,0,0,407,408,1,0,0,0,408,51,1,0,0,0,409,407,1,
-        0,0,0,410,415,3,54,27,0,411,412,7,7,0,0,412,414,3,54,27,0,413,411,
-        1,0,0,0,414,417,1,0,0,0,415,413,1,0,0,0,415,416,1,0,0,0,416,53,1,
-        0,0,0,417,415,1,0,0,0,418,423,3,56,28,0,419,420,7,8,0,0,420,422,
-        3,56,28,0,421,419,1,0,0,0,422,425,1,0,0,0,423,421,1,0,0,0,423,424,
-        1,0,0,0,424,55,1,0,0,0,425,423,1,0,0,0,426,431,3,58,29,0,427,428,
-        7,9,0,0,428,430,3,58,29,0,429,427,1,0,0,0,430,433,1,0,0,0,431,429,
-        1,0,0,0,431,432,1,0,0,0,432,57,1,0,0,0,433,431,1,0,0,0,434,435,5,
-        23,0,0,435,440,3,58,29,0,436,437,5,21,0,0,437,440,3,58,29,0,438,
-        440,3,60,30,0,439,434,1,0,0,0,439,436,1,0,0,0,439,438,1,0,0,0,440,
-        59,1,0,0,0,441,444,3,62,31,0,442,443,5,27,0,0,443,445,3,58,29,0,
-        444,442,1,0,0,0,444,445,1,0,0,0,445,61,1,0,0,0,446,450,3,66,33,0,
-        447,450,3,64,32,0,448,450,3,68,34,0,449,446,1,0,0,0,449,447,1,0,
-        0,0,449,448,1,0,0,0,450,452,1,0,0,0,451,453,5,21,0,0,452,451,1,0,
-        0,0,452,453,1,0,0,0,453,63,1,0,0,0,454,455,7,10,0,0,455,456,3,68,
-        34,0,456,65,1,0,0,0,457,458,3,68,34,0,458,459,7,10,0,0,459,67,1,
-        0,0,0,460,467,3,70,35,0,461,462,5,35,0,0,462,463,3,30,15,0,463,464,
-        5,36,0,0,464,466,1,0,0,0,465,461,1,0,0,0,466,469,1,0,0,0,467,465,
-        1,0,0,0,467,468,1,0,0,0,468,69,1,0,0,0,469,467,1,0,0,0,470,475,3,
-        72,36,0,471,472,5,12,0,0,472,474,3,84,42,0,473,471,1,0,0,0,474,477,
-        1,0,0,0,475,473,1,0,0,0,475,476,1,0,0,0,476,71,1,0,0,0,477,475,1,
-        0,0,0,478,544,3,84,42,0,479,544,3,80,40,0,480,544,3,82,41,0,481,
-        483,5,3,0,0,482,481,1,0,0,0,482,483,1,0,0,0,483,484,1,0,0,0,484,
-        495,3,90,45,0,485,486,5,33,0,0,486,491,5,85,0,0,487,488,5,41,0,0,
-        488,490,5,85,0,0,489,487,1,0,0,0,490,493,1,0,0,0,491,489,1,0,0,0,
-        491,492,1,0,0,0,492,494,1,0,0,0,493,491,1,0,0,0,494,496,5,34,0,0,
-        495,485,1,0,0,0,495,496,1,0,0,0,496,497,1,0,0,0,497,499,5,31,0,0,
-        498,500,3,94,47,0,499,498,1,0,0,0,499,500,1,0,0,0,500,510,1,0,0,
-        0,501,502,5,30,0,0,502,507,3,104,52,0,503,504,5,41,0,0,504,506,3,
-        104,52,0,505,503,1,0,0,0,506,509,1,0,0,0,507,505,1,0,0,0,507,508,
-        1,0,0,0,508,511,1,0,0,0,509,507,1,0,0,0,510,501,1,0,0,0,510,511,
-        1,0,0,0,511,512,1,0,0,0,512,513,5,32,0,0,513,544,1,0,0,0,514,515,
-        5,31,0,0,515,516,5,24,0,0,516,517,3,30,15,0,517,518,5,32,0,0,518,
-        520,5,31,0,0,519,521,3,94,47,0,520,519,1,0,0,0,520,521,1,0,0,0,521,
-        531,1,0,0,0,522,523,5,30,0,0,523,528,3,104,52,0,524,525,5,41,0,0,
-        525,527,3,104,52,0,526,524,1,0,0,0,527,530,1,0,0,0,528,526,1,0,0,
-        0,528,529,1,0,0,0,529,532,1,0,0,0,530,528,1,0,0,0,531,522,1,0,0,
-        0,531,532,1,0,0,0,532,533,1,0,0,0,533,534,5,32,0,0,534,544,1,0,0,
-        0,535,536,5,31,0,0,536,537,3,30,15,0,537,538,5,32,0,0,538,544,1,
-        0,0,0,539,544,5,102,0,0,540,544,3,86,43,0,541,544,3,74,37,0,542,
-        544,3,4,2,0,543,478,1,0,0,0,543,479,1,0,0,0,543,480,1,0,0,0,543,
-        482,1,0,0,0,543,514,1,0,0,0,543,535,1,0,0,0,543,539,1,0,0,0,543,
-        540,1,0,0,0,543,541,1,0,0,0,543,542,1,0,0,0,544,73,1,0,0,0,545,546,
-        5,1,0,0,546,551,5,85,0,0,547,548,5,41,0,0,548,550,5,85,0,0,549,547,
-        1,0,0,0,550,553,1,0,0,0,551,549,1,0,0,0,551,552,1,0,0,0,552,556,
-        1,0,0,0,553,551,1,0,0,0,554,555,5,38,0,0,555,557,5,85,0,0,556,554,
-        1,0,0,0,556,557,1,0,0,0,557,558,1,0,0,0,558,559,5,2,0,0,559,75,1,
-        0,0,0,560,562,5,23,0,0,561,560,1,0,0,0,561,562,1,0,0,0,562,563,1,
-        0,0,0,563,564,5,85,0,0,564,566,5,25,0,0,565,567,5,23,0,0,566,565,
-        1,0,0,0,566,567,1,0,0,0,567,568,1,0,0,0,568,569,5,85,0,0,569,77,
-        1,0,0,0,570,571,7,11,0,0,571,79,1,0,0,0,572,579,5,42,0,0,573,579,
-        5,43,0,0,574,579,3,76,38,0,575,579,3,78,39,0,576,579,5,44,0,0,577,
-        579,5,45,0,0,578,572,1,0,0,0,578,573,1,0,0,0,578,574,1,0,0,0,578,
-        575,1,0,0,0,578,576,1,0,0,0,578,577,1,0,0,0,579,81,1,0,0,0,580,584,
-        5,46,0,0,581,584,5,47,0,0,582,584,5,82,0,0,583,580,1,0,0,0,583,581,
-        1,0,0,0,583,582,1,0,0,0,584,83,1,0,0,0,585,589,5,83,0,0,586,589,
-        5,81,0,0,587,589,5,103,0,0,588,585,1,0,0,0,588,586,1,0,0,0,588,587,
-        1,0,0,0,589,85,1,0,0,0,590,592,5,35,0,0,591,593,3,94,47,0,592,591,
-        1,0,0,0,592,593,1,0,0,0,593,594,1,0,0,0,594,595,5,36,0,0,595,87,
-        1,0,0,0,596,600,5,33,0,0,597,599,3,2,1,0,598,597,1,0,0,0,599,602,
-        1,0,0,0,600,598,1,0,0,0,600,601,1,0,0,0,601,603,1,0,0,0,602,600,
-        1,0,0,0,603,606,5,34,0,0,604,606,3,2,1,0,605,596,1,0,0,0,605,604,
-        1,0,0,0,606,89,1,0,0,0,607,608,5,83,0,0,608,610,5,86,0,0,609,607,
-        1,0,0,0,609,610,1,0,0,0,610,611,1,0,0,0,611,612,3,84,42,0,612,91,
-        1,0,0,0,613,616,3,84,42,0,614,615,5,86,0,0,615,617,3,84,42,0,616,
-        614,1,0,0,0,617,618,1,0,0,0,618,616,1,0,0,0,618,619,1,0,0,0,619,
-        93,1,0,0,0,620,625,3,30,15,0,621,622,5,41,0,0,622,624,3,30,15,0,
-        623,621,1,0,0,0,624,627,1,0,0,0,625,623,1,0,0,0,625,626,1,0,0,0,
-        626,95,1,0,0,0,627,625,1,0,0,0,628,629,7,12,0,0,629,97,1,0,0,0,630,
-        631,5,104,0,0,631,99,1,0,0,0,632,633,5,96,0,0,633,637,3,30,15,0,
-        634,636,3,2,1,0,635,634,1,0,0,0,636,639,1,0,0,0,637,635,1,0,0,0,
-        637,638,1,0,0,0,638,101,1,0,0,0,639,637,1,0,0,0,640,644,5,95,0,0,
-        641,643,3,2,1,0,642,641,1,0,0,0,643,646,1,0,0,0,644,642,1,0,0,0,
-        644,645,1,0,0,0,645,103,1,0,0,0,646,644,1,0,0,0,647,648,3,84,42,
-        0,648,649,5,28,0,0,649,650,3,30,15,0,650,105,1,0,0,0,72,109,130,
-        137,147,150,153,161,167,171,178,180,190,193,206,209,221,226,230,
-        234,242,252,259,277,289,300,312,322,333,339,347,350,359,367,375,
-        383,391,399,407,415,423,431,439,444,449,452,467,475,482,491,495,
-        499,507,510,520,528,531,543,551,556,561,566,578,583,588,592,600,
-        605,609,618,625,637,644
+        52,2,53,7,53,2,54,7,54,2,55,7,55,1,0,5,0,114,8,0,10,0,12,0,117,9,
+        0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,3,1,140,8,1,1,2,1,2,1,2,1,2,1,2,3,2,147,8,
+        2,1,3,1,3,1,3,1,3,1,3,1,3,5,3,155,8,3,10,3,12,3,158,9,3,3,3,160,
+        8,3,1,3,3,3,163,8,3,1,3,1,3,1,3,1,3,5,3,169,8,3,10,3,12,3,172,9,
+        3,1,3,5,3,175,8,3,10,3,12,3,178,9,3,1,3,3,3,181,8,3,1,3,1,3,1,3,
+        1,3,1,3,3,3,188,8,3,3,3,190,8,3,1,4,1,4,1,4,1,4,1,4,1,4,5,4,198,
+        8,4,10,4,12,4,201,9,4,3,4,203,8,4,1,4,1,4,1,4,1,5,1,5,1,5,1,5,1,
+        5,1,5,5,5,214,8,5,10,5,12,5,217,9,5,3,5,219,8,5,1,5,1,5,1,5,1,6,
+        1,6,1,6,1,6,1,6,1,6,1,6,3,6,231,8,6,1,7,1,7,1,7,3,7,236,8,7,1,7,
+        1,7,3,7,240,8,7,1,7,1,7,3,7,244,8,7,1,7,1,7,1,7,1,8,1,8,1,8,3,8,
+        252,8,8,1,8,1,8,1,8,1,9,1,9,1,9,1,9,1,9,3,9,262,8,9,1,9,1,9,1,9,
+        1,10,1,10,3,10,269,8,10,1,10,1,10,1,11,1,11,1,11,1,12,1,12,1,12,
+        1,13,1,13,1,13,1,13,1,13,1,13,5,13,285,8,13,10,13,12,13,288,9,13,
+        1,13,1,13,1,13,1,14,1,14,1,14,1,15,1,15,1,15,1,16,1,16,1,16,1,17,
+        1,17,1,17,1,17,5,17,306,8,17,10,17,12,17,309,9,17,1,17,1,17,1,17,
+        1,17,1,17,1,17,1,17,1,17,3,17,319,8,17,1,18,1,18,1,19,1,19,1,19,
+        1,19,1,19,1,19,5,19,329,8,19,10,19,12,19,332,9,19,1,19,1,19,1,19,
+        1,19,1,19,4,19,339,8,19,11,19,12,19,340,1,19,1,19,1,19,1,19,1,19,
+        1,19,1,19,5,19,350,8,19,10,19,12,19,353,9,19,1,19,1,19,1,19,3,19,
+        358,8,19,1,20,1,20,1,20,1,20,1,20,1,20,3,20,366,8,20,1,21,3,21,369,
+        8,21,1,21,1,21,1,22,1,22,1,22,5,22,376,8,22,10,22,12,22,379,9,22,
+        1,23,1,23,1,23,5,23,384,8,23,10,23,12,23,387,9,23,1,24,1,24,1,24,
+        5,24,392,8,24,10,24,12,24,395,9,24,1,25,1,25,1,25,5,25,400,8,25,
+        10,25,12,25,403,9,25,1,26,1,26,1,26,5,26,408,8,26,10,26,12,26,411,
+        9,26,1,27,1,27,1,27,5,27,416,8,27,10,27,12,27,419,9,27,1,28,1,28,
+        1,28,5,28,424,8,28,10,28,12,28,427,9,28,1,29,1,29,1,29,5,29,432,
+        8,29,10,29,12,29,435,9,29,1,30,1,30,1,30,5,30,440,8,30,10,30,12,
+        30,443,9,30,1,31,1,31,1,31,5,31,448,8,31,10,31,12,31,451,9,31,1,
+        32,1,32,1,32,1,32,1,32,3,32,458,8,32,1,33,1,33,1,33,3,33,463,8,33,
+        1,34,1,34,1,34,3,34,468,8,34,1,34,3,34,471,8,34,1,35,1,35,1,35,1,
+        36,1,36,1,36,1,37,1,37,1,37,1,37,1,37,5,37,484,8,37,10,37,12,37,
+        487,9,37,1,38,1,38,1,38,5,38,492,8,38,10,38,12,38,495,9,38,1,39,
+        1,39,1,39,1,39,3,39,501,8,39,1,39,1,39,1,39,1,39,1,39,5,39,508,8,
+        39,10,39,12,39,511,9,39,1,39,3,39,514,8,39,1,39,1,39,3,39,518,8,
+        39,1,39,1,39,1,39,1,39,5,39,524,8,39,10,39,12,39,527,9,39,3,39,529,
+        8,39,1,39,1,39,1,39,1,39,1,39,1,39,1,39,1,39,3,39,539,8,39,1,39,
+        1,39,1,39,1,39,5,39,545,8,39,10,39,12,39,548,9,39,3,39,550,8,39,
+        1,39,1,39,1,39,1,39,1,39,1,39,1,39,1,39,1,39,1,39,3,39,562,8,39,
+        1,40,1,40,1,40,1,40,5,40,568,8,40,10,40,12,40,571,9,40,1,40,1,40,
+        3,40,575,8,40,1,40,1,40,1,41,3,41,580,8,41,1,41,1,41,1,41,3,41,585,
+        8,41,1,41,1,41,1,42,1,42,1,43,1,43,1,43,1,43,1,43,1,43,3,43,597,
+        8,43,1,44,1,44,1,44,3,44,602,8,44,1,45,1,45,1,45,3,45,607,8,45,1,
+        46,1,46,3,46,611,8,46,1,46,1,46,1,47,1,47,5,47,617,8,47,10,47,12,
+        47,620,9,47,1,47,1,47,3,47,624,8,47,1,48,1,48,3,48,628,8,48,1,48,
+        1,48,1,49,1,49,1,49,4,49,635,8,49,11,49,12,49,636,1,50,1,50,1,50,
+        5,50,642,8,50,10,50,12,50,645,9,50,1,51,1,51,1,52,1,52,1,53,1,53,
+        1,53,5,53,654,8,53,10,53,12,53,657,9,53,1,54,1,54,5,54,661,8,54,
+        10,54,12,54,664,9,54,1,55,1,55,1,55,1,55,1,55,0,0,56,0,2,4,6,8,10,
+        12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,
+        56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,
+        100,102,104,106,108,110,0,13,1,0,95,97,1,0,75,79,2,0,6,11,28,28,
+        1,0,60,62,1,0,58,59,1,0,56,57,1,0,48,54,1,0,13,18,1,0,22,23,1,0,
+        24,26,1,0,4,5,1,0,87,88,1,0,39,40,720,0,115,1,0,0,0,2,139,1,0,0,
+        0,4,146,1,0,0,0,6,189,1,0,0,0,8,191,1,0,0,0,10,207,1,0,0,0,12,223,
+        1,0,0,0,14,232,1,0,0,0,16,248,1,0,0,0,18,256,1,0,0,0,20,266,1,0,
+        0,0,22,272,1,0,0,0,24,275,1,0,0,0,26,278,1,0,0,0,28,292,1,0,0,0,
+        30,295,1,0,0,0,32,298,1,0,0,0,34,318,1,0,0,0,36,320,1,0,0,0,38,357,
+        1,0,0,0,40,359,1,0,0,0,42,368,1,0,0,0,44,372,1,0,0,0,46,380,1,0,
+        0,0,48,388,1,0,0,0,50,396,1,0,0,0,52,404,1,0,0,0,54,412,1,0,0,0,
+        56,420,1,0,0,0,58,428,1,0,0,0,60,436,1,0,0,0,62,444,1,0,0,0,64,457,
+        1,0,0,0,66,459,1,0,0,0,68,467,1,0,0,0,70,472,1,0,0,0,72,475,1,0,
+        0,0,74,478,1,0,0,0,76,488,1,0,0,0,78,561,1,0,0,0,80,563,1,0,0,0,
+        82,579,1,0,0,0,84,588,1,0,0,0,86,596,1,0,0,0,88,601,1,0,0,0,90,606,
+        1,0,0,0,92,608,1,0,0,0,94,623,1,0,0,0,96,627,1,0,0,0,98,631,1,0,
+        0,0,100,638,1,0,0,0,102,646,1,0,0,0,104,648,1,0,0,0,106,650,1,0,
+        0,0,108,658,1,0,0,0,110,665,1,0,0,0,112,114,3,2,1,0,113,112,1,0,
+        0,0,114,117,1,0,0,0,115,113,1,0,0,0,115,116,1,0,0,0,116,118,1,0,
+        0,0,117,115,1,0,0,0,118,119,5,0,0,1,119,1,1,0,0,0,120,121,3,36,18,
+        0,121,122,3,102,51,0,122,140,1,0,0,0,123,140,3,102,51,0,124,140,
+        3,8,4,0,125,140,3,10,5,0,126,140,3,12,6,0,127,140,3,14,7,0,128,140,
+        3,16,8,0,129,140,3,18,9,0,130,140,3,20,10,0,131,140,3,24,12,0,132,
+        140,3,22,11,0,133,140,3,26,13,0,134,140,3,28,14,0,135,140,3,30,15,
+        0,136,140,3,32,16,0,137,140,3,34,17,0,138,140,3,6,3,0,139,120,1,
+        0,0,0,139,123,1,0,0,0,139,124,1,0,0,0,139,125,1,0,0,0,139,126,1,
+        0,0,0,139,127,1,0,0,0,139,128,1,0,0,0,139,129,1,0,0,0,139,130,1,
+        0,0,0,139,131,1,0,0,0,139,132,1,0,0,0,139,133,1,0,0,0,139,134,1,
+        0,0,0,139,135,1,0,0,0,139,136,1,0,0,0,139,137,1,0,0,0,139,138,1,
+        0,0,0,140,3,1,0,0,0,141,142,5,104,0,0,142,147,5,86,0,0,143,144,5,
+        86,0,0,144,145,5,103,0,0,145,147,5,86,0,0,146,141,1,0,0,0,146,143,
+        1,0,0,0,147,5,1,0,0,0,148,149,5,102,0,0,149,162,5,86,0,0,150,159,
+        5,31,0,0,151,156,5,86,0,0,152,153,5,41,0,0,153,155,5,86,0,0,154,
+        152,1,0,0,0,155,158,1,0,0,0,156,154,1,0,0,0,156,157,1,0,0,0,157,
+        160,1,0,0,0,158,156,1,0,0,0,159,151,1,0,0,0,159,160,1,0,0,0,160,
+        161,1,0,0,0,161,163,5,32,0,0,162,150,1,0,0,0,162,163,1,0,0,0,163,
+        164,1,0,0,0,164,190,3,36,18,0,165,166,7,0,0,0,166,170,3,36,18,0,
+        167,169,3,2,1,0,168,167,1,0,0,0,169,172,1,0,0,0,170,168,1,0,0,0,
+        170,171,1,0,0,0,171,176,1,0,0,0,172,170,1,0,0,0,173,175,3,106,53,
+        0,174,173,1,0,0,0,175,178,1,0,0,0,176,174,1,0,0,0,176,177,1,0,0,
+        0,177,180,1,0,0,0,178,176,1,0,0,0,179,181,3,108,54,0,180,179,1,0,
+        0,0,180,181,1,0,0,0,181,182,1,0,0,0,182,183,5,100,0,0,183,190,1,
+        0,0,0,184,187,5,101,0,0,185,188,3,104,52,0,186,188,5,105,0,0,187,
+        185,1,0,0,0,187,186,1,0,0,0,188,190,1,0,0,0,189,148,1,0,0,0,189,
+        165,1,0,0,0,189,184,1,0,0,0,190,7,1,0,0,0,191,192,5,63,0,0,192,193,
+        3,90,45,0,193,202,5,31,0,0,194,199,5,86,0,0,195,196,5,41,0,0,196,
+        198,5,86,0,0,197,195,1,0,0,0,198,201,1,0,0,0,199,197,1,0,0,0,199,
+        200,1,0,0,0,200,203,1,0,0,0,201,199,1,0,0,0,202,194,1,0,0,0,202,
+        203,1,0,0,0,203,204,1,0,0,0,204,205,5,32,0,0,205,206,3,94,47,0,206,
+        9,1,0,0,0,207,208,5,80,0,0,208,209,3,90,45,0,209,218,5,31,0,0,210,
+        215,3,90,45,0,211,212,5,41,0,0,212,214,3,90,45,0,213,211,1,0,0,0,
+        214,217,1,0,0,0,215,213,1,0,0,0,215,216,1,0,0,0,216,219,1,0,0,0,
+        217,215,1,0,0,0,218,210,1,0,0,0,218,219,1,0,0,0,219,220,1,0,0,0,
+        220,221,5,32,0,0,221,222,3,102,51,0,222,11,1,0,0,0,223,224,5,64,
+        0,0,224,225,5,31,0,0,225,226,3,36,18,0,226,227,5,32,0,0,227,230,
+        3,94,47,0,228,229,5,68,0,0,229,231,3,94,47,0,230,228,1,0,0,0,230,
+        231,1,0,0,0,231,13,1,0,0,0,232,233,5,65,0,0,233,235,5,31,0,0,234,
+        236,3,100,50,0,235,234,1,0,0,0,235,236,1,0,0,0,236,237,1,0,0,0,237,
+        239,5,39,0,0,238,240,3,100,50,0,239,238,1,0,0,0,239,240,1,0,0,0,
+        240,241,1,0,0,0,241,243,5,39,0,0,242,244,3,100,50,0,243,242,1,0,
+        0,0,243,244,1,0,0,0,244,245,1,0,0,0,245,246,5,32,0,0,246,247,3,94,
+        47,0,247,15,1,0,0,0,248,249,5,66,0,0,249,251,5,31,0,0,250,252,3,
+        100,50,0,251,250,1,0,0,0,251,252,1,0,0,0,252,253,1,0,0,0,253,254,
+        5,32,0,0,254,255,3,94,47,0,255,17,1,0,0,0,256,257,5,67,0,0,257,258,
+        3,94,47,0,258,259,5,66,0,0,259,261,5,31,0,0,260,262,3,100,50,0,261,
+        260,1,0,0,0,261,262,1,0,0,0,262,263,1,0,0,0,263,264,5,32,0,0,264,
+        265,5,39,0,0,265,19,1,0,0,0,266,268,5,69,0,0,267,269,3,36,18,0,268,
+        267,1,0,0,0,268,269,1,0,0,0,269,270,1,0,0,0,270,271,3,102,51,0,271,
+        21,1,0,0,0,272,273,5,70,0,0,273,274,3,102,51,0,274,23,1,0,0,0,275,
+        276,5,71,0,0,276,277,3,102,51,0,277,25,1,0,0,0,278,279,5,72,0,0,
+        279,280,3,90,45,0,280,281,5,33,0,0,281,286,3,90,45,0,282,283,5,41,
+        0,0,283,285,3,90,45,0,284,282,1,0,0,0,285,288,1,0,0,0,286,284,1,
+        0,0,0,286,287,1,0,0,0,287,289,1,0,0,0,288,286,1,0,0,0,289,290,5,
+        34,0,0,290,291,3,102,51,0,291,27,1,0,0,0,292,293,5,81,0,0,293,294,
+        3,102,51,0,294,29,1,0,0,0,295,296,5,82,0,0,296,297,3,102,51,0,297,
+        31,1,0,0,0,298,299,5,83,0,0,299,300,3,102,51,0,300,33,1,0,0,0,301,
+        302,7,1,0,0,302,307,3,90,45,0,303,304,5,41,0,0,304,306,3,90,45,0,
+        305,303,1,0,0,0,306,309,1,0,0,0,307,305,1,0,0,0,307,308,1,0,0,0,
+        308,310,1,0,0,0,309,307,1,0,0,0,310,311,3,102,51,0,311,319,1,0,0,
+        0,312,313,5,73,0,0,313,314,3,90,45,0,314,315,3,102,51,0,315,319,
+        1,0,0,0,316,317,5,74,0,0,317,319,3,102,51,0,318,301,1,0,0,0,318,
+        312,1,0,0,0,318,316,1,0,0,0,319,35,1,0,0,0,320,321,3,38,19,0,321,
+        37,1,0,0,0,322,358,3,40,20,0,323,330,5,86,0,0,324,325,5,35,0,0,325,
+        326,3,36,18,0,326,327,5,36,0,0,327,329,1,0,0,0,328,324,1,0,0,0,329,
+        332,1,0,0,0,330,328,1,0,0,0,330,331,1,0,0,0,331,333,1,0,0,0,332,
+        330,1,0,0,0,333,334,7,2,0,0,334,358,3,38,19,0,335,338,5,86,0,0,336,
+        337,5,12,0,0,337,339,3,90,45,0,338,336,1,0,0,0,339,340,1,0,0,0,340,
+        338,1,0,0,0,340,341,1,0,0,0,341,342,1,0,0,0,342,343,7,2,0,0,343,
+        344,3,38,19,0,344,358,1,0,0,0,345,346,5,35,0,0,346,351,5,86,0,0,
+        347,348,5,41,0,0,348,350,5,86,0,0,349,347,1,0,0,0,350,353,1,0,0,
+        0,351,349,1,0,0,0,351,352,1,0,0,0,352,354,1,0,0,0,353,351,1,0,0,
+        0,354,355,5,36,0,0,355,356,7,2,0,0,356,358,3,38,19,0,357,322,1,0,
+        0,0,357,323,1,0,0,0,357,335,1,0,0,0,357,345,1,0,0,0,358,39,1,0,0,
+        0,359,365,3,42,21,0,360,361,5,37,0,0,361,362,3,36,18,0,362,363,5,
+        38,0,0,363,364,3,36,18,0,364,366,1,0,0,0,365,360,1,0,0,0,365,366,
+        1,0,0,0,366,41,1,0,0,0,367,369,5,29,0,0,368,367,1,0,0,0,368,369,
+        1,0,0,0,369,370,1,0,0,0,370,371,3,44,22,0,371,43,1,0,0,0,372,377,
+        3,46,23,0,373,374,7,3,0,0,374,376,3,46,23,0,375,373,1,0,0,0,376,
+        379,1,0,0,0,377,375,1,0,0,0,377,378,1,0,0,0,378,45,1,0,0,0,379,377,
+        1,0,0,0,380,385,3,48,24,0,381,382,5,55,0,0,382,384,3,48,24,0,383,
+        381,1,0,0,0,384,387,1,0,0,0,385,383,1,0,0,0,385,386,1,0,0,0,386,
+        47,1,0,0,0,387,385,1,0,0,0,388,393,3,50,25,0,389,390,7,4,0,0,390,
+        392,3,50,25,0,391,389,1,0,0,0,392,395,1,0,0,0,393,391,1,0,0,0,393,
+        394,1,0,0,0,394,49,1,0,0,0,395,393,1,0,0,0,396,401,3,52,26,0,397,
+        398,7,5,0,0,398,400,3,52,26,0,399,397,1,0,0,0,400,403,1,0,0,0,401,
+        399,1,0,0,0,401,402,1,0,0,0,402,51,1,0,0,0,403,401,1,0,0,0,404,409,
+        3,54,27,0,405,406,7,6,0,0,406,408,3,54,27,0,407,405,1,0,0,0,408,
+        411,1,0,0,0,409,407,1,0,0,0,409,410,1,0,0,0,410,53,1,0,0,0,411,409,
+        1,0,0,0,412,417,3,56,28,0,413,414,5,20,0,0,414,416,3,56,28,0,415,
+        413,1,0,0,0,416,419,1,0,0,0,417,415,1,0,0,0,417,418,1,0,0,0,418,
+        55,1,0,0,0,419,417,1,0,0,0,420,425,3,58,29,0,421,422,5,19,0,0,422,
+        424,3,58,29,0,423,421,1,0,0,0,424,427,1,0,0,0,425,423,1,0,0,0,425,
+        426,1,0,0,0,426,57,1,0,0,0,427,425,1,0,0,0,428,433,3,60,30,0,429,
+        430,7,7,0,0,430,432,3,60,30,0,431,429,1,0,0,0,432,435,1,0,0,0,433,
+        431,1,0,0,0,433,434,1,0,0,0,434,59,1,0,0,0,435,433,1,0,0,0,436,441,
+        3,62,31,0,437,438,7,8,0,0,438,440,3,62,31,0,439,437,1,0,0,0,440,
+        443,1,0,0,0,441,439,1,0,0,0,441,442,1,0,0,0,442,61,1,0,0,0,443,441,
+        1,0,0,0,444,449,3,64,32,0,445,446,7,9,0,0,446,448,3,64,32,0,447,
+        445,1,0,0,0,448,451,1,0,0,0,449,447,1,0,0,0,449,450,1,0,0,0,450,
+        63,1,0,0,0,451,449,1,0,0,0,452,453,5,23,0,0,453,458,3,64,32,0,454,
+        455,5,21,0,0,455,458,3,64,32,0,456,458,3,66,33,0,457,452,1,0,0,0,
+        457,454,1,0,0,0,457,456,1,0,0,0,458,65,1,0,0,0,459,462,3,68,34,0,
+        460,461,5,27,0,0,461,463,3,64,32,0,462,460,1,0,0,0,462,463,1,0,0,
+        0,463,67,1,0,0,0,464,468,3,72,36,0,465,468,3,70,35,0,466,468,3,74,
+        37,0,467,464,1,0,0,0,467,465,1,0,0,0,467,466,1,0,0,0,468,470,1,0,
+        0,0,469,471,5,21,0,0,470,469,1,0,0,0,470,471,1,0,0,0,471,69,1,0,
+        0,0,472,473,7,10,0,0,473,474,3,74,37,0,474,71,1,0,0,0,475,476,3,
+        74,37,0,476,477,7,10,0,0,477,73,1,0,0,0,478,485,3,76,38,0,479,480,
+        5,35,0,0,480,481,3,36,18,0,481,482,5,36,0,0,482,484,1,0,0,0,483,
+        479,1,0,0,0,484,487,1,0,0,0,485,483,1,0,0,0,485,486,1,0,0,0,486,
+        75,1,0,0,0,487,485,1,0,0,0,488,493,3,78,39,0,489,490,5,12,0,0,490,
+        492,3,90,45,0,491,489,1,0,0,0,492,495,1,0,0,0,493,491,1,0,0,0,493,
+        494,1,0,0,0,494,77,1,0,0,0,495,493,1,0,0,0,496,562,3,90,45,0,497,
+        562,3,86,43,0,498,562,3,88,44,0,499,501,5,3,0,0,500,499,1,0,0,0,
+        500,501,1,0,0,0,501,502,1,0,0,0,502,513,3,96,48,0,503,504,5,33,0,
+        0,504,509,5,88,0,0,505,506,5,41,0,0,506,508,5,88,0,0,507,505,1,0,
+        0,0,508,511,1,0,0,0,509,507,1,0,0,0,509,510,1,0,0,0,510,512,1,0,
+        0,0,511,509,1,0,0,0,512,514,5,34,0,0,513,503,1,0,0,0,513,514,1,0,
+        0,0,514,515,1,0,0,0,515,517,5,31,0,0,516,518,3,100,50,0,517,516,
+        1,0,0,0,517,518,1,0,0,0,518,528,1,0,0,0,519,520,5,30,0,0,520,525,
+        3,110,55,0,521,522,5,41,0,0,522,524,3,110,55,0,523,521,1,0,0,0,524,
+        527,1,0,0,0,525,523,1,0,0,0,525,526,1,0,0,0,526,529,1,0,0,0,527,
+        525,1,0,0,0,528,519,1,0,0,0,528,529,1,0,0,0,529,530,1,0,0,0,530,
+        531,5,32,0,0,531,562,1,0,0,0,532,533,5,31,0,0,533,534,5,24,0,0,534,
+        535,3,36,18,0,535,536,5,32,0,0,536,538,5,31,0,0,537,539,3,100,50,
+        0,538,537,1,0,0,0,538,539,1,0,0,0,539,549,1,0,0,0,540,541,5,30,0,
+        0,541,546,3,110,55,0,542,543,5,41,0,0,543,545,3,110,55,0,544,542,
+        1,0,0,0,545,548,1,0,0,0,546,544,1,0,0,0,546,547,1,0,0,0,547,550,
+        1,0,0,0,548,546,1,0,0,0,549,540,1,0,0,0,549,550,1,0,0,0,550,551,
+        1,0,0,0,551,552,5,32,0,0,552,562,1,0,0,0,553,554,5,31,0,0,554,555,
+        3,36,18,0,555,556,5,32,0,0,556,562,1,0,0,0,557,562,5,105,0,0,558,
+        562,3,92,46,0,559,562,3,80,40,0,560,562,3,4,2,0,561,496,1,0,0,0,
+        561,497,1,0,0,0,561,498,1,0,0,0,561,500,1,0,0,0,561,532,1,0,0,0,
+        561,553,1,0,0,0,561,557,1,0,0,0,561,558,1,0,0,0,561,559,1,0,0,0,
+        561,560,1,0,0,0,562,79,1,0,0,0,563,564,5,1,0,0,564,569,5,88,0,0,
+        565,566,5,41,0,0,566,568,5,88,0,0,567,565,1,0,0,0,568,571,1,0,0,
+        0,569,567,1,0,0,0,569,570,1,0,0,0,570,574,1,0,0,0,571,569,1,0,0,
+        0,572,573,5,38,0,0,573,575,5,88,0,0,574,572,1,0,0,0,574,575,1,0,
+        0,0,575,576,1,0,0,0,576,577,5,2,0,0,577,81,1,0,0,0,578,580,5,23,
+        0,0,579,578,1,0,0,0,579,580,1,0,0,0,580,581,1,0,0,0,581,582,5,88,
+        0,0,582,584,5,25,0,0,583,585,5,23,0,0,584,583,1,0,0,0,584,585,1,
+        0,0,0,585,586,1,0,0,0,586,587,5,88,0,0,587,83,1,0,0,0,588,589,7,
+        11,0,0,589,85,1,0,0,0,590,597,5,42,0,0,591,597,5,43,0,0,592,597,
+        3,82,41,0,593,597,3,84,42,0,594,597,5,44,0,0,595,597,5,45,0,0,596,
+        590,1,0,0,0,596,591,1,0,0,0,596,592,1,0,0,0,596,593,1,0,0,0,596,
+        594,1,0,0,0,596,595,1,0,0,0,597,87,1,0,0,0,598,602,5,46,0,0,599,
+        602,5,47,0,0,600,602,5,85,0,0,601,598,1,0,0,0,601,599,1,0,0,0,601,
+        600,1,0,0,0,602,89,1,0,0,0,603,607,5,86,0,0,604,607,5,84,0,0,605,
+        607,5,106,0,0,606,603,1,0,0,0,606,604,1,0,0,0,606,605,1,0,0,0,607,
+        91,1,0,0,0,608,610,5,35,0,0,609,611,3,100,50,0,610,609,1,0,0,0,610,
+        611,1,0,0,0,611,612,1,0,0,0,612,613,5,36,0,0,613,93,1,0,0,0,614,
+        618,5,33,0,0,615,617,3,2,1,0,616,615,1,0,0,0,617,620,1,0,0,0,618,
+        616,1,0,0,0,618,619,1,0,0,0,619,621,1,0,0,0,620,618,1,0,0,0,621,
+        624,5,34,0,0,622,624,3,2,1,0,623,614,1,0,0,0,623,622,1,0,0,0,624,
+        95,1,0,0,0,625,626,5,86,0,0,626,628,5,89,0,0,627,625,1,0,0,0,627,
+        628,1,0,0,0,628,629,1,0,0,0,629,630,3,90,45,0,630,97,1,0,0,0,631,
+        634,3,90,45,0,632,633,5,89,0,0,633,635,3,90,45,0,634,632,1,0,0,0,
+        635,636,1,0,0,0,636,634,1,0,0,0,636,637,1,0,0,0,637,99,1,0,0,0,638,
+        643,3,36,18,0,639,640,5,41,0,0,640,642,3,36,18,0,641,639,1,0,0,0,
+        642,645,1,0,0,0,643,641,1,0,0,0,643,644,1,0,0,0,644,101,1,0,0,0,
+        645,643,1,0,0,0,646,647,7,12,0,0,647,103,1,0,0,0,648,649,5,107,0,
+        0,649,105,1,0,0,0,650,651,5,99,0,0,651,655,3,36,18,0,652,654,3,2,
+        1,0,653,652,1,0,0,0,654,657,1,0,0,0,655,653,1,0,0,0,655,656,1,0,
+        0,0,656,107,1,0,0,0,657,655,1,0,0,0,658,662,5,98,0,0,659,661,3,2,
+        1,0,660,659,1,0,0,0,661,664,1,0,0,0,662,660,1,0,0,0,662,663,1,0,
+        0,0,663,109,1,0,0,0,664,662,1,0,0,0,665,666,3,90,45,0,666,667,5,
+        28,0,0,667,668,3,36,18,0,668,111,1,0,0,0,72,115,139,146,156,159,
+        162,170,176,180,187,189,199,202,215,218,230,235,239,243,251,261,
+        268,286,307,318,330,340,351,357,365,368,377,385,393,401,409,417,
+        425,433,441,449,457,462,467,470,485,493,500,509,513,517,525,528,
+        538,546,549,561,569,574,579,584,596,601,606,610,618,623,627,636,
+        643,655,662
     ];
 
     private static __ATN: antlr.ATN;
@@ -3473,6 +3593,32 @@ export class StatementContext extends antlr.ParserRuleContext {
     }
     public override copyFrom(ctx: StatementContext): void {
         super.copyFrom(ctx);
+    }
+}
+export class QuitStatementContext extends StatementContext {
+    public constructor(ctx: StatementContext) {
+        super(ctx.parent, ctx.invokingState);
+        super.copyFrom(ctx);
+    }
+    public functionQuit(): FunctionQuitContext {
+        return this.getRuleContext(0, FunctionQuitContext)!;
+    }
+    public override enterRule(listener: asirListener): void {
+        if(listener.enterQuitStatement) {
+             listener.enterQuitStatement(this);
+        }
+    }
+    public override exitRule(listener: asirListener): void {
+        if(listener.exitQuitStatement) {
+             listener.exitQuitStatement(this);
+        }
+    }
+    public override accept<Result>(visitor: asirVisitor<Result>): Result | null {
+        if (visitor.visitQuitStatement) {
+            return visitor.visitQuitStatement(this);
+        } else {
+            return visitor.visitChildren(this);
+        }
     }
 }
 export class DoStatementContext extends StatementContext {
@@ -3574,6 +3720,58 @@ export class WhileStatementContext extends StatementContext {
     public override accept<Result>(visitor: asirVisitor<Result>): Result | null {
         if (visitor.visitWhileStatement) {
             return visitor.visitWhileStatement(this);
+        } else {
+            return visitor.visitChildren(this);
+        }
+    }
+}
+export class EndStatementContext extends StatementContext {
+    public constructor(ctx: StatementContext) {
+        super(ctx.parent, ctx.invokingState);
+        super.copyFrom(ctx);
+    }
+    public functionEnd(): FunctionEndContext {
+        return this.getRuleContext(0, FunctionEndContext)!;
+    }
+    public override enterRule(listener: asirListener): void {
+        if(listener.enterEndStatement) {
+             listener.enterEndStatement(this);
+        }
+    }
+    public override exitRule(listener: asirListener): void {
+        if(listener.exitEndStatement) {
+             listener.exitEndStatement(this);
+        }
+    }
+    public override accept<Result>(visitor: asirVisitor<Result>): Result | null {
+        if (visitor.visitEndStatement) {
+            return visitor.visitEndStatement(this);
+        } else {
+            return visitor.visitChildren(this);
+        }
+    }
+}
+export class DebugStatementContext extends StatementContext {
+    public constructor(ctx: StatementContext) {
+        super(ctx.parent, ctx.invokingState);
+        super.copyFrom(ctx);
+    }
+    public functionDebug(): FunctionDebugContext {
+        return this.getRuleContext(0, FunctionDebugContext)!;
+    }
+    public override enterRule(listener: asirListener): void {
+        if(listener.enterDebugStatement) {
+             listener.enterDebugStatement(this);
+        }
+    }
+    public override exitRule(listener: asirListener): void {
+        if(listener.exitDebugStatement) {
+             listener.exitDebugStatement(this);
+        }
+    }
+    public override accept<Result>(visitor: asirVisitor<Result>): Result | null {
+        if (visitor.visitDebugStatement) {
+            return visitor.visitDebugStatement(this);
         } else {
             return visitor.visitChildren(this);
         }
@@ -4671,6 +4869,132 @@ export class StructContext extends FunctionStructContext {
 }
 
 
+export class FunctionEndContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
+        super(parent, invokingState);
+    }
+    public override get ruleIndex(): number {
+        return asirParser.RULE_functionEnd;
+    }
+    public override copyFrom(ctx: FunctionEndContext): void {
+        super.copyFrom(ctx);
+    }
+}
+export class EndContext extends FunctionEndContext {
+    public constructor(ctx: FunctionEndContext) {
+        super(ctx.parent, ctx.invokingState);
+        super.copyFrom(ctx);
+    }
+    public END(): antlr.TerminalNode {
+        return this.getToken(asirParser.END, 0)!;
+    }
+    public terminator(): TerminatorContext {
+        return this.getRuleContext(0, TerminatorContext)!;
+    }
+    public override enterRule(listener: asirListener): void {
+        if(listener.enterEnd) {
+             listener.enterEnd(this);
+        }
+    }
+    public override exitRule(listener: asirListener): void {
+        if(listener.exitEnd) {
+             listener.exitEnd(this);
+        }
+    }
+    public override accept<Result>(visitor: asirVisitor<Result>): Result | null {
+        if (visitor.visitEnd) {
+            return visitor.visitEnd(this);
+        } else {
+            return visitor.visitChildren(this);
+        }
+    }
+}
+
+
+export class FunctionQuitContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
+        super(parent, invokingState);
+    }
+    public override get ruleIndex(): number {
+        return asirParser.RULE_functionQuit;
+    }
+    public override copyFrom(ctx: FunctionQuitContext): void {
+        super.copyFrom(ctx);
+    }
+}
+export class QuitContext extends FunctionQuitContext {
+    public constructor(ctx: FunctionQuitContext) {
+        super(ctx.parent, ctx.invokingState);
+        super.copyFrom(ctx);
+    }
+    public QUIT(): antlr.TerminalNode {
+        return this.getToken(asirParser.QUIT, 0)!;
+    }
+    public terminator(): TerminatorContext {
+        return this.getRuleContext(0, TerminatorContext)!;
+    }
+    public override enterRule(listener: asirListener): void {
+        if(listener.enterQuit) {
+             listener.enterQuit(this);
+        }
+    }
+    public override exitRule(listener: asirListener): void {
+        if(listener.exitQuit) {
+             listener.exitQuit(this);
+        }
+    }
+    public override accept<Result>(visitor: asirVisitor<Result>): Result | null {
+        if (visitor.visitQuit) {
+            return visitor.visitQuit(this);
+        } else {
+            return visitor.visitChildren(this);
+        }
+    }
+}
+
+
+export class FunctionDebugContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
+        super(parent, invokingState);
+    }
+    public override get ruleIndex(): number {
+        return asirParser.RULE_functionDebug;
+    }
+    public override copyFrom(ctx: FunctionDebugContext): void {
+        super.copyFrom(ctx);
+    }
+}
+export class DebugContext extends FunctionDebugContext {
+    public constructor(ctx: FunctionDebugContext) {
+        super(ctx.parent, ctx.invokingState);
+        super.copyFrom(ctx);
+    }
+    public DEBUG(): antlr.TerminalNode {
+        return this.getToken(asirParser.DEBUG, 0)!;
+    }
+    public terminator(): TerminatorContext {
+        return this.getRuleContext(0, TerminatorContext)!;
+    }
+    public override enterRule(listener: asirListener): void {
+        if(listener.enterDebug) {
+             listener.enterDebug(this);
+        }
+    }
+    public override exitRule(listener: asirListener): void {
+        if(listener.exitDebug) {
+             listener.exitDebug(this);
+        }
+    }
+    public override accept<Result>(visitor: asirVisitor<Result>): Result | null {
+        if (visitor.visitDebug) {
+            return visitor.visitDebug(this);
+        } else {
+            return visitor.visitChildren(this);
+        }
+    }
+}
+
+
 export class FunctionModuleContext extends antlr.ParserRuleContext {
     public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
@@ -5226,6 +5550,15 @@ export class QEImplContext extends QeImplExprContext {
         }
 
         return this.getRuleContext(i, QeNotExprContext);
+    }
+    public QE_IMPL(): antlr.TerminalNode[];
+    public QE_IMPL(i: number): antlr.TerminalNode | null;
+    public QE_IMPL(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(asirParser.QE_IMPL);
+    	} else {
+    		return this.getToken(asirParser.QE_IMPL, i);
+    	}
     }
     public QE_REPL(): antlr.TerminalNode[];
     public QE_REPL(i: number): antlr.TerminalNode | null;

@@ -31,7 +31,7 @@
     "build": "tsc",
     "start": "node dist/run.js",
     "parse": "npm run build && node dist/run.js",
-    "test": "jest --detectOpenHandles"
+    "test": "npm run build && jest --detectOpenHandles"
   },
   "keywords": [],
   "author": "",

@@ -56,10 +56,26 @@ export type StatementNode =
     | ReturnStatementNode
     | BreakStatementNode
     | ContinueStatementNode
+    | EndStatementNode // <--- ADDED
+    | QuitStatementNode // <--- ADDED
+    | DebugStatementNode // <--- ADDED
     | StructStatementNode
     | ModuleStatementNode
     | PreprocessorNode
     | BlockNode;
+
+// ... new interfaces ...
+export interface EndStatementNode extends ASTNode {
+    kind: 'EndStatement';
+}
+
+export interface QuitStatementNode extends ASTNode {
+    kind: 'QuitStatement';
+}
+
+export interface DebugStatementNode extends ASTNode {
+    kind: 'DebugStatement';
+}
 
 //  モジュール関連の文ノードのユニオン型
 export type ModuleStatementNode =
@@ -337,7 +353,7 @@ export interface QualifiedNameNode extends ASTNode {
     functionName: IndeterminateNode;
 }
 
-export interface DottedIdentifierNode extends ASTNode {
+export interface DottedIdentifierNode extends TypedExpressionNode {
     kind: 'DottedIdentifier';
     identifiers: IndeterminateNode[];
 }

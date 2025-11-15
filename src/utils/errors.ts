@@ -7,13 +7,19 @@ import * as ast from '../core/ast/asirAst.js';
  * @returns ASTNode['loc'] 形式の位置情報オブジェクト
  */
 export function getLoc(arg: ParserRuleContext | TerminalNode | Token): ast.ASTNode['loc'] {
+    // Helper to calculate endColumn ensuring a minimum length of 1 if text length is 0
+    const calculateEndColumn = (token: Token | null, defaultColumn: number): number => {
+        if (!token) return defaultColumn;
+        const textLength = token.text?.length ?? 0;
+        return token.column + (textLength > 0 ? textLength : 1);
+    };
+
     if (arg instanceof ParserRuleContext) {
         const ctx = arg as ParserRuleContext;
         const startToken: Token | null = ctx.start;
         const stopToken: Token | null = ctx.stop ?? null;
 
         if (!startToken) {
-            // 開始トークンがない場合、有効な位置情報は取得できない
             return { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 };
         }
 
@@ -21,7 +27,7 @@ export function getLoc(arg: ParserRuleContext | TerminalNode | Token): ast.ASTNo
             startLine: startToken.line,
             startColumn: startToken.column,
             endLine: stopToken?.line ?? startToken.line,
-            endColumn: stopToken ? stopToken.column + (stopToken.text?.length ?? 0) : startToken.column + (startToken.text?.length ?? 0),
+            endColumn: calculateEndColumn(stopToken, calculateEndColumn(startToken, startToken.column)),
         };
     } else if (arg instanceof TerminalNode) {
         const terminalNode = arg as TerminalNode;
@@ -31,19 +37,21 @@ export function getLoc(arg: ParserRuleContext | TerminalNode | Token): ast.ASTNo
             return { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 };
         }
 
+        const effectiveLength = (token.text?.length ?? 0) > 0 ? (token.text?.length ?? 0) : 1;
         return {
             startLine: token.line,
             startColumn: token.column,
             endLine: token.line,
-            endColumn: token.column + (token.text?.length ?? 0),
+            endColumn: token.column + effectiveLength,
         };
     } else {
         const token = arg as Token;
+        const effectiveLength = (token.text?.length ?? 0) > 0 ? (token.text?.length ?? 0) : 1;
         return {
             startLine: token.line,
             startColumn: token.column,
             endLine: token.line,
-            endColumn: token.column + (token.text?.length ?? 0),
+            endColumn: token.column + effectiveLength,
         };
     }
 }

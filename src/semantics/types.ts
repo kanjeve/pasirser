@@ -1,6 +1,5 @@
-import { ASTNode } from '../core/ast/asirAst.js';
+import * as ast from '../core/ast/asirAst.js';
 
-// --- Rich Type System ---
 
 export type PrimitiveAsirTypeName = 
     | 'number' | 'ratfunction' | 'string' |'dpoly' | 'usint' | 'error' | 'gf2mat' | 'mathcap' | 'qeformula' | 'gfmmat' | 'bytearray'
@@ -104,22 +103,28 @@ export type AsirType =
 export interface Symbol {
     name: string;
     type: AsirType;
-    definedAt: ASTNode['loc'];
-    node: ASTNode;
+    definedAt: ast.ASTNode['loc'];
+    node: ast.ASTNode;
     isUsed: boolean;
+    isFunctionArgument?: boolean;
     constantValue?: ConstantValue;
 }
 
 // --- Data Flow Analysis Types ---
 
-// A constant value can be a primitive or an array of primitives.
-// null represents a value that is known not to be a constant (e.g. result of a complex expression).
 export type ConstantValue = string | number | (string | number | null)[];
 
-// The result of visiting an expression node.
 export interface EvaluationResult {
     type: AsirType;
     constantValue?: ConstantValue;
+}
+
+export interface IndexAccessResult extends EvaluationResult {
+    baseNode: ast.ExpressionNode;
+    accessPath: ast.IndexAccessNode[];
+    accessedType: AsirType;
+    accessedConstantValue?: ConstantValue;
+    indices: ast.ExpressionNode[];
 }
 
 export class Scope {
@@ -127,9 +132,9 @@ export class Scope {
     public hasLocalDeclaration: boolean = false;
     public readonly parent: Scope | null;
     public children: Scope[] = [];
-    public readonly node: ASTNode;
+    public readonly node: ast.ASTNode;
 
-    constructor(node: ASTNode, parent: Scope | null = null) {
+    constructor(node: ast.ASTNode, parent: Scope | null = null) {
         this.node = node;
         this.parent = parent;
     }

@@ -15,6 +15,9 @@ statement : expr terminator       #ExprStatement
           | functionBreak         #BreakStatement
           | functionContinue      #ContinueStatement
           | functionStruct        #StructStatement
+          | functionEnd           #EndStatement
+          | functionQuit          #QuitStatement
+          | functionDebug         #DebugStatement
           | functionModule        #ModuleStatement
           | preprocessor          #PreproStatement
           ;
@@ -39,6 +42,9 @@ functionReturn : RETURN expr? terminator #Return;
 functionContinue : CONTINUE terminator #Continue;
 functionBreak : BREAK terminator #Break;
 functionStruct : STRUCT name=indeterminate LBRANCE members+=indeterminate (COMMA members+=indeterminate)* RBRANCE terminator #Struct;
+functionEnd : END terminator #End;
+functionQuit : QUIT terminator #Quit;
+functionDebug : DEBUG terminator #Debug;
 
 functionModule : (EXTERN | STATIC | GLOBAL | LOCAL | LOCALF) indeterminate (COMMA indeterminate)* terminator   #ModuleAssign
                | MODULE indeterminate terminator                                             #ModuleStart
@@ -58,7 +64,7 @@ ternaryExpr : condition=quoteExpr (QUESTION consequence=expr COLON alternative=e
 
 quoteExpr : (BACK)? qeImplExpr #Quote;
 
-qeImplExpr : qeNotExpr ((QE_REPL | QE_REPL | QE_EQUIV) qeNotExpr)* #QEImpl;
+qeImplExpr : qeNotExpr ((QE_IMPL | QE_REPL | QE_EQUIV) qeNotExpr)* #QEImpl;
 
 qeNotExpr : qeOrExpr (QE_8 qeOrExpr)* #QEnot;
 
@@ -239,6 +245,9 @@ GLOBAL   : 'global';
 LOCAL    : 'local';
 LOCALF   : 'localf';
 FUNCTION : 'function';
+END      : 'end';
+QUIT     : 'quit';
+DEBUG    : 'denug';
 ATFUNC   : '@'([a-zA-Z])+;
 VAR_2    : '@';
 ID       : [_]?[a-zA-Z_]([a-zA-Z0-9_])*;

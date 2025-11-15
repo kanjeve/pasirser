@@ -15,19 +15,14 @@ import { getDocumentSymbols } from '../features/documentSymbolProvider.js';
 import { getSemanticTokens } from '../features/semanticTokensProvider.js'; 
 
 export function analyze(code: string, filePath: string | null = null, systemIncludePaths: string[] = [], loadPaths: string[] = []): { ast: ast.ProgramNode | null, diagnostics: Diagnostic[], symbolTable: SymbolTable | null } {
-    const { ast, diagnostics: parseDiagnostics } = parseAndBuildAST(code, filePath || 'untitled');
-    
+    const { ast, diagnostics: parseDiagnostics } = parseAndBuildAST(code, filePath || 'untitled'); 
     const diagnostics: Diagnostic[] = [...parseDiagnostics];
-
     if (!ast) {
         return { ast: null, diagnostics, symbolTable: null };
     }
-
     const validator = new Validator(ast, filePath, systemIncludePaths, loadPaths);
     const semanticErrors = validator.analyze(ast);
-
     diagnostics.push(...semanticErrors);
-
     return { ast, diagnostics, symbolTable: validator.symbolTable };
 }
 
@@ -42,7 +37,7 @@ if (require.main === module) {
         .option('--load-path <paths...>', 'Specify load paths')
         .option('--min-severity <level>', '表示する診断の最小重要度 (error, warning, info, hint)', 'hint')
         .action((filePath, options) => {
-            console.log(`Analyzing: ${filePath}`);
+            // console.log(`Analyzing: ${filePath}`); // Removed
             try {
                 const absolutePath = path.resolve(filePath);
                 const code = fs.readFileSync(absolutePath, 'utf-8');
@@ -81,7 +76,7 @@ if (require.main === module) {
     program.command('format <file>')
         .description('Format an Asir file.')
         .action((filePath) => {
-            console.log(`Formatting: ${filePath}`);
+            // console.log(`Formatting: ${filePath}`); // Removed
             try {
                 const absolutePath = path.resolve(filePath);
                 const code = fs.readFileSync(absolutePath, 'utf-8');
@@ -108,7 +103,7 @@ if (require.main === module) {
     program.command('complete <file> <line> <character>')
         .description('Provide code completion suggestions for an Asir file.')
         .action((filePath, lineStr, charStr) => {
-            console.log(`Getting completions for: ${filePath} at L${lineStr}:C${charStr}`);
+            // console.log(`Getting completions for: ${filePath} at L${lineStr}:C${charStr}`); // Removed
             try {
                 const absolutePath = path.resolve(filePath);
                 const code = fs.readFileSync(absolutePath, 'utf-8');
@@ -138,7 +133,7 @@ if (require.main === module) {
     program.command('hover <file> <line> <character>')
         .description('Provide hover information for a symbol in an Asir file.')
         .action((filePath, lineStr, charStr) => {
-            console.log(`Getting hover info for: ${filePath} at L${lineStr}:C${charStr}`);
+            // console.log(`Getting hover info for: ${filePath} at L${lineStr}:C${charStr}`); // Removed
             try {
                 const absolutePath = path.resolve(filePath);
                 const code = fs.readFileSync(absolutePath, 'utf-8');
@@ -168,7 +163,7 @@ if (require.main === module) {
     program.command('definition <file> <line> <character>')
         .description('Find the definition of a symbol in an Asir file.')
         .action((filePath, lineStr, charStr) => {
-            console.log(`Getting definition for: ${filePath} at L${lineStr}:C${charStr}`);
+            // console.log(`Getting definition for: ${filePath} at L${lineStr}:C${charStr}`); // Removed
             try {
                 const absolutePath = path.resolve(filePath);
                 const code = fs.readFileSync(absolutePath, 'utf-8');
@@ -201,7 +196,7 @@ if (require.main === module) {
     program.command('rename <file> <line> <character> <newName>')
         .description('Generate text edits to rename a symbol in an Asir file.')
         .action((filePath, lineStr, charStr, newName) => {
-            console.log(`Generating rename edits for: ${filePath} at L${lineStr}:C${charStr} to new name: ${newName}`);
+            // console.log(`Generating rename edits for: ${filePath} at L${lineStr}:C${charStr} to new name: ${newName}`); // Removed
             try {
                 const absolutePath = path.resolve(filePath);
                 const code = fs.readFileSync(absolutePath, 'utf-8');
@@ -235,7 +230,7 @@ if (require.main === module) {
     program.command('semantic-tokens <file>')
         .description('Generate semantic tokens for an Asir file.')
         .action((filePath) => {
-            console.log(`Generating semantic tokens for: ${filePath}`);
+            // console.log(`Generating semantic tokens for: ${filePath}`); // Removed
             try {
                 const absolutePath = path.resolve(filePath);
                 const code = fs.readFileSync(absolutePath, 'utf-8');
@@ -262,7 +257,7 @@ if (require.main === module) {
     program.command('outline <file>')
         .description('Generate document symbols (outline) for an Asir file.')
         .action((filePath) => {
-            console.log(`Generating document symbols for: ${filePath}`);
+            // console.log(`Generating document symbols for: ${filePath}`); // Removed
             try {
                 const absolutePath = path.resolve(filePath);
                 const code = fs.readFileSync(absolutePath, 'utf-8');

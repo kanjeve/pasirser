@@ -16,6 +16,9 @@ import { ReturnStatementContext } from "./asirParser.js";
 import { BreakStatementContext } from "./asirParser.js";
 import { ContinueStatementContext } from "./asirParser.js";
 import { StructStatementContext } from "./asirParser.js";
+import { EndStatementContext } from "./asirParser.js";
+import { QuitStatementContext } from "./asirParser.js";
+import { DebugStatementContext } from "./asirParser.js";
 import { ModuleStatementContext } from "./asirParser.js";
 import { PreproStatementContext } from "./asirParser.js";
 import { PreChrContext } from "./asirParser.js";
@@ -33,6 +36,9 @@ import { ReturnContext } from "./asirParser.js";
 import { ContinueContext } from "./asirParser.js";
 import { BreakContext } from "./asirParser.js";
 import { StructContext } from "./asirParser.js";
+import { EndContext } from "./asirParser.js";
+import { QuitContext } from "./asirParser.js";
+import { DebugContext } from "./asirParser.js";
 import { ModuleAssignContext } from "./asirParser.js";
 import { ModuleStartContext } from "./asirParser.js";
 import { ModuleEndContext } from "./asirParser.js";
@@ -199,6 +205,27 @@ export class asirVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitStructStatement?: (ctx: StructStatementContext) => Result;
     /**
+     * Visit a parse tree produced by the `EndStatement`
+     * labeled alternative in `asirParser.statement`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitEndStatement?: (ctx: EndStatementContext) => Result;
+    /**
+     * Visit a parse tree produced by the `QuitStatement`
+     * labeled alternative in `asirParser.statement`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitQuitStatement?: (ctx: QuitStatementContext) => Result;
+    /**
+     * Visit a parse tree produced by the `DebugStatement`
+     * labeled alternative in `asirParser.statement`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitDebugStatement?: (ctx: DebugStatementContext) => Result;
+    /**
      * Visit a parse tree produced by the `ModuleStatement`
      * labeled alternative in `asirParser.statement`.
      * @param ctx the parse tree
@@ -317,6 +344,27 @@ export class asirVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      * @return the visitor result
      */
     visitStruct?: (ctx: StructContext) => Result;
+    /**
+     * Visit a parse tree produced by the `End`
+     * labeled alternative in `asirParser.functionEnd`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitEnd?: (ctx: EndContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Quit`
+     * labeled alternative in `asirParser.functionQuit`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitQuit?: (ctx: QuitContext) => Result;
+    /**
+     * Visit a parse tree produced by the `Debug`
+     * labeled alternative in `asirParser.functionDebug`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitDebug?: (ctx: DebugContext) => Result;
     /**
      * Visit a parse tree produced by the `ModuleAssign`
      * labeled alternative in `asirParser.functionModule`.
