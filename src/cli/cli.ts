@@ -13,6 +13,7 @@ import { getDefinitionLocation } from '../features/definitionProvider.js';
 import { getRenameEdits } from '../features/renameProvider.js'; 
 import { getDocumentSymbols } from '../features/documentSymbolProvider.js'; 
 import { getSemanticTokens } from '../features/semanticTokensProvider.js'; 
+import { convertLatexToAsir } from '../latex-converter/LatexToAsirConverter.js'; 
 
 export function analyze(code: string, filePath: string | null = null, systemIncludePaths: string[] = [], loadPaths: string[] = []): { ast: ast.ProgramNode | null, diagnostics: Diagnostic[], symbolTable: SymbolTable | null } {
     const { ast, diagnostics: parseDiagnostics } = parseAndBuildAST(code, filePath || 'untitled'); 
@@ -277,6 +278,23 @@ if (require.main === module) {
 
             } catch (e) {
                 console.error(`Error generating document symbols: ${e}`);
+                process.exit(1);
+            }
+        });
+
+    program.command('convert <file>')
+        .description('Convert a file containing a LaTeX math expression to an Asir string.')
+        .action((filePath) => {
+            try {
+                const absolutePath = path.resolve(filePath);
+                const latexCode = fs.readFileSync(absolutePath, 'utf-8');
+                
+                const asirCode = convertLatexToAsir(latexCode);
+                
+                console.log(asirCode);
+
+            } catch (e) {
+                console.error(`Error converting file: ${e}`);
                 process.exit(1);
             }
         });

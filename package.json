@@ -29,8 +29,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/run.js",
-    "parse": "npm run build && node dist/run.js",
+    "start": "node dist/cli/cli.js",
+    "parse": "npm run build && node dist/cli/cli.js",
     "test": "npm run build && jest --detectOpenHandles"
   },
   "keywords": [],

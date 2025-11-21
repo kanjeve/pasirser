@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as ast from '../core/ast/asirAst.js';
 import { parseAndBuildAST } from '../core/parser/parserUtils.js';
 import { SymbolTable } from './symbolTable.js';
-import { AsirType, FunctionAsirType, OverloadedFunctionType, PrimitiveAsirType, PrimitiveAsirTypeName, Symbol, Scope, TYPE_METADATA, StructAsirType, ModuleAsirType, ListAsirType, VectorAsirType, MatrixAsirType, PolynomialAsirType, TupleType, TupleElement, UnionType, LiteralUnionType, p_type, dpm_type, dpoly_type, rat_type, EvaluationResult, IndexAccessResult, ConstantValue, m_type, u_type, l_type, v_type } from './types.js';
+import { AsirType, FunctionAsirType, OverloadedFunctionType, PrimitiveAsirType, PrimitiveAsirTypeName, Symbol, Scope, TYPE_METADATA, StructAsirType, ModuleAsirType, ListAsirType, VectorAsirType, MatrixAsirType, PolynomialAsirType, TupleType, TupleElement, UnionType, LiteralUnionType, p_type, stdpoly_type, dpm_type, dpoly_type, rat_type, ncpoly_type, EvaluationResult, IndexAccessResult, ConstantValue, m_type, u_type, l_type, v_type } from './types.js';
 import { Diagnostic, DiagnosticSeverity } from '../utils/diagnostics.js';
 import { ALL_ASIR_BUILTIN, ASIR_KEYWORDS } from '../data/builtins.js';
 import { BUILTIN_SIGNATURES } from '../data/builtinSignatures.js';
@@ -140,7 +140,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     private isInLoop: boolean = false;
     private currentModuleScope: Scope | null = null;
     private currentModule: ModuleAsirType | null = null;
-    private assignmentsInBranch: Map<string, AsirType> | null = null;
     private readonly initialFilePath: string | null;
     public currentFilePath: string | null;
     public inclusionStack: string[] = [];
@@ -150,6 +149,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     public effectiveCwd: string;
     private isReachable: boolean = true; // For local block/function reachability
     private isProgramTerminated: boolean = false; // New flag for global program termination
+    private analysisStack: ast.DefinitionStatementNode[] = []; // Stack to detect recursion
 
     constructor(programNode: ast.ProgramNode, filePath: string | null = null, systemIncludePaths: string[] = [], loadPaths: string[] = []) {
         super();
@@ -277,16 +277,29 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         if (sourceType.kind === 'rational_function' && targetType.kind === 'standard_polynomial') {
             return this.isTypeCompatible(sourceType.coefficientType, targetType.coefficientType);
         }
+        // R4.2: standard_polynomialはrational_functionと互換性がある
+        if (sourceType.kind === 'standard_polynomial' && targetType.kind === 'rational_function') {
+            return this.isTypeCompatible(sourceType.coefficientType, targetType.coefficientType);
+        }
+        // R4.3: polynomial<integer>はpolynomial<finite_field_type>と互換性がある
+        if (sourceType.kind === 'standard_polynomial' && sourceType.coefficientType.kind === 'primitive' && sourceType.coefficientType.name === 'integer' &&
+            targetType.kind === 'standard_polynomial' && targetType.coefficientType.kind === 'primitive' &&
+            ['fchar2', 'fcharp', 'fcharpsmall', 'fchardefp', 'fsmall', 'flarge'].includes(targetType.coefficientType.name)) {
+            return true;
+        }
         // R5: ターゲットかソースがunionなら、そのうちのどれか一つと互換性があればよい
         if (targetType.kind === 'union') {
-            return targetType.types.some(one => this.isTypeCompatible(sourceType, one));
+            const result = targetType.types.some(one => this.isTypeCompatible(sourceType, one));
+            return result;
         }
         if (sourceType.kind === 'union') {
-            return sourceType.types.some(one => this.isTypeCompatible(one, targetType));
+            const result = sourceType.types.some(one => this.isTypeCompatible(one, targetType));
+            return result;
         }
         // R6: primitive同士ならサブタイプ関係にあれば互換
         if (sourceType.kind === 'primitive' && targetType.kind === 'primitive') {
-            return this.isSubtypeOf(sourceType.name, targetType.name);
+            const result = this.isSubtypeOf(sourceType.name, targetType.name);
+            return result;
         }
         // R7: 多項式同士の互換性チェック
         if (this.isPolynomialType(sourceType) && this.isPolynomialType(targetType)) {
@@ -297,24 +310,31 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         }
         // R8: リストなどの互換性チェック
         if (sourceType.kind === 'list' && targetType.kind === 'list') {
-            return this.isTypeCompatible(sourceType.elementType, targetType.elementType);
+            const result = this.isTypeCompatible(sourceType.elementType, targetType.elementType);
+            return result;
         }
         if (sourceType.kind === 'vector' && targetType.kind === 'vector') {
-            return this.isTypeCompatible(sourceType.elementType, targetType.elementType);
+            const result = this.isTypeCompatible(sourceType.elementType, targetType.elementType);
+            return result;
         }
         if (sourceType.kind === 'matrix' && targetType.kind === 'matrix') {
-            return this.isTypeCompatible(sourceType.elementType, targetType.elementType);
+            const result = this.isTypeCompatible(sourceType.elementType, targetType.elementType);
+            return result;
         }
         if (sourceType.kind === 'struct' && targetType.kind === 'struct') {
-            return sourceType.name ===targetType.name;
+            const result = sourceType.name ===targetType.name;
+            return result;
         }
         // R9: タプル型同士の互換性チェック
         if (targetType.kind === 'tuple' && sourceType.kind === 'tuple') {
-            if (sourceType.elements.length !== targetType.elements.length) { return false; }
-            return sourceType.elements.every((sourceElm, i) => {
+            if (sourceType.elements.length !== targetType.elements.length) { 
+                return false; 
+            }
+            const result = sourceType.elements.every((sourceElm, i) => {
                 const targetElm = targetType.elements[i];
                 return this.isTypeCompatible(sourceElm.type, targetElm.type);
             });
+            return result;
         }
         // R10: function同士の互換性チェック
         if (sourceType.kind === 'function' && targetType.kind === 'function') {
@@ -332,22 +352,27 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         // R11: overloaded_functionを考える場合
         if (targetType.kind === 'overloaded_function') {
             if (sourceType.kind === 'function') {
-                return targetType.signatures.some(sig => this.isTypeCompatible(sourceType, sig));
+                const result = targetType.signatures.some(sig => this.isTypeCompatible(sourceType, sig));
+                return result;
             }
             if (sourceType.kind === 'overloaded_function') {
-                return this.areTypesDeeplyEqual(sourceType, targetType);
+                const result = this.areTypesDeeplyEqual(sourceType, targetType);
+                return result;
             }
         }
         if (sourceType.kind === 'overloaded_function' && targetType.kind === 'function') {
-            return sourceType.signatures.some(sig => this.isTypeCompatible(sig, targetType));
+            const result = sourceType.signatures.some(sig => this.isTypeCompatible(sig, targetType));
+            return result;
         }
         // R12: タプルはリストに代入可能
         if (sourceType.kind === 'tuple' && targetType.kind === 'list') {
-            return sourceType.elements.every(sourceElm =>
+            const result = sourceType.elements.every(sourceElm =>
                 this.isTypeCompatible(sourceElm.type, targetType.elementType)
             );
+            return result;
         }
-        return this.areTypesDeeplyEqual(sourceType, targetType);
+        const result = this.areTypesDeeplyEqual(sourceType, targetType);
+        return result;
     }
 
     public typeToString(type: AsirType): string {
@@ -566,6 +591,40 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             'non_commutative_polynomial',
             'rational_function'
         ].includes(type.kind);
+    }
+
+    private getTypeFromCode(code: number): AsirType | undefined {
+        switch (code) {
+            case 0: return p_type('void'); // VOID (from -1, but 0 is listed as type 0) - assuming 0 maps to void for now, will adjust if needed
+            case 1: return p_type('number'); // 数 (number) - general numeric type
+            case 2: return stdpoly_type(p_type('any')); // 多項式 (standard_polynomial)
+            case 3: return rat_type(p_type('any')); // 有理関数 (rational_function)
+            case 4: return l_type(p_type('any')); // リスト (list or tuple) - using generic list for now
+            case 5: return v_type(p_type('any')); // ベクトル (vector)
+            case 6: return m_type(p_type('any')); // 行列 (matrix)
+            case 7: return p_type('string'); // 文字列 (string)
+            case 8: return { kind: 'struct', name: 'any', members: new Map() }; // 構造体 (struct) - generic struct
+            case 9: return dpoly_type(p_type('any')); // 分散表現多項式 (distributed_polynomial)
+            case 10: return p_type('usint'); // 符号付32bit整数 (usint)
+            case 11: return p_type('error'); // エラーオブジェクト (error)
+            case 12: return p_type('gf2mat'); // GF(2)上行列 (gf2mat)
+            case 13: return p_type('mathcap'); // MATHCAP (mathcap)
+            case 14: return p_type('qeformula'); // 一階述語論理式 (qeformula)
+            case 15: return p_type('gfmmat'); // GF(M)上行列 (gfmmat)
+            case 16: return p_type('bytearray'); // byte行列 (byteaaray)
+            case 17: return p_type('quote'); // QUOTE (quote)
+            case 18: return p_type('option'); // オプションリスト (option)
+            case 19: return p_type('symbol'); // シンボル (symbol)
+            case 20: return p_type('range'); // 変数範囲 (range)
+            case 21: return p_type('textbuffer'); // テキストバッファ (textbuffer)
+            case 22: return p_type('dpolyvector'); // 分散表現多項式ベクトル (dpolyvector)
+            case 23: return p_type('quotearg'); // QUOTEノード (quotearg)
+            case 24: return p_type('imatrix'); // 疎行列 (imatrix)
+            case 25: return ncpoly_type(p_type('any')); // 非可換多項式 (non_commutative_polynomial)
+            case 26: return dpm_type(p_type('any')); // 分散表現加群多項式 (dmod_polynomial)
+            case -1: return p_type('void'); // VOID (void)
+            default: return undefined;
+        }
     }
 
     private areTypesDeeplyEqual(type1: AsirType, type2: AsirType): boolean {
@@ -934,6 +993,47 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
 
     // --- 具体的な意味解析 ---
 
+    private analyzeFunctionBodyWithArgs(funcNode: ast.DefinitionStatementNode, parameterTypes: AsirType[]): AsirType {
+        // Detect recursion
+        if (this.analysisStack.includes(funcNode)) {
+            // If we detect recursion, return 'any' to break the cycle and prevent stack overflow
+            return p_type('any');
+        }
+
+        this.analysisStack.push(funcNode); // Push current function onto the stack
+
+        const oldFunction = this.currentFunction;
+        this.currentFunction = funcNode;
+        this.symbolTable.enterScope(funcNode);
+
+        // Define parameters in the new scope with the provided types
+        funcNode.parameters.forEach((param, i) => {
+            if (param.loc) {
+                this.checkVariableNameConvention(param);
+                const paramSymbol: Symbol = { 
+                    name: param.name, 
+                    type: parameterTypes[i] || p_type('parameter'), // Use provided type or default to parameter
+                    definedAt: param.loc, 
+                    node: param, 
+                    isUsed: false, 
+                    isFunctionArgument: true 
+                };
+                this.symbolTable.currentScope.define(paramSymbol);
+                this.visit(param);
+            }
+        });
+
+        // Visit the function body to infer the return type
+        this.visit(funcNode.body);
+        const inferredReturnType = (this.symbolTable.currentScope.lookup(funcNode.name.name)?.type as FunctionAsirType)?.returnType || p_type('any');
+
+        this.symbolTable.exitScope();
+        this.currentFunction = oldFunction;
+        this.analysisStack.pop(); // Pop current function from the stack
+
+        return inferredReturnType;
+    }
+
     override visitProgram(node: ast.ProgramNode): EvaluationResult {
         for (const stmt of node.statements) {
             if (!this.isReachable || this.isProgramTerminated) {
@@ -977,52 +1077,211 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             }
         }
 
-        if (this.assignmentsInBranch !== null && node.left.kind === 'Indeterminate') {
-            this.assignmentsInBranch.set(node.left.name, finalType);
-        } else {
-            if (node.left.kind === 'Indeterminate') {
-                const varName = node.left.name;
-                const symbol = this.symbolTable.currentScope.lookup(varName);
-                if (!symbol) {
-                    this.checkVariableNameConvention(node.left);
-                    if (this.currentModuleScope && !this.currentFunction) {
+        
+        if (node.left.kind === 'Indeterminate') {
+            const varName = node.left.name;
+            const symbol = this.symbolTable.currentScope.lookup(varName);
+            if (!symbol) {
+                this.checkVariableNameConvention(node.left);
+                if (this.currentModuleScope && !this.currentFunction) {
+                    this.addDiagnostic(
+                        node.left,
+                        `モジュールのトップレベルの変数 '${varName}' は、static または extern で事前に宣言する必要があります。`,
+                        DiagnosticSeverity.Error
+                    );
+                } else if (this.currentFunction && this.symbolTable.currentScope.hasLocalDeclaration) {
+                    this.addDiagnostic(
+                        node.left,
+                        `未宣言のローカル変数 '${varName}' に代入されました。`,
+                        DiagnosticSeverity.Warning
+                    );
+                }
+                if (node.left.loc) {
+                    this.symbolTable.currentScope.define({
+                        name: varName,
+                        type: finalType,
+                        definedAt: node.left.loc,
+                        node: node.left,
+                        isUsed: false,
+                        constantValue: isCompoundAssignment ? undefined : rightResult.constantValue
+                    });
+                }
+            } else {
+                const existingType = symbol.type;
+                if (existingType.kind !== 'primitive' || (existingType.name !== 'any' && existingType.name !== 'parameter')) {
+                    if (!this.isTypeCompatible(finalType, existingType)) {
                         this.addDiagnostic(
-                            node.left,
-                            `モジュールのトップレベルの変数 '${varName}' は、static または extern で事前に宣言する必要があります。`,
-                            DiagnosticSeverity.Error
-                        );
-                    } else if (this.currentFunction && this.symbolTable.currentScope.hasLocalDeclaration) {
-                        this.addDiagnostic(
-                            node.left,
-                            `未宣言のローカル変数 '${varName}' に代入されました。`,
+                            node,
+                            `変数の型が変更されました。 '${this.typeToString(existingType)}' から ${this.typeToString(rightResult.type)} に変わっています。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
                             DiagnosticSeverity.Warning
                         );
                     }
-                    if (node.left.loc) {
-                        this.symbolTable.currentScope.define({
-                            name: varName,
-                            type: finalType,
-                            definedAt: node.left.loc,
-                            node: node.left,
-                            isUsed: false,
-                            constantValue: isCompoundAssignment ? undefined : rightResult.constantValue
-                        });
-                    }
-                } else {
-                    const existingType = symbol.type;
-                    if (existingType.kind !== 'primitive' || (existingType.name !== 'any' && existingType.name !== 'parameter')) {
-                        if (!this.isTypeCompatible(finalType, existingType)) {
-                            this.addDiagnostic(
-                                node,
-                                `変数の型が変更されました。 '${this.typeToString(existingType)}' から ${this.typeToString(rightResult.type)} に変わっています。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
-                                DiagnosticSeverity.Warning
-                            );
+                }
+                symbol.type = finalType;
+                symbol.constantValue = isCompoundAssignment ? undefined : rightResult.constantValue; 
+            }
+        } else if (node.left.kind === 'IndexAccess' || node.left.kind === 'MemberAccess') {
+            let baseNode: ast.ExpressionNode = node.left;
+            while (baseNode.kind === 'IndexAccess' || baseNode.kind === 'MemberAccess') {
+                baseNode = (baseNode as ast.IndexAccessNode | ast.MemberAccessNode).base;
+            }
+            if (baseNode.kind === 'Indeterminate') {
+                const baseSymbol = this.symbolTable.currentScope.lookup(baseNode.name);
+                if (baseSymbol) { baseSymbol.constantValue = undefined; }
+            }
+            const leftResult= this.visit(node.left);
+            if (leftResult && !this.isTypeCompatible(finalType, leftResult.type)) {
+                this.addDiagnostic(node.right, `代入の型が一致しません。型 '${this.typeToString(leftResult.type)}' から型 '${this.typeToString(finalType)}'へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`, DiagnosticSeverity.Warning);
+            }
+            // Update the type of the base collection if it's an IndexAccess
+            if (node.left.kind === 'IndexAccess') {
+                // let currentBaseNode: ast.ExpressionNode = node.left;
+                // let lastIndexAccessNode: ast.IndexAccessNode | undefined;
+                // while (currentBaseNode.kind === 'IndexAccess') {
+                //     lastIndexAccessNode = currentBaseNode;
+                //     currentBaseNode = currentBaseNode.base;
+                // }
+                // if (currentBaseNode.kind === 'Indeterminate') {
+                //     const baseSymbol = this.symbolTable.currentScope.lookup(currentBaseNode.name);
+                //     if (baseSymbol) {
+                //         // Re-evaluate the type of the collection based on the new element type
+                //         let newCollectionType = baseSymbol.type;
+                //         console.log(`[DEBUG] IndexAccess: baseSymbol.type=${this.typeToString(baseSymbol.type)}, finalType=${this.typeToString(finalType)}`);
+                //         if (newCollectionType.kind === 'list' || newCollectionType.kind === 'vector' || newCollectionType.kind === 'matrix' || newCollectionType.kind === 'tuple') {
+                //             if (newCollectionType.kind === 'tuple') {
+                //                 // タプルの場合は要素の型を更新
+                //                 const updatedElements = newCollectionType.elements.map(elm => ({
+                //                     ...elm,
+                //                     type: this.getCommonSupertype([elm.type, finalType])
+                //                 }));
+                //                 newCollectionType = { ...newCollectionType, elements: updatedElements };
+                //             } else {
+                //                 // リスト、ベクトル、行列の場合は elementType を更新
+                //                 const existingElementType = newCollectionType.elementType;
+                //                 const updatedElementType = this.getCommonSupertype([existingElementType, finalType]);
+                //                 newCollectionType = { ...newCollectionType, elementType: updatedElementType };
+                //             }
+                //         }
+                //         console.log(`[DEBUG] IndexAccess: newCollectionType=${this.typeToString(newCollectionType)}`);
+                //         baseSymbol.type = newCollectionType;
+                //     }
+                // }
+                const IndexAccessNode = node.left;
+                const IndexAccessResult = this.visit(IndexAccessNode) as IndexAccessResult;
+
+                if (IndexAccessResult.baseNode.kind === 'Indeterminate') {
+                    const baseSymbol = this.symbolTable.currentScope.lookup(IndexAccessResult.baseNode.name);
+                    if (baseSymbol) {
+                        if (baseSymbol.name === 'L') {
+                            console.log(`[DEBUG] Before assignment to ${baseSymbol.name}[...], line ${node.loc?.startLine}: L.type = ${this.typeToString(baseSymbol.type)}`);
+                        }
+                        baseSymbol.constantValue = undefined;
+
+                        const updateTypeRecursively = (collectionType: AsirType, indices: ast.ExpressionNode[], newElementType: AsirType): AsirType => {
+                            if (indices.length === 0) { return newElementType; }
+                            const [currentIndex, ...remainingIndices] = indices;
+
+                            if (collectionType.kind === 'vector' || collectionType.kind === 'list' || collectionType.kind === 'matrix') {
+                                const updatedElementType = updateTypeRecursively(collectionType.elementType, remainingIndices, newElementType);
+                                return { ...collectionType, elementType: this.getCommonSupertype([collectionType.elementType, updatedElementType])};
+                            } else if (collectionType.kind === 'tuple') {
+                                const indexValue = this.getIntegerLiteralValue(currentIndex);
+                                if (indexValue !== null) {
+                                    const updatedElements = [...collectionType.elements];
+                                    if (indexValue >= 0 && indexValue < updatedElements.length) {
+                                        const elementToUpdate = updatedElements[indexValue];
+                                        const updatedElementType = updateTypeRecursively(elementToUpdate.type, remainingIndices, newElementType);
+                                        updatedElements[indexValue] = { ...elementToUpdate, type: updatedElementType };
+                                    }
+                                    return { ...collectionType, elements: updatedElements };
+                                } else {
+                                    // Index is not a literal. The tuple with known elements becomes a list with a general element type.
+                                    const originalElementType = this.getCommonSupertype(collectionType.elements.map(e => e.type));
+                                    const updatedElementType = updateTypeRecursively(originalElementType, remainingIndices, newElementType);
+                                    
+                                    const newOverallType = this.getCommonSupertype([originalElementType, updatedElementType]);
+                                    return { kind: 'list', elementType: newOverallType };
+                                }
+                            }
+                            return collectionType;
+                        };
+                        baseSymbol.type = updateTypeRecursively(baseSymbol.type, IndexAccessResult.indices, finalType);
+                        if (baseSymbol.name === 'L') {
+                            console.log(`[DEBUG] After assignment to ${baseSymbol.name}[...], line ${node.loc?.startLine}: L.type = ${this.typeToString(baseSymbol.type)}`);
                         }
                     }
-                    symbol.type = finalType;
-                    symbol.constantValue = isCompoundAssignment ? undefined : rightResult.constantValue; 
                 }
-            } else if (node.left.kind === 'IndexAccess' || node.left.kind === 'MemberAccess') {
+            } 
+            if (node.left.kind === 'MemberAccess') {
+                const memberAccessNode = node.left;
+                let currentResult = this.visit(memberAccessNode.base);
+                if (!currentResult) { return { type: finalType }; }
+
+                let currentType = currentResult.type;
+                const membersToTrace = memberAccessNode.members.slice(0,-1);
+                const finalMember = memberAccessNode.members[memberAccessNode.members.length -1];
+                for (const memberIndeterminate of membersToTrace) {
+                    if (!currentType) { return { type: finalType}; }
+                    const memberName = memberIndeterminate.name;
+
+                    if (currentType.kind !== 'struct') {
+                        this.addDiagnostic(
+                            memberIndeterminate,
+                            `'${this.typeToString(currentType)}' 型にメンバー '${memberName}' はありません。`,
+                            DiagnosticSeverity.Error
+                        );
+                        return { type: finalType};
+                    }
+
+                    const memberType = currentType.members.get(memberName);
+                    if (!memberType) {
+                        this.addDiagnostic(
+                            memberIndeterminate,
+                            `構造体 '${currentType.name}' にメンバー '${memberName}' はありません。`,
+                            DiagnosticSeverity.Error
+                        );
+                        return { type: finalType };
+                    }
+                    currentType = memberType;
+                }
+                if (!currentType ||  currentType.kind !== 'struct') {
+                    this.addDiagnostic(
+                        finalMember,
+                        `'${this.typeToString(currentType)}' 型は構造体ではないため、メンバーにアクセスできません。`,
+                        DiagnosticSeverity.Error
+                    );
+                    return { type: finalType};
+                }
+
+                const finalMemberName = finalMember.name;
+                const expecedType = currentType.members.get(finalMemberName);
+                if (!expecedType) {
+                    this.addDiagnostic(
+                        finalMember,
+                        `構造体 '${(currentType as StructAsirType).name}' にメンバー '${finalMemberName}' はありません。`,
+                        DiagnosticSeverity.Error
+                    );
+                } else {
+                    if (!this.isTypeCompatible(finalType, expecedType)) {
+                        this.addDiagnostic(
+                            node.right,
+                            `メンバー '${finalMemberName}' の型が一致しません。型 '${this.typeToString(expecedType)}' から型 '${this.typeToString(finalType)}' へ変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
+                            DiagnosticSeverity.Warning
+                        );
+                    }
+                    (currentType as StructAsirType).members.set(finalMemberName, finalType);
+                }
+            }
+
+            if (leftResult!.type && !this.isTypeCompatible(finalType, leftResult!.type)) {
+                this.addDiagnostic(
+                    node.right,
+                    `代入の型が一致しません。型 '${this.typeToString(leftResult!.type)}' から型 '${this.typeToString(finalType)}' へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
+                    DiagnosticSeverity.Warning
+                );
+            }
+
+            if (isCompoundAssignment) {
                 let baseNode: ast.ExpressionNode = node.left;
                 while (baseNode.kind === 'IndexAccess' || baseNode.kind === 'MemberAccess') {
                     baseNode = (baseNode as ast.IndexAccessNode | ast.MemberAccessNode).base;
@@ -1030,168 +1289,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 if (baseNode.kind === 'Indeterminate') {
                     const baseSymbol = this.symbolTable.currentScope.lookup(baseNode.name);
                     if (baseSymbol) { baseSymbol.constantValue = undefined; }
-                }
-                const leftResult= this.visit(node.left);
-                if (leftResult && !this.isTypeCompatible(finalType, leftResult.type)) {
-                    this.addDiagnostic(node.right, `代入の型が一致しません。型 '${this.typeToString(leftResult.type)}' から型 '${this.typeToString(finalType)}'へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`, DiagnosticSeverity.Warning);
-                }
-                // Update the type of the base collection if it's an IndexAccess
-                if (node.left.kind === 'IndexAccess') {
-                    // let currentBaseNode: ast.ExpressionNode = node.left;
-                    // let lastIndexAccessNode: ast.IndexAccessNode | undefined;
-                    // while (currentBaseNode.kind === 'IndexAccess') {
-                    //     lastIndexAccessNode = currentBaseNode;
-                    //     currentBaseNode = currentBaseNode.base;
-                    // }
-                    // if (currentBaseNode.kind === 'Indeterminate') {
-                    //     const baseSymbol = this.symbolTable.currentScope.lookup(currentBaseNode.name);
-                    //     if (baseSymbol) {
-                    //         // Re-evaluate the type of the collection based on the new element type
-                    //         let newCollectionType = baseSymbol.type;
-                    //         console.log(`[DEBUG] IndexAccess: baseSymbol.type=${this.typeToString(baseSymbol.type)}, finalType=${this.typeToString(finalType)}`);
-                    //         if (newCollectionType.kind === 'list' || newCollectionType.kind === 'vector' || newCollectionType.kind === 'matrix' || newCollectionType.kind === 'tuple') {
-                    //             if (newCollectionType.kind === 'tuple') {
-                    //                 // タプルの場合は要素の型を更新
-                    //                 const updatedElements = newCollectionType.elements.map(elm => ({
-                    //                     ...elm,
-                    //                     type: this.getCommonSupertype([elm.type, finalType])
-                    //                 }));
-                    //                 newCollectionType = { ...newCollectionType, elements: updatedElements };
-                    //             } else {
-                    //                 // リスト、ベクトル、行列の場合は elementType を更新
-                    //                 const existingElementType = newCollectionType.elementType;
-                    //                 const updatedElementType = this.getCommonSupertype([existingElementType, finalType]);
-                    //                 newCollectionType = { ...newCollectionType, elementType: updatedElementType };
-                    //             }
-                    //         }
-                    //         console.log(`[DEBUG] IndexAccess: newCollectionType=${this.typeToString(newCollectionType)}`);
-                    //         baseSymbol.type = newCollectionType;
-                    //     }
-                    // }
-                    const IndexAccessNode = node.left;
-                    const IndexAccessResult = this.visit(IndexAccessNode) as IndexAccessResult;
-
-                    if (IndexAccessResult.baseNode.kind === 'Indeterminate') {
-                        const baseSymbol = this.symbolTable.currentScope.lookup(IndexAccessResult.baseNode.name);
-                        if (baseSymbol) {
-                            if (baseSymbol.name === 'L') {
-                                console.log(`[DEBUG] Before assignment to ${baseSymbol.name}[...], line ${node.loc?.startLine}: L.type = ${this.typeToString(baseSymbol.type)}`);
-                            }
-                            baseSymbol.constantValue = undefined;
-
-                            const updateTypeRecursively = (collectionType: AsirType, indices: ast.ExpressionNode[], newElementType: AsirType): AsirType => {
-                                if (indices.length === 0) { return newElementType; }
-                                const [currentIndex, ...remainingIndices] = indices;
-
-                                if (collectionType.kind === 'vector' || collectionType.kind === 'list' || collectionType.kind === 'matrix') {
-                                    const updatedElementType = updateTypeRecursively(collectionType.elementType, remainingIndices, newElementType);
-                                    return { ...collectionType, elementType: this.getCommonSupertype([collectionType.elementType, updatedElementType])};
-                                } else if (collectionType.kind === 'tuple') {
-                                    const indexValue = this.getIntegerLiteralValue(currentIndex);
-                                    if (indexValue !== null) {
-                                        const updatedElements = [...collectionType.elements];
-                                        if (indexValue >= 0 && indexValue < updatedElements.length) {
-                                            const elementToUpdate = updatedElements[indexValue];
-                                            const updatedElementType = updateTypeRecursively(elementToUpdate.type, remainingIndices, newElementType);
-                                            updatedElements[indexValue] = { ...elementToUpdate, type: updatedElementType };
-                                        }
-                                        return { ...collectionType, elements: updatedElements };
-                                    } else {
-                                        // Index is not a literal. The tuple with known elements becomes a list with a general element type.
-                                        const originalElementType = this.getCommonSupertype(collectionType.elements.map(e => e.type));
-                                        const updatedElementType = updateTypeRecursively(originalElementType, remainingIndices, newElementType);
-                                        
-                                        const newOverallType = this.getCommonSupertype([originalElementType, updatedElementType]);
-                                        return { kind: 'list', elementType: newOverallType };
-                                    }
-                                }
-                                return collectionType;
-                            };
-                            baseSymbol.type = updateTypeRecursively(baseSymbol.type, IndexAccessResult.indices, finalType);
-                            if (baseSymbol.name === 'L') {
-                                console.log(`[DEBUG] After assignment to ${baseSymbol.name}[...], line ${node.loc?.startLine}: L.type = ${this.typeToString(baseSymbol.type)}`);
-                            }
-                        }
-                    }
-                } 
-                if (node.left.kind === 'MemberAccess') {
-                    const memberAccessNode = node.left;
-                    let currentResult = this.visit(memberAccessNode.base);
-                    if (!currentResult) { return { type: finalType }; }
-
-                    let currentType = currentResult.type;
-                    const membersToTrace = memberAccessNode.members.slice(0,-1);
-                    const finalMember = memberAccessNode.members[memberAccessNode.members.length -1];
-                    for (const memberIndeterminate of membersToTrace) {
-                        if (!currentType) { return { type: finalType}; }
-                        const memberName = memberIndeterminate.name;
-
-                        if (currentType.kind !== 'struct') {
-                            this.addDiagnostic(
-                                memberIndeterminate,
-                                `'${this.typeToString(currentType)}' 型にメンバー '${memberName}' はありません。`,
-                                DiagnosticSeverity.Error
-                            );
-                            return { type: finalType};
-                        }
-
-                        const memberType = currentType.members.get(memberName);
-                        if (!memberType) {
-                            this.addDiagnostic(
-                                memberIndeterminate,
-                                `構造体 '${currentType.name}' にメンバー '${memberName}' はありません。`,
-                                DiagnosticSeverity.Error
-                            );
-                            return { type: finalType };
-                        }
-                        currentType = memberType;
-                    }
-                    if (!currentType ||  currentType.kind !== 'struct') {
-                        this.addDiagnostic(
-                            finalMember,
-                            `'${this.typeToString(currentType)}' 型は構造体ではないため、メンバーにアクセスできません。`,
-                            DiagnosticSeverity.Error
-                        );
-                        return { type: finalType};
-                    }
-
-                    const finalMemberName = finalMember.name;
-                    const expecedType = currentType.members.get(finalMemberName);
-                    if (!expecedType) {
-                        this.addDiagnostic(
-                            finalMember,
-                            `構造体 '${(currentType as StructAsirType).name}' にメンバー '${finalMemberName}' はありません。`,
-                            DiagnosticSeverity.Error
-                        );
-                    } else {
-                        if (!this.isTypeCompatible(finalType, expecedType)) {
-                            this.addDiagnostic(
-                                node.right,
-                                `メンバー '${finalMemberName}' の型が一致しません。型 '${this.typeToString(expecedType)}' から型 '${this.typeToString(finalType)}' へ変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
-                                DiagnosticSeverity.Warning
-                            );
-                        }
-                        (currentType as StructAsirType).members.set(finalMemberName, finalType);
-                    }
-                }
-
-                if (leftResult!.type && !this.isTypeCompatible(finalType, leftResult!.type)) {
-                    this.addDiagnostic(
-                        node.right,
-                        `代入の型が一致しません。型 '${this.typeToString(leftResult!.type)}' から型 '${this.typeToString(finalType)}' へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
-                        DiagnosticSeverity.Warning
-                    );
-                }
-
-                if (isCompoundAssignment) {
-                    let baseNode: ast.ExpressionNode = node.left;
-                    while (baseNode.kind === 'IndexAccess' || baseNode.kind === 'MemberAccess') {
-                        baseNode = (baseNode as ast.IndexAccessNode | ast.MemberAccessNode).base;
-                    }
-                    if (baseNode.kind === 'Indeterminate') {
-                        const baseSymbol = this.symbolTable.currentScope.lookup(baseNode.name);
-                        if (baseSymbol) { baseSymbol.constantValue = undefined; }
-                    }
                 }
             }
         }
@@ -1206,8 +1303,15 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         return exprType || { type: p_type('undefined') };
     }
 
-    visitFunctionDefinition(node: ast.DefinitionStatementNode): EvaluationResult {
+    visitFunctionDefinition(node: ast.DefinitionStatementNode, parameterOverrideTypes?: AsirType[]): EvaluationResult {
         const funcName = node.name.name;
+        if (funcName === 'format_f_rp') {
+            const matrixParam = node.parameters[0];
+            const symbol = this.symbolTable.currentScope.lookup(matrixParam.name);
+            if (symbol) {
+                console.log(`[DEBUG] format_f_rp: MATRIX parameter type at start: ${this.typeToString(symbol.type)}`);
+            }
+        }
 
         // モジュール内の宣言チェック
         if (this.currentModuleScope) {
@@ -1233,9 +1337,9 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
 
         this.checkFunctionNameConvention(node.name);
         // 関数の型情報を作成する。
-        const parameterTypes = node.parameters.map(p => ({
+        const parameterTypes = node.parameters.map((p, i) => ({
             name: p.name,
-            type: p_type('parameter') as AsirType
+            type: parameterOverrideTypes && parameterOverrideTypes[i] ? parameterOverrideTypes[i] : p_type('parameter') as AsirType
         }));
         const functionType: FunctionAsirType = {
             kind: 'function',
@@ -1272,7 +1376,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             }
         });
 
-        this.visit(node.body);
         this.symbolTable.exitScope();
         this.currentFunction = null;
 
@@ -1392,106 +1495,123 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             argResults.push(argResult);
         }
         
+        if (funcName === 'format_f_rp') {
+            console.log(`[DEBUG] Calling format_f_rp with FRP type: ${this.typeToString(argResults[0].type)}`);
+        }
+
         if (builtinHandlers.has(funcName)) {
             const handler = builtinHandlers.get(funcName)!;
             return handler(this, node, argResults)
         }
         const calleeResult = this.visit(calleeNode.functionName);
         const actualArgTypes = argResults.map(r => r.type);
-        let calleeType: AsirType | undefined = calleeResult?.type;
-        // --- 呼び出し方に応じたロジック ---
-        if (node.isGlobal) {
-            if (calleeNode.moduleName) {
-                this.addDiagnostic(node, `'::' と '.'を同時に使用することはできません。`, DiagnosticSeverity.Error);
-                return { type: p_type('any') };
-            }
-            const globalScope = this.symbolTable.getRootScope();
-            calleeType = globalScope.lookup(funcName)?.type;
-            if (!calleeType && BUILTIN_SIGNATURES.has(funcName)) {
-                calleeType = BUILTIN_SIGNATURES.get(funcName);
-            }
-        } else if (calleeNode.moduleName) {
-            const moduleName = calleeNode.moduleName.name;
-            const moduleSymbol = this.symbolTable.currentScope.lookup(moduleName);
-            if (!moduleSymbol) {
-                this.addDiagnostic(calleeNode.moduleName, `モジュール '${moduleName}' は定義されていません。`, DiagnosticSeverity.Error);
-                return { type: p_type('any') };
-            }
-            if (moduleSymbol.type.kind !== 'module') {
-                this.addDiagnostic(calleeNode.moduleName, `'${moduleName}' はモジュールではありません。`, DiagnosticSeverity.Error);
-                return { type: p_type('any') };
-            } 
-            calleeType = moduleSymbol.type.members.get(funcName)?.type;
-        } else {
-            const symbol = this.symbolTable.currentScope.lookup(funcName);
-            if (symbol) {
-                calleeType = symbol.type;
-            } else if (BUILTIN_SIGNATURES.has(funcName)) {
-                calleeType = BUILTIN_SIGNATURES.get(funcName);
-            }
-        }
-        // --- 型チェック ---
-        if (!calleeType) {
-            this.addDiagnostic(calleeNode.functionName, `関数 '${funcName}' は定義されていません。`, DiagnosticSeverity.Error);
-            return { type: p_type('any') };
-        }
-        if (calleeType.kind === 'union') {
-            const funcPart = calleeType.types.find(t => t.kind === 'function' || t.kind === 'overloaded_function');
-            if (funcPart) { calleeType = funcPart; }
-        }
-        // 引数が一定の関数のチェック
-        if (calleeType.kind === 'function') {
-            // 引数の数チェック
-            const expectedParams = calleeType.parameters;
-            const restParam = calleeType.restParameter;
-            if (restParam) {
-                if (actualArgTypes.length < expectedParams.length) {
-                    this.addDiagnostic(node, `引数の数が足りません。少なくとも ${expectedParams.length} 個の引数が必要ですが、${argResults.length}個が指定されました。`, DiagnosticSeverity.Error);
+                let calleeType: AsirType | undefined = calleeResult?.type;
+                let funcSymbol: Symbol | undefined; // Declare funcSymbol here
+        
+                // --- 呼び出し方に応じたロジック ---
+                if (node.isGlobal) {
+                    if (calleeNode.moduleName) {
+                        this.addDiagnostic(node, `'::' と '.'を同時に使用することはできません。`, DiagnosticSeverity.Error);
+                        return { type: p_type('any') };
+                    }
+                    const globalScope = this.symbolTable.getRootScope();
+                    funcSymbol = globalScope.lookup(funcName); // Store the symbol
+                    calleeType = funcSymbol?.type;
+                    if (!calleeType && BUILTIN_SIGNATURES.has(funcName)) {
+                        calleeType = BUILTIN_SIGNATURES.get(funcName);
+                    }
+                } else if (calleeNode.moduleName) {
+                    const moduleName = calleeNode.moduleName.name;
+                    const moduleSymbol = this.symbolTable.currentScope.lookup(moduleName);
+                    if (!moduleSymbol) {
+                        this.addDiagnostic(calleeNode.moduleName, `モジュール '${moduleName}' は定義されていません。`, DiagnosticSeverity.Error);
+                        return { type: p_type('any') };
+                    }
+                    if (moduleSymbol.type.kind !== 'module') {
+                        this.addDiagnostic(calleeNode.moduleName, `'${moduleName}' はモジュールではありません。`, DiagnosticSeverity.Error);
+                        return { type: p_type('any') };
+                    } 
+                    funcSymbol = moduleSymbol.type.members.get(funcName); // Store the symbol
+                    calleeType = funcSymbol?.type;
+                } else {
+                    funcSymbol = this.symbolTable.currentScope.lookup(funcName); // Store the symbol
+                    if (funcSymbol) {
+                        calleeType = funcSymbol.type;
+                    } else if (BUILTIN_SIGNATURES.has(funcName)) {
+                        calleeType = BUILTIN_SIGNATURES.get(funcName);
+                    }
                 }
-            } else {
-                if (actualArgTypes.length !== expectedParams.length) {
-                    this.addDiagnostic(node,`引数の数が一致しません。 ${expectedParams.length} 個の引数が必要ですが、 ${argResults.length} 個が指定されました。`,DiagnosticSeverity.Error);
+                // --- 型チェック ---
+                if (!calleeType) {
+                    this.addDiagnostic(calleeNode.functionName, `関数 '${funcName}' は定義されていません。`, DiagnosticSeverity.Error);
+                    return { type: p_type('any') };
                 }
-            }
-            // 各固定引数の型をチェック
-            const fixedArgCount = Math.min(actualArgTypes.length, expectedParams.length);
-            for (let i = 0; i < fixedArgCount; i++) {
-                // --- Start of type refinement for parameters ---
-                if (node.args[i].kind === 'Indeterminate') {
-                    const argName = (node.args[i] as ast.IndeterminateNode).name;
-                    const symbol = this.symbolTable.currentScope.lookup(argName);
-                    if (symbol && symbol.isFunctionArgument && symbol.type.kind === 'primitive' && symbol.type.name === 'parameter') {
-                        if (!(expectedParams[i].type.kind === 'primitive' && (expectedParams[i].type as PrimitiveAsirType).name === 'any')) {
-                            symbol.type = expectedParams[i].type;
-                            actualArgTypes[i] = symbol.type;
+                if (calleeType.kind === 'union') {
+                    const funcPart = calleeType.types.find(t => t.kind === 'function' || t.kind === 'overloaded_function');
+                    if (funcPart) { calleeType = funcPart; }
+                }
+                // 引数が一定の関数のチェック
+                if (calleeType.kind === 'function') {
+                    // If it's a user-defined function, analyze its body with actual argument types
+                                if (funcSymbol && funcSymbol.node && funcSymbol.node.kind === 'FunctionDefinition') {
+                                    const inferredReturnType = this.analyzeFunctionBodyWithArgs(funcSymbol.node as ast.DefinitionStatementNode, actualArgTypes);
+                                    this.validateOptions(funcName, calleeType.allowesOptions, node.options);
+                                    return { type: inferredReturnType };
+                                }        
+                    // Otherwise, proceed with standard type checking for built-in or pre-defined functions
+                    const expectedParams = calleeType.parameters;
+                    const restParam = calleeType.restParameter;
+                    if (restParam) {
+                        if (actualArgTypes.length < expectedParams.length) {
+                            this.addDiagnostic(node, `引数の数が足りません。少なくとも ${expectedParams.length} 個の引数が必要ですが、${argResults.length}個が指定されました。`, DiagnosticSeverity.Error);
+                        }
+                    } else {
+                        if (actualArgTypes.length !== expectedParams.length) {
+                            this.addDiagnostic(node,`引数の数が一致しません。 ${expectedParams.length} 個の引数が必要ですが、 ${argResults.length} 個が指定されました。`,DiagnosticSeverity.Error);
                         }
                     }
-                }
-                // --- End of type refinement for parameters ---
-                this.checkUsageAsValue(actualArgTypes[i], actualArgTypes[i]);
-                if (!this.isTypeCompatible(actualArgTypes[i], expectedParams[i].type)) {
-                    this.addDiagnostic(
-                        node.args[i],
-                        `引数${i + 1}の型が一致しません。型 '${this.typeToString(expectedParams[i].type)}' が必要ですが、型 '${this.typeToString(actualArgTypes[i])}' が指定されました。`,
-                        DiagnosticSeverity.Error
-                    );
-                }
-            }
-            // 可変長引数の型チェック
-            if (restParam) {
-                for (let i = fixedArgCount; i < actualArgTypes.length; i++) {
-                    if (!this.isTypeCompatible(actualArgTypes[i], restParam.type)) {
-                        this.addDiagnostic(
-                            node.args[i],
-                            `引数${i+1}の型が一致しません。型 '${this.typeToString(restParam.type)}' が必要ですが、型 '${this.typeToString(actualArgTypes[i])}' が指定されました。`,
-                            DiagnosticSeverity.Error
-                        );
+                                // 各固定引数の型をチェック
+                                const fixedArgCount = Math.min(actualArgTypes.length, expectedParams.length);
+                                if (funcName === 'diff') {
+                                    console.log(`[DEBUG] funcName: ${funcName}`);
+                                    console.log(`[DEBUG] actualArgTypes: ${actualArgTypes.map(t => this.typeToString(t)).join(', ')}`);
+                                    console.log(`[DEBUG] expectedParams: ${expectedParams.map(p => this.typeToString(p.type)).join(', ')}`);
+                                }
+                                for (let i = 0; i < fixedArgCount; i++) {
+                                    // --- Start of type refinement for parameters ---
+                                    if (node.args[i].kind === 'Indeterminate') {
+                                        const argName = (node.args[i] as ast.IndeterminateNode).name;
+                                        const symbol = this.symbolTable.currentScope.lookup(argName);
+                                        if (symbol && symbol.isFunctionArgument && symbol.type.kind === 'primitive' && symbol.type.name === 'parameter') {
+                                            if (!(expectedParams[i].type.kind === 'primitive' && (expectedParams[i].type as PrimitiveAsirType).name === 'any')) {
+                                                symbol.type = expectedParams[i].type;
+                                                actualArgTypes[i] = symbol.type;
+                                            }
+                                        }
+                                    }
+                                    // --- End of type refinement for parameters ---
+                                    this.checkUsageAsValue(actualArgTypes[i], actualArgTypes[i]);
+                                                                    if (!this.isTypeCompatible(actualArgTypes[i], expectedParams[i].type)) {
+                                                                        this.addDiagnostic(
+                                                                            node.args[i],
+                                                                            `引数${i + 1}の型が一致しません。型 '${this.typeToString(expectedParams[i].type)}' が必要ですが、型 '${this.typeToString(actualArgTypes[i])}' が指定されました。`,
+                                                                            DiagnosticSeverity.Error
+                                                                        );
+                                                                    }                                }                    // 可変長引数の型チェック
+                    if (restParam) {
+                        for (let i = fixedArgCount; i < actualArgTypes.length; i++) {
+                            if (!this.isTypeCompatible(actualArgTypes[i], restParam.type)) {
+                                this.addDiagnostic(
+                                    node.args[i],
+                                    `引数${i+1}の型が一致しません。型 '${this.typeToString(restParam.type)}' が必要ですが、型 '${this.typeToString(actualArgTypes[i])}' が指定されました。`,
+                                    DiagnosticSeverity.Error
+                                );
+                            }
+                        }
                     }
+                    this.validateOptions(funcName, calleeType.allowesOptions, node.options);
+                    return { type: calleeType.returnType };
                 }
-            }
-            this.validateOptions(funcName, calleeType.allowesOptions, node.options);
-            return { type: calleeType.returnType };
-        }
         // 引数の数が可変の関数のチェック（Overloaded Function）
         if (calleeType.kind === 'overloaded_function') {
             const matchingSignature = calleeType.signatures.find(sig => {
@@ -2002,6 +2122,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         return { type: p_type('undefined') };
     }
 
+
     visitForStatement(node: ast.ForStatementNode): EvaluationResult {
         // for 文の初期化式、条件式、更新式を先に解析
         node.initializers.forEach(init => this.visit(init));
@@ -2023,82 +2144,85 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     visitIfStatement(node: ast.IfStatementNode): EvaluationResult {
         this.visit(node.condition);
 
-        let narrowedVarSymbol: Symbol | undefined = undefined;
-        let originalType: AsirType | undefined = undefined;
-        let thenType: AsirType | undefined = undefined;
-        let elseType: AsirType | undefined = undefined;
+        // --- Capture pre-branch state ---
+        const originalTypes = new Map<string, AsirType>();
+        const symbolsToTrack = this.symbolTable.currentScope.symbols;
+        symbolsToTrack.forEach((s: Symbol) => originalTypes.set(s.name, s.type));
 
-        if (node.condition.kind === 'BinaryOperation' && (node.condition.operator === '==' || node.condition.operator === '!=')) {
-            const op = node.condition;
-            let varNode: ast.IndeterminateNode | undefined;
-            let literalType: AsirType | undefined;
-
-            if (op.left.kind === 'Indeterminate' && this.isTypeLiteral(op.right)) {
-                varNode = op.left;
-                literalType = this.visit(op.right)?.type;
-            } else if (op.right.kind === 'Indeterminate' && this.isTypeLiteral(op.left)) {
-                varNode = op.right;
-                literalType = this.visit(op.left)?.type;
+        // --- Analyze 'then' branch ---
+        this.visit(node.thenStatement);
+        const thenTypes = new Map<string, AsirType>();
+        symbolsToTrack.forEach((s: Symbol) => {
+            // Record type if it changed from the original
+            if (!this.areTypesDeeplyEqual(originalTypes.get(s.name)!, s.type)) {
+                thenTypes.set(s.name, s.type);
             }
+        });
 
-            if (varNode && literalType) {
-                narrowedVarSymbol = this.symbolTable.currentScope.lookup(varNode.name);
-                if (narrowedVarSymbol && narrowedVarSymbol.type.kind === 'union') {
-                    originalType = narrowedVarSymbol.type;
-                    if (node.condition.operator === '==') {
-                        thenType = literalType;
-                        elseType = this.substractType(originalType, literalType);
-                    } else {
-                        thenType = this.substractType(originalType, literalType);
-                        elseType = literalType;
-                    }
+        // --- Restore state for 'else' branch ---
+        symbolsToTrack.forEach((s: Symbol) => {
+            const originalType = originalTypes.get(s.name);
+            if (originalType) {
+                s.type = originalType;
+            }
+        });
+
+        // --- Analyze 'else' branch ---
+        const elseTypes = new Map<string, AsirType>();
+        if (node.elseStatement) {
+            this.visit(node.elseStatement);
+            symbolsToTrack.forEach((s: Symbol) => {
+                // Record type if it changed from the original
+                if (!this.areTypesDeeplyEqual(originalTypes.get(s.name)!, s.type)) {
+                    elseTypes.set(s.name, s.type);
+                }
+            });
+        }
+
+        // --- Restore state before merging ---
+        symbolsToTrack.forEach((s: Symbol) => {
+            const originalType = originalTypes.get(s.name);
+            if (originalType) {
+                s.type = originalType;
+            }
+        });
+
+        // --- Merge and apply final types ---
+        const allModifiedVars = new Set([...thenTypes.keys(), ...elseTypes.keys()]);
+        allModifiedVars.forEach(name => {
+            const symbol = this.symbolTable.currentScope.lookup(name)!;
+            const originalType = originalTypes.get(name);
+            const thenType = thenTypes.get(name);
+            const elseType = elseTypes.get(name);
+
+            const typesToMerge: (AsirType | undefined)[] = [];
+            if (thenType && elseType) {
+                typesToMerge.push(thenType, elseType);
+            } else if (thenType) {
+                typesToMerge.push(thenType);
+                if (originalType) {
+                    typesToMerge.push(thenType);
+                }
+            } else if (elseType) {
+                typesToMerge.push(originalType, elseType);
+                if (originalType) {
+                    typesToMerge.push(originalType);
                 }
             }
-        }
 
-        const thenAssignments = new Map<string, AsirType>();
-        this.assignmentsInBranch = thenAssignments;
-        if (narrowedVarSymbol && thenType) {
-            narrowedVarSymbol.type = thenType;
-        }
-        this.visit(node.thenStatement);
-        if (narrowedVarSymbol && originalType) {
-            narrowedVarSymbol.type = originalType;
-        }
-        this.assignmentsInBranch = null;
-
-        const elseAssignments = new Map<string, AsirType>();
-        if (node.elseStatement) {
-            this.assignmentsInBranch = elseAssignments;
-            if (narrowedVarSymbol && elseType) {
-                narrowedVarSymbol.type = elseType;
+            const filteredTypes = typesToMerge.filter((t): t is AsirType => t !== undefined);
+            
+            if (typesToMerge.length > 0) {
+                symbol.type = this.getCommonSupertype(filteredTypes);
+            } else {
+                if (originalType) {
+                    symbol.type = originalType;
+                } else {
+                    symbol.type = p_type('any');
+                }
             }
-            this.visit(node.elseStatement);
-            if (narrowedVarSymbol && originalType) {
-                narrowedVarSymbol.type = originalType;
-            }
-            this.assignmentsInBranch = null;
-        }
+        });
 
-        const AllAssignedVars = new Set([...thenAssignments.keys(), ...elseAssignments.keys()]);
-        for (const name of AllAssignedVars) {
-            const symbol = this.symbolTable.currentScope.lookup(name);
-            if (!symbol) continue;
-
-            const thenType = thenAssignments.get(name);
-            const elseType = elseAssignments.get(name);
-
-            if (thenType && elseType) {
-                const margedType = this.getCommonSupertype([thenType, elseType]);
-                symbol.type = margedType;
-            } else if (thenType) {
-                const margedType = this.getCommonSupertype([symbol.type, thenType]);
-                symbol.type = margedType;
-            } else if (elseType) {
-                const margedType = this.getCommonSupertype([symbol.type, elseType]);
-                symbol.type = margedType;
-            }
-        }
         return { type: p_type('undefined') };
     }
 

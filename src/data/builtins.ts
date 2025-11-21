@@ -8,6 +8,10 @@ export const ASIR_KEYWORDS = [
     'end', 'quit', 'debug'
 ]; 
 export const ALL_ASIR_BUILTIN = [
+    // --- なぜかflistにない関数 ---
+    'quote', 'pari', 'recmap', 'timer', 'newstruct', 'getopt',
+    'sin', 'cos', 'tan', 'sinh', 'cosh', 'tanh', 'log', 'exp', 'factorial',
+    // --- flistにある関数 ---
     'comp_f','div_minf','div_pinf','mul_minf','mul_pinf','sub_minf','sub_pinf','add_minf','add_pinf','hugo',
     'nnf','subf','atnum','qe','qevar','atl','compf','fopargs','fargs','fop','all','ex','simpl','sha1',
     'ecm_set_addcounter','ecm_find_match','separate_vect','sort_ktarray','nextvect1','ecm_count_order',

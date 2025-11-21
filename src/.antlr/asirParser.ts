@@ -187,7 +187,7 @@ export class asirParser extends antlr.Parser {
         "'@equiv'", "'def'", "'if'", "'for'", "'while'", "'do'", "'else'", 
         "'return'", "'continue'", "'break'", "'struct'", "'module'", "'endmodule'", 
         "'extern'", "'static'", "'global'", "'local'", "'localf'", "'function'", 
-        "'end'", "'quit'", "'denug'", null, "'@'", null, null, null, "'.'", 
+        "'end'", "'quit'", "'debug'", null, "'@'", null, null, null, "'.'", 
         "'\\n'", null, null, null, null, "'#ifdef'", "'#ifndef'", "'#if'", 
         "'#else'", "'#elif'", "'#endif'", "'#include'", "'#define'", "'##'", 
         "'#'"

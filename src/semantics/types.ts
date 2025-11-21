@@ -174,6 +174,7 @@ export const stdpoly_type = (coeffType: AsirType): PolynomialAsirType  => ({ kin
 export const dpoly_type = (coeffType: AsirType): PolynomialAsirType => ({ kind: 'distributed_polynomial', coefficientType: coeffType });
 export const dpm_type = (coeffType: AsirType): PolynomialAsirType => ({ kind: 'dmod_polynomial', coefficientType: coeffType });
 export const rat_type = (coeffType: AsirType): PolynomialAsirType => ({ kind: 'rational_function', coefficientType: coeffType });
+export const ncpoly_type = (coeffType: AsirType): PolynomialAsirType => ({ kind: 'non_commutative_polynomial', coefficientType: coeffType });
 
 export const type_0: LiteralUnionType = { kind: 'literal_union', values: [0] };
 export const type_1: LiteralUnionType = { kind: 'literal_union', values: [1] };

@@ -1,8 +1,8 @@
-
 import * as fs from 'fs';
 import * as path from 'path';
+import * as ast from '../../core/ast/asirAst.js';
 import { BuiltinFunctionHandler } from './handler';
-import { EvaluationResult, p_type, ConstantValue, TupleType, TupleElement,  AsirType, l_type, ListAsirType, VectorAsirType, UnionType } from '../types';
+import { EvaluationResult, p_type, u_type, ConstantValue, TupleType, TupleElement,  AsirType, l_type, ListAsirType, VectorAsirType, UnionType, FunctionAsirType } from '../types';
 import { DiagnosticSeverity } from '../../utils/diagnostics';
 import { parseAndBuildAST } from '../../core/parser/parserUtils';
 import { Validator } from '../validator';
@@ -43,23 +43,86 @@ const handleMap: BuiltinFunctionHandler = (validator, node, argResults) => {
         return { type: { kind: 'list', elementType: p_type('any')}};
     }
 
-    const containerType = argResults[1].type;
+    const mappedFunctionType = resolvedFuncType as FunctionAsirType; // Assuming it's a single function type after resolution
+    const containerResult = argResults[1];
+    const containerType = containerResult.type;
     const fixedArgTypes = argResults.slice(2).map(r => r.type);
 
-    if (containerType.kind === 'tuple') {
-        const fixedArgNodes = node.args.slice(2);
-        const resultElements: TupleElement[] = containerType.elements.map((element, i) => {
-            const callArgTypes = [element.type, ...fixedArgTypes];
-            if (resolvedFuncType.parameters.length !== callArgTypes.length) {
-                validator.addDiagnostic(node, `map に渡された関数は ${resolvedFuncType.parameters.length} 個の引数を期待しますが、 ${callArgTypes.length} 個が渡されました `, DiagnosticSeverity.Error);
+    let newConstantValue: ConstantValue | undefined = undefined;
+    // Constant value propagation for map is complex, skip for now.
+
+    // Helper to apply the mapped function to an element type
+    const applyFunctionToElementType = (elementType: AsirType): AsirType => {
+        const callArgTypes = [elementType, ...fixedArgTypes];
+        
+        // Check if the number of arguments matches
+        if (mappedFunctionType.restParameter) {
+            if (callArgTypes.length < mappedFunctionType.parameters.length) {
+                validator.addDiagnostic(node, `map の関数引数の数が足りません。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+        } else {
+            if (callArgTypes.length !== mappedFunctionType.parameters.length) {
+                validator.addDiagnostic(node, `map の関数引数の数が一致しません。`, DiagnosticSeverity.Error);
+                return p_type('any');
+            }
+        }
+
+        // Check type compatibility for fixed parameters
+        const fixedArgCount = Math.min(callArgTypes.length, mappedFunctionType.parameters.length);
+        for (let i = 0; i < fixedArgCount; i++) {
+            if (!validator.isTypeCompatible(callArgTypes[i], mappedFunctionType.parameters[i].type)) {
+                validator.addDiagnostic(
+                    node,
+                    `map の関数引数 ${i + 1} の型が一致しません。型 '${validator.typeToString(mappedFunctionType.parameters[i].type)}' が必要ですが、型 '${validator.typeToString(callArgTypes[i])}' が指定されました。`,
+                    DiagnosticSeverity.Error
+                );
+                return p_type('any');
+            }
+        }
+
+        // Check type compatibility for rest parameter
+        if (mappedFunctionType.restParameter) {
+            for (let i = fixedArgCount; i < callArgTypes.length; i++) {
+                if (!validator.isTypeCompatible(callArgTypes[i], mappedFunctionType.restParameter.type)) {
+                    validator.addDiagnostic(
+                        node,
+                        `map の関数引数 ${i + 1} の型が一致しません。型 '${validator.typeToString(mappedFunctionType.restParameter.type)}' が必要ですが、型 '${validator.typeToString(callArgTypes[i])}' が指定されました。`,
+                        DiagnosticSeverity.Error
+                    );
+                    return p_type('any');
+                }
+            }
+        }
+
+        return mappedFunctionType.returnType;
+    };
+
+    switch (containerType.kind) {
+        case 'list':
+            const newElementTypeList = applyFunctionToElementType(containerType.elementType);
+            return { type: { kind: 'list', elementType: newElementTypeList }, constantValue: newConstantValue };
+        case 'vector':
+            const newElementTypeVector = applyFunctionToElementType(containerType.elementType);
+            return { type: { kind: 'vector', elementType: newElementTypeVector }, constantValue: newConstantValue };
+        case 'matrix':
+            const newElementTypeMatrix = applyFunctionToElementType(containerType.elementType);
+            return { type: { kind: 'matrix', elementType: newElementTypeMatrix }, constantValue: newConstantValue };
+        case 'tuple':
+            const newElementsTuple = containerType.elements.map(element => ({
+                ...element,
+                type: applyFunctionToElementType(element.type)
+            }));
+            return { type: { kind: 'tuple', elements: newElementsTuple }, constantValue: newConstantValue };
+        case 'primitive':
+            if (containerType.name === 'any' || containerType.name === 'parameter') {
+                // If the container type is unknown, the result is also unknown.
                 return { type: p_type('any') };
             }
-            // ... (Type checking logic for each argument) ...
-            return { type: resolvedFuncType.returnType };
-        });
-        return { type: { kind: 'tuple', elements: resultElements }};
+            break; // Fall through to default error
     }
-    // TODO: Handle map over matrix, vector
+
+    validator.addDiagnostic(node.args[1], `map の第二引数はリスト、ベクトル、行列、またはタプルである必要があります。`, DiagnosticSeverity.Error);
     return { type: p_type('any') };
 };
 
@@ -464,6 +527,70 @@ const handleVtol: BuiltinFunctionHandler = (validator, node, argResults) => {
     }
 };
 
+function devalTypeTransform(this: Validator, inputType: AsirType, node: ast.ASTNode): AsirType {
+    switch (inputType.kind) {
+        case 'primitive':
+            if (inputType.name === 'complex') {
+                return p_type('complex');
+            }
+            if (['integer', 'rational', 'float', 'bigfloat', 'number'].includes(inputType.name)) {
+                return p_type('float');
+            }
+            if (inputType.name === 'form') {
+                return u_type([p_type('number'), p_type('form')]);
+            }
+            if (inputType.name === 'parameter') {
+                return p_type('any'); // Changed from p_type('form')
+            }
+            this.addDiagnostic(node, `devalは型'${this.typeToString(inputType)}'を評価できません。`, DiagnosticSeverity.Error);
+            return p_type('error');
+
+        case 'standard_polynomial':
+        case 'distributed_polynomial':
+        case 'dmod_polynomial':
+        case 'non_commutative_polynomial':
+        case 'rational_function':
+            const newCoeffType = devalTypeTransform.call(this, inputType.coefficientType, node);
+            if (newCoeffType.kind === 'primitive' && newCoeffType.name === 'error') {
+                return p_type('error');
+            }
+            return { ...inputType, coefficientType: newCoeffType };
+
+        case 'union':
+            const transformedTypes = inputType.types.map(t => devalTypeTransform.call(this, t, node));
+            const validTypes = transformedTypes.filter(t => !(t.kind === 'primitive' && t.name === 'error'));
+            if (validTypes.length === 0) {
+                return p_type('error');
+            }
+            return this.getCommonSupertype(validTypes);
+        
+        case 'vector':
+        case 'matrix':
+        case 'list':
+        case 'tuple':
+            this.addDiagnostic(node, `devalはコンテナ型'${inputType.kind}'を直接評価できません。`, DiagnosticSeverity.Error);
+            return p_type('error');
+
+        default:
+            this.addDiagnostic(node, `devalで未対応の型'${inputType.kind}'です。`, DiagnosticSeverity.Warning);
+            return p_type('any');
+    }
+}
+
+const handleDeval: BuiltinFunctionHandler = (validator, node, argResults) => {
+    if (argResults.length === 0 || argResults.length > 2) {
+        validator.addDiagnostic(node, `deval/eval は1つまたは2つの引数を取ります。`, DiagnosticSeverity.Error);
+        return { type: p_type('any') };
+    }
+
+    const inputType = argResults[0].type;
+    const argNode = node.args[0];
+    
+    const resultType = devalTypeTransform.call(validator, inputType, argNode);
+
+    return { type: resultType };
+};
+
 // 組み込み関数ハンドラーの登録簿
 export const builtinHandlers = new Map<string, BuiltinFunctionHandler>([
     ['map', handleMap],
@@ -480,4 +607,6 @@ export const builtinHandlers = new Map<string, BuiltinFunctionHandler>([
     ['ltov', handleLtov],
     ['vtol', handleVtol],
     ['newstruct', handleNewstruct],
+    ['deval', handleDeval],
+    ['eval', handleDeval],
 ]);

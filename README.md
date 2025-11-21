@@ -30,12 +30,12 @@ npm run build
 
 ## 使い方 (CLI)
 
-ビルド後、`dist/run.js` を `node` コマンドで実行することでCLIツールとして利用できます。
+ビルド後、`dist/cli/cli.js` を `node` コマンドで実行することでCLIツールとして利用できます。
 
 ### 基本的な解析
 
 ```bash
-node dist/run.js <解析したいファイルパス>
+node dist/cli/cli.js <解析したいファイルパス>
 ```
 
 ### オプション
@@ -47,17 +47,17 @@ node dist/run.js <解析したいファイルパス>
 
 *   `input.rr` を解析し、テキスト形式で結果を表示する:
     ```bash
-    node dist/run.js input.rr
+    node dist/cli/cli.js input.rr
     ```
 
 *   `input.rr` を解析し、JSON形式で結果を表示する:
     ```bash
-    node dist/run.js input.rr --format json
+    node dist/cli/cli.js input.rr --format json
     ```
 
 *   `input.rr` を解析し、警告レベル以上の診断のみをテキスト形式で表示する:
     ```bash
-    node dist/run.js input.rr --min-severity warning
+    node dist/cli/cli.js input.rr --min-severity warning
     ```
 
 ## テスト
@@ -68,10 +68,11 @@ Jestを用いた単体テストを実行します。
 npm test
 ```
 
-## 将来の機能向上案
+## 問題
 
-~~このプロジェクトのさらなる発展のためのアイデアは、`tome/future_enhancements.txt` にまとめられています。~~
+確認されている未修正の問題は以下の通りです。
 
-## ライセンス
+- 文字列内のエスケープ文字「\"」が正しくパースされない（構文エラー）
+- def文内の局所変数に対してホバー情報が表示されない
 
 

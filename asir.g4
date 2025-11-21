@@ -247,10 +247,10 @@ LOCALF   : 'localf';
 FUNCTION : 'function';
 END      : 'end';
 QUIT     : 'quit';
-DEBUG    : 'denug';
+DEBUG    : 'debug';
 ATFUNC   : '@'([a-zA-Z])+;
 VAR_2    : '@';
-ID       : [_]?[a-zA-Z_]([a-zA-Z0-9_])*;
+ID       : [a-zA-Z_]([a-zA-Z0-9_])*;
 FLOAT    : [0-9]+ '.' [0-9]* EXPONENT?
          | '.' [0-9]* EXPONENT?
          | [0-9]+ EXPONENT
@@ -272,7 +272,7 @@ PINCLUDE : '#include';
 PDEFINE  : '#define';
 CHARPLUS : '##';
 CHAR     : '#';
-STRING   : '"' .*? '"';
+STRING   : '"' ( '\\' . | ~["\\] )* '"';
 NOSTRING : '\'' .*?  '\'';
 SYSTEM_PATH_LITERAL: '<' [a-zA-Z0-9_./\\-]+ '>';
 
