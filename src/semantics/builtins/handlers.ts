@@ -5,11 +5,12 @@ import { BuiltinFunctionHandler } from './handler';
 import { EvaluationResult, p_type, u_type, ConstantValue, TupleType, TupleElement,  AsirType, l_type, ListAsirType, VectorAsirType, UnionType, FunctionAsirType } from '../types';
 import { DiagnosticSeverity } from '../../utils/diagnostics';
 import { parseAndBuildAST } from '../../core/parser/parserUtils';
-import { Validator } from '../validator';
+import { Validator } from '../validator.js';
+import { isTypeCompatible, getCommonSupertype } from '../utils/typeSystem.js';
+import { typeToString } from '../utils/typeFormatter.js';
 import { BUILTIN_SIGNATURES } from '../../data/builtinSignatures';
 import { ctrlSubHandlers } from './ctrl_handlers';
 import { PARI_SIGNATURES } from '../../data/pariSignatures'; 
-import { ListAssignContext } from '../../.antlr/asirParser';
 
 // 各ハンドラーは、Validatorのインスタンス、ASTノード、評価済みの引数を受け取る
 
@@ -71,10 +72,10 @@ const handleMap: BuiltinFunctionHandler = (validator, node, argResults) => {
         // Check type compatibility for fixed parameters
         const fixedArgCount = Math.min(callArgTypes.length, mappedFunctionType.parameters.length);
         for (let i = 0; i < fixedArgCount; i++) {
-            if (!validator.isTypeCompatible(callArgTypes[i], mappedFunctionType.parameters[i].type)) {
+            if (!isTypeCompatible(callArgTypes[i], mappedFunctionType.parameters[i].type)) {
                 validator.addDiagnostic(
                     node,
-                    `map の関数引数 ${i + 1} の型が一致しません。型 '${validator.typeToString(mappedFunctionType.parameters[i].type)}' が必要ですが、型 '${validator.typeToString(callArgTypes[i])}' が指定されました。`,
+                    `map の関数引数 ${i + 1} の型が一致しません。型 '${typeToString(mappedFunctionType.parameters[i].type)}' が必要ですが、型 '${typeToString(callArgTypes[i])}' が指定されました。`,
                     DiagnosticSeverity.Error
                 );
                 return p_type('any');
@@ -84,10 +85,10 @@ const handleMap: BuiltinFunctionHandler = (validator, node, argResults) => {
         // Check type compatibility for rest parameter
         if (mappedFunctionType.restParameter) {
             for (let i = fixedArgCount; i < callArgTypes.length; i++) {
-                if (!validator.isTypeCompatible(callArgTypes[i], mappedFunctionType.restParameter.type)) {
+                if (!isTypeCompatible(callArgTypes[i], mappedFunctionType.restParameter.type)) {
                     validator.addDiagnostic(
                         node,
-                        `map の関数引数 ${i + 1} の型が一致しません。型 '${validator.typeToString(mappedFunctionType.restParameter.type)}' が必要ですが、型 '${validator.typeToString(callArgTypes[i])}' が指定されました。`,
+                        `map の関数引数 ${i + 1} の型が一致しません。型 '${typeToString(mappedFunctionType.restParameter.type)}' が必要ですが、型 '${typeToString(callArgTypes[i])}' が指定されました。`,
                         DiagnosticSeverity.Error
                     );
                     return p_type('any');
@@ -156,8 +157,8 @@ const handlePari: BuiltinFunctionHandler = (validator, node, argResults) => {
     
     const fixedArgCount = Math.min(pariArgTypes.length, expectedParams.length);
     for (let i = 0; i < fixedArgCount; i++) {
-        if (!validator.isTypeCompatible(pariArgTypes[i], expectedParams[i].type)) {
-            validator.addDiagnostic(node, `pari 関数 '${pariFuncName}' の引数 ${i+1} の型が一致しません。型 '${validator.typeToString(expectedParams[i].type)}' が必要ですが、型 '${validator.typeToString(pariArgTypes[i])}' が指定されました。`,DiagnosticSeverity.Error);
+        if (!isTypeCompatible(pariArgTypes[i], expectedParams[i].type)) {
+            validator.addDiagnostic(node, `pari 関数 '${pariFuncName}' の引数 ${i+1} の型が一致しません。型 '${typeToString(expectedParams[i].type)}' が必要ですが、型 '${typeToString(pariArgTypes[i])}' が指定されました。`,DiagnosticSeverity.Error);
         }
     }
     return { type: pariFuncSignature.returnType };
@@ -270,14 +271,14 @@ const handleCons: BuiltinFunctionHandler = (validator, node, argResults) => {
 
     if (isListLikeOrUnknown(listType)) {
         if (listType.kind === 'primitive' && (listType.name === 'parameter' || listType.name === 'any')) {
-            return { type: l_type(validator.getCommonSupertype([itemResult.type, p_type('any')])), constantValue: newConstantValue };
+            return { type: l_type(getCommonSupertype([itemResult.type, p_type('any')])), constantValue: newConstantValue };
         }
 
         if (listType.kind === 'tuple') {
             const newElements = [{ type: itemResult.type }, ...listType.elements];
             return { type: { kind: 'tuple', elements: newElements }, constantValue: newConstantValue };
         } else if (listType.kind === 'list') {
-            const commonElementType = validator.getCommonSupertype([itemResult.type, listType.elementType]);
+            const commonElementType = getCommonSupertype([itemResult.type, listType.elementType]);
             return { type: { kind: 'list', elementType: commonElementType }, constantValue: newConstantValue };
         }
     }
@@ -364,9 +365,9 @@ const handleAppend: BuiltinFunctionHandler = (validator, node, argResults) => {
                 const newElements = list1Type.elements.concat(list2Type.elements);
                 return { type: { kind: 'tuple', elements: newElements }, constantValue: newConstantValue };
             } else {
-                const elem1Type = list1Type.kind === 'list' ? list1Type.elementType : validator.getCommonSupertype(list1Type.elements.map(e => e.type));
-                const elem2Type = list2Type.kind === 'list' ? list2Type.elementType : validator.getCommonSupertype(list2Type.elements.map(e => e.type));
-                return { type: { kind: 'list', elementType: validator.getCommonSupertype([elem1Type, elem2Type]) }, constantValue: newConstantValue };
+                const elem1Type = list1Type.kind === 'list' ? list1Type.elementType : getCommonSupertype(list1Type.elements.map(e => e.type));
+                const elem2Type = list2Type.kind === 'list' ? list2Type.elementType : getCommonSupertype(list2Type.elements.map(e => e.type));
+                return { type: { kind: 'list', elementType: getCommonSupertype([elem1Type, elem2Type]) }, constantValue: newConstantValue };
             }
         } else {
             return { type: l_type(p_type('any')), constantValue: newConstantValue };
@@ -439,7 +440,7 @@ const handleLtov: BuiltinFunctionHandler = (validator, node, argResults) => {
         if (actualListType.kind === 'list') {
             return { type: { kind: 'vector', elementType: (actualListType as ListAsirType).elementType }, constantValue: newConstantValue };
         } else if (actualListType.kind === 'tuple') {
-            const commonElementType = validator.getCommonSupertype((actualListType as TupleType).elements.map(e => e.type));
+            const commonElementType = getCommonSupertype((actualListType as TupleType).elements.map(e => e.type));
             return { type: { kind: 'vector', elementType: commonElementType }, constantValue: newConstantValue };
         }
     }
@@ -481,7 +482,7 @@ const handleNewstruct: BuiltinFunctionHandler = (validator, node, argResults) =>
 };
 
 const handleVtol: BuiltinFunctionHandler = (validator, node, argResults) => {
-    console.log(`[DEBUG] handleVtol: argType=${validator.typeToString(argResults[0].type)}`);
+    console.log(`[DEBUG] handleVtol: argType=${typeToString(argResults[0].type)}`);
     if (argResults.length !== 1) {
         validator.addDiagnostic(node, `vtol は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
         return { type: p_type('any') };
@@ -497,15 +498,15 @@ const handleVtol: BuiltinFunctionHandler = (validator, node, argResults) => {
     let actualVectorType: VectorAsirType | undefined;
     if (argType.kind === 'union') {
         const findVectorInUnion = (unionType: UnionType): VectorAsirType | undefined => {
-            console.log(`[DEBUG] findVectorInUnion: unionType.types=${unionType.types.map(t => validator.typeToString(t)).join(', ')}`);
+            console.log(`[DEBUG] findVectorInUnion: unionType.types=${unionType.types.map(t => typeToString(t)).join(', ')}`);
             for (const type of unionType.types) {
                 console.log(`[DEBUG] findVectorInUnion: Checking type:`, type);
                 if (type.kind === 'vector') {
-                    console.log(`[DEBUG] findVectorInUnion: Found vector: ${validator.typeToString(type)}`);
+                    console.log(`[DEBUG] findVectorInUnion: Found vector: ${typeToString(type)}`);
                     return type as VectorAsirType;
                 }
                 if (type.kind === 'union') {
-                    console.log(`[DEBUG] findVectorInUnion: Recursing into nested union: ${validator.typeToString(type)}`);
+                    console.log(`[DEBUG] findVectorInUnion: Recursing into nested union: ${typeToString(type)}`);
                     const nestedVector = findVectorInUnion(type);
                     if (nestedVector) {
                         return nestedVector;
@@ -542,7 +543,7 @@ function devalTypeTransform(this: Validator, inputType: AsirType, node: ast.ASTN
             if (inputType.name === 'parameter') {
                 return p_type('any'); // Changed from p_type('form')
             }
-            this.addDiagnostic(node, `devalは型'${this.typeToString(inputType)}'を評価できません。`, DiagnosticSeverity.Error);
+            this.addDiagnostic(node, `devalは型'${typeToString(inputType)}'を評価できません。`, DiagnosticSeverity.Error);
             return p_type('error');
 
         case 'standard_polynomial':
@@ -562,7 +563,7 @@ function devalTypeTransform(this: Validator, inputType: AsirType, node: ast.ASTN
             if (validTypes.length === 0) {
                 return p_type('error');
             }
-            return this.getCommonSupertype(validTypes);
+            return getCommonSupertype(validTypes);
         
         case 'vector':
         case 'matrix':

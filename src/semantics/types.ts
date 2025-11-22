@@ -108,6 +108,7 @@ export interface Symbol {
     isUsed: boolean;
     isFunctionArgument?: boolean;
     constantValue?: ConstantValue;
+    declaredFilePath?: string;
 }
 
 // --- Data Flow Analysis Types ---

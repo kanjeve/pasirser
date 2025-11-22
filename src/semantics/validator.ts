@@ -235,7 +235,8 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 type: funcType,
                 definedAt: undefined,
                 node: {} as ast.ASTNode,
-                isUsed: false // Add this
+                isUsed: false,
+                declaredFilePath: this.currentFilePath ?? undefined
             };
             globalScope.define(symbol);
         });
@@ -458,11 +459,12 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 this.checkVariableNameConvention(param);
                 const paramSymbol: Symbol = { 
                     name: param.name, 
-                    type: parameterTypes[i] || p_type('parameter'), // Use provided type or default to parameter
+                    type: parameterTypes[i] || p_type('parameter'),
                     definedAt: param.loc, 
                     node: param, 
                     isUsed: false, 
-                    isFunctionArgument: true 
+                    isFunctionArgument: true ,
+                    declaredFilePath: this.currentFilePath ?? undefined
                 };
                 this.symbolTable.currentScope.define(paramSymbol);
                 this.visit(param);
@@ -809,7 +811,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         node.parameters.forEach((param, i) => {
             if (param.loc) {
                 this.checkVariableNameConvention(param);
-                const paramSymbol: Symbol = { name: param.name, type: functionType.parameters[i].type, definedAt: param.loc, node: param, isUsed: false, isFunctionArgument: true };
+                const paramSymbol: Symbol = { name: param.name, type: functionType.parameters[i].type, definedAt: param.loc, node: param, isUsed: false, isFunctionArgument: true, declaredFilePath: this.currentFilePath ?? undefined };
                 this.symbolTable.currentScope.define(paramSymbol);
                 // Explicitly visit the parameter name node to set its resolvedSymbol
                 this.visit(param);
@@ -948,7 +950,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         const calleeResult = this.visit(calleeNode.functionName);
         const actualArgTypes = argResults.map(r => r.type);
                 let calleeType: AsirType | undefined = calleeResult?.type;
-                let funcSymbol: Symbol | undefined; // Declare funcSymbol here
+                let funcSymbol: Symbol | undefined;
         
                 // --- 呼び出し方に応じたロジック ---
                 if (node.isGlobal) {
@@ -1823,7 +1825,8 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 type: p_type('any'),
                 definedAt: variableNode.loc,
                 node: variableNode,
-                isUsed: false // Add this
+                isUsed: false,
+                declaredFilePath: this.currentFilePath ?? undefined
             };
 
             switch (scopeType) {

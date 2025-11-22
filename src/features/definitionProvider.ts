@@ -63,7 +63,7 @@ export function getDefinitionLocation(
 
     if (symbol && symbol.definedAt) {
         return {
-            filePath: currentFilePath, // 現時点では同じファイル内での定義を想定
+            filePath: symbol.declaredFilePath ?? currentFilePath,
             startLine: symbol.definedAt.start.line,
             startColumn: symbol.definedAt.start.column,
             endLine: symbol.definedAt.end.line,

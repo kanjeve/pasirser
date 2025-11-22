@@ -1,11 +1,11 @@
 import { CharStream, CommonTokenStream } from 'antlr4ng';
-import { asirLexer } from '../../.antlr/asirLexer.js';
-import { asirParser } from '../../.antlr/asirParser.js';
-import { AsirASTBuilder } from '../ast/asirASTBuilder.js';
-import { CustomErrorListener, SyntaxErrorInfo } from './customErrorListener.js';
-import { ASTBuilderError } from '../../utils/errors.js';
-import * as ast from '../ast/asirAst.js';
-import { Diagnostic, DiagnosticSeverity } from '../../utils/diagnostics.js';
+import { asirLexer } from '../../.antlr/asirLexer';
+import { asirParser } from '../../.antlr/asirParser';
+import { AsirASTBuilder } from '../ast/asirASTBuilder';
+import { CustomErrorListener, SyntaxErrorInfo } from './customErrorListener';
+import { ASTBuilderError } from '../../utils/errors';
+import * as ast from '../ast/asirAst';
+import { Diagnostic, DiagnosticSeverity } from '../../utils/diagnostics';
 
 /**
  * Asirのソースコード文字列を解析し、AST（抽象構文木）と構文エラーを生成します。
@@ -67,15 +67,26 @@ export function parseAndBuildAST(code: string, filePathForErrors: string): { ast
 
     const astBuilder = new AsirASTBuilder();
     try {
-        const programNode = astBuilder.visit(tree) as ast.ProgramNode;
-        return { ast: programNode, diagnostics };
+        const result = astBuilder.visit(tree);
+        if (result?.kind === 'Program') {
+            return { ast: result as ast.ProgramNode, diagnostics };
+        } else {
+            diagnostics.push({
+                severity: DiagnosticSeverity.Error,
+                range: { start: { line: 1, character: 0 }, end: { line: 1, character: 1 } },
+                message: (result as ast.ErrorNode).message || 'Failed to build AST: Unknown root node',
+                source: 'AST Builder',
+                filePath: filePathForErrors
+            });
+            return { ast: null, diagnostics };
+        }
     } catch (e) {
         if (e instanceof ASTBuilderError) {
             const errorInfo: SyntaxErrorInfo = {
-                line: e.loc?.startLine ?? 0,
-                column: e.loc?.startColumn ?? 0,
-                endLine: e.loc?.endLine ?? e.loc?.startLine ?? 0,
-                endColumn: e.loc?.endColumn ?? e.loc?.startColumn ?? 0,
+                line: e.loc?.start.line ?? 0, // 1-based への対応をどうするか？
+                column: e.loc?.start.column ?? 0,
+                endLine: e.loc?.end.line ?? e.loc?.start.line ?? 0,
+                endColumn: e.loc?.end.column ?? e.loc?.start.column ?? 0,
                 message: e.message,
                 offendingSymbol: null,
                 ruleStack: [],
