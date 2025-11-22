@@ -47,9 +47,9 @@ export function getSemanticTokens(
         addToken(node: ast.ASTNode, type: SemanticTokenTypes, modifiers: SemanticTokenModifiers[] = []) {
             if (!node.loc) return;
 
-            const line = node.loc.startLine;
-            const character = node.loc.startColumn;
-            const length = (node.loc.endColumn ?? character) - character;
+            const line = node.loc.start.line;
+            const character = node.loc.start.column;
+            const length = (node.loc.end.column ?? character) - character;
 
             if (length <= 0) return;
 

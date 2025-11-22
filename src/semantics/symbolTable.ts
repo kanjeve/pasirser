@@ -1,5 +1,5 @@
 import { ASTNode } from '../core/ast/asirAst.js';
-import { Scope, Symbol } from './types.js'; // Import Symbol
+import { Scope, Symbol } from './types.js';
 import { Position } from '../utils/diagnostics.js';
 
 export class SymbolTable {
@@ -43,10 +43,10 @@ export class SymbolTable {
         }
 
         if (scope.node.loc) {
-            const startLine = scope.node.loc.startLine;
-            const startChar = scope.node.loc.startColumn;
-            const endLine = (scope.node.loc.endLine ?? scope.node.loc.startLine);
-            const endChar = scope.node.loc.endColumn ?? (scope.node.loc.startColumn + 1);
+            const startLine = scope.node.loc.start.line;
+            const startChar = scope.node.loc.start.column;
+            const endLine = scope.node.loc.end.line;
+            const endChar = scope.node.loc.end.column;
 
             if (position.line >= startLine && position.line <= endLine) {
                 if (position.line === startLine && position.character < startChar) {

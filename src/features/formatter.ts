@@ -2,7 +2,7 @@ import * as ast from '../core/ast/asirAst';
 
 export class AsirFormatter {
     private indentLevel: number = 0;
-    private indentString: string = '  '; // 2スペースインデント
+    private indentString: string = '  ';
 
     public format(node: ast.ASTNode): string {
         return this.visit(node);

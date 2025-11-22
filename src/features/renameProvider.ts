@@ -2,7 +2,7 @@ import * as ast from '../core/ast/asirAst';
 import { SymbolTable } from '../semantics/symbolTable';
 import { Position, Range } from '../utils/diagnostics';
 import { Symbol } from '../semantics/types';
-import { AsirASTVisitor } from '../semantics/validator'; // Import AsirASTVisitor
+import { AsirASTVisitor } from '../semantics/validator';
 import { getDefinitionLocation } from './definitionProvider'; // Reusing word identification logic
 
 export interface TextEdit {
@@ -70,8 +70,8 @@ export function getRenameEdits(
     // 2. 定義場所の編集を追加
     // definedAtはASTNode['loc']なので、Rangeに変換
     const definitionRange: Range = {
-        start: { line: targetSymbol.definedAt.startLine, character: targetSymbol.definedAt.startColumn },
-        end: { line: (targetSymbol.definedAt.endLine ?? targetSymbol.definedAt.startLine), character: targetSymbol.definedAt.endColumn ?? targetSymbol.definedAt.startColumn + targetSymbol.name.length }
+        start: { line: targetSymbol.definedAt.start.line, character: targetSymbol.definedAt.start.column },
+        end: { line: targetSymbol.definedAt.end.line, character: targetSymbol.definedAt.end.column }
     };
     edits.push({ range: definitionRange, newText: newName });
 
@@ -87,9 +87,8 @@ export function getRenameEdits(
         }
 
         getReferences(): Range[] {
-            // Filter out duplicates before returning
             const uniqueReferences: Range[] = [];
-            const seen = new Set<string>(); // Use a Set to track seen ranges
+            const seen = new Set<string>();
 
             for (const ref of this.references) {
                 const key = `${ref.start.line}:${ref.start.character}-${ref.end.line}:${ref.end.character}`;
@@ -103,18 +102,18 @@ export function getRenameEdits(
 
         // IndeterminateNodeがシンボルを参照する主要な場所
         visitIndeterminate(node: ast.IndeterminateNode): void {
-            if (node.resolvedSymbol && node.loc && this.targetSymbol.node) { // Ensure targetSymbol.node exists
+            if (node.resolvedSymbol && node.loc && this.targetSymbol.node) {
                 // resolvedSymbolがターゲットシンボルと一致し、loc情報がある場合
                 // オブジェクト同一性ではなく、名前と定義ASTノードで比較する
                 if (node.resolvedSymbol.name === this.targetSymbol.name &&
-                    node.resolvedSymbol.node === this.targetSymbol.node) { // ASTNodeオブジェクトを比較
+                    node.resolvedSymbol.node === this.targetSymbol.node) {
                     this.references.push({
-                        start: { line: node.loc.startLine, character: node.loc.startColumn },
-                        end: { line: (node.loc.endLine ?? node.loc.startLine), character: node.loc.endColumn ?? node.loc.startColumn + node.name.length }
+                        start: { line: node.loc.start.line, character: node.loc.start.column },
+                        end: { line: node.loc.end.line, character: node.loc.end.column }
                     });
                 }
             }
-            super.visitIndeterminate(node); // 子ノードも走査
+            super.visitIndeterminate(node);
         }
 
         // QualifiedNameNode (例: module.func) の関数名部分も参照になりうる
@@ -124,8 +123,8 @@ export function getRenameEdits(
                 if (node.functionName.resolvedSymbol.name === this.targetSymbol.name &&
                     node.functionName.resolvedSymbol.node === this.targetSymbol.node) { // ASTNodeオブジェクトを比較
                     this.references.push({
-                        start: { line: node.functionName.loc.startLine, character: node.functionName.loc.startColumn },
-                        end: { line: (node.functionName.loc.endLine ?? node.functionName.loc.startLine), character: node.functionName.loc.endColumn ?? node.functionName.loc.startColumn + node.functionName.name.length }
+                        start: { line: node.functionName.loc.start.line, character: node.functionName.loc.start.column },
+                        end: { line: node.functionName.loc.end.line, character: node.functionName.loc.end.column }
                     });
                 }
             }

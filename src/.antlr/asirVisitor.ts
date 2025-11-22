@@ -42,42 +42,46 @@ import { DebugContext } from "./asirParser.js";
 import { ModuleAssignContext } from "./asirParser.js";
 import { ModuleStartContext } from "./asirParser.js";
 import { ModuleEndContext } from "./asirParser.js";
-import { MainContext } from "./asirParser.js";
-import { NoAssignmentContext } from "./asirParser.js";
-import { AssignContext } from "./asirParser.js";
-import { StructAssignContext } from "./asirParser.js";
-import { ListAssignContext } from "./asirParser.js";
-import { TernaryContext } from "./asirParser.js";
-import { QuoteContext } from "./asirParser.js";
-import { QEImplContext } from "./asirParser.js";
-import { QEnotContext } from "./asirParser.js";
-import { QEorContext } from "./asirParser.js";
-import { QEandContext } from "./asirParser.js";
-import { QECompareContext } from "./asirParser.js";
-import { OrContext } from "./asirParser.js";
-import { AndContext } from "./asirParser.js";
-import { CompareContext } from "./asirParser.js";
-import { AddSubContext } from "./asirParser.js";
-import { MulDivSurContext } from "./asirParser.js";
-import { UnaryMinusContext } from "./asirParser.js";
-import { NotExprContext } from "./asirParser.js";
-import { PowExprContext } from "./asirParser.js";
-import { PowExContext } from "./asirParser.js";
+import { AndExprContext } from "./asirParser.js";
+import { IndexAccessExprContext } from "./asirParser.js";
+import { DottedIdExprContext } from "./asirParser.js";
+import { PreFixExprContext } from "./asirParser.js";
+import { StringLiteralExprContext } from "./asirParser.js";
+import { UnaryNotExprContext } from "./asirParser.js";
+import { RelationalExprContext } from "./asirParser.js";
+import { AssignExprContext } from "./asirParser.js";
 import { FactorialExprContext } from "./asirParser.js";
-import { PreFixContext } from "./asirParser.js";
-import { PostFixContext } from "./asirParser.js";
-import { IndexAccessContext } from "./asirParser.js";
-import { MemberAccessContext } from "./asirParser.js";
-import { IndExprContext } from "./asirParser.js";
-import { RealContext } from "./asirParser.js";
-import { IdExprContext } from "./asirParser.js";
+import { ListLiteralExprContext } from "./asirParser.js";
+import { PrecharExprContext } from "./asirParser.js";
+import { QENotExprContext } from "./asirParser.js";
+import { VarExprContext } from "./asirParser.js";
 import { FCallExprContext } from "./asirParser.js";
+import { QEAndExprContext } from "./asirParser.js";
 import { FunctorCallExprContext } from "./asirParser.js";
-import { ParenContext } from "./asirParser.js";
-import { StringLiteralContext } from "./asirParser.js";
-import { ListLiteralContext } from "./asirParser.js";
-import { DpLiteralContext } from "./asirParser.js";
-import { PreChrExprContext } from "./asirParser.js";
+import { TernaryExprContext } from "./asirParser.js";
+import { QECompareExprContext } from "./asirParser.js";
+import { IdLiteralContext } from "./asirParser.js";
+import { UnarySignExprContext } from "./asirParser.js";
+import { OrExprContext } from "./asirParser.js";
+import { QEOrExprContext } from "./asirParser.js";
+import { PowerExprContext } from "./asirParser.js";
+import { QEImplExprContext } from "./asirParser.js";
+import { DpolyLiteralExprContext } from "./asirParser.js";
+import { QuoteExprContext } from "./asirParser.js";
+import { PostFixExprContext } from "./asirParser.js";
+import { ParenExprContext } from "./asirParser.js";
+import { MemberAccessExprContext } from "./asirParser.js";
+import { AddSubExprContext } from "./asirParser.js";
+import { NumberLiteralContext } from "./asirParser.js";
+import { MulDivSurExprContext } from "./asirParser.js";
+import { QualifiedNameContext } from "./asirParser.js";
+import { DottedIdentifierContext } from "./asirParser.js";
+import { ExprlistContext } from "./asirParser.js";
+import { TerminatorContext } from "./asirParser.js";
+import { SystemPathContext } from "./asirParser.js";
+import { ElifClauseContext } from "./asirParser.js";
+import { ElseClauseContext } from "./asirParser.js";
+import { OptionPairContext } from "./asirParser.js";
 import { DpContext } from "./asirParser.js";
 import { RatContext } from "./asirParser.js";
 import { FloatContext } from "./asirParser.js";
@@ -86,7 +90,8 @@ import { BitNumContext } from "./asirParser.js";
 import { RatNumContext } from "./asirParser.js";
 import { DecNumContext } from "./asirParser.js";
 import { ImaNumContext } from "./asirParser.js";
-import { GenNumContext } from "./asirParser.js";
+import { AsGenNumContext } from "./asirParser.js";
+import { ApGenNumContext } from "./asirParser.js";
 import { BefContext } from "./asirParser.js";
 import { BefNContext } from "./asirParser.js";
 import { V2IdContext } from "./asirParser.js";
@@ -96,14 +101,6 @@ import { ChFuncContext } from "./asirParser.js";
 import { ListExprContext } from "./asirParser.js";
 import { SentenceContext } from "./asirParser.js";
 import { Sentence1Context } from "./asirParser.js";
-import { QualifiedNameContext } from "./asirParser.js";
-import { DottedIdentifierContext } from "./asirParser.js";
-import { ExprlistContext } from "./asirParser.js";
-import { TerminatorContext } from "./asirParser.js";
-import { SystemPathContext } from "./asirParser.js";
-import { ElifClauseContext } from "./asirParser.js";
-import { ElseClauseContext } from "./asirParser.js";
-import { OptionPairContext } from "./asirParser.js";
 
 
 /**
@@ -387,257 +384,277 @@ export class asirVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitModuleEnd?: (ctx: ModuleEndContext) => Result;
     /**
-     * Visit a parse tree produced by the `Main`
+     * Visit a parse tree produced by the `AndExpr`
      * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitMain?: (ctx: MainContext) => Result;
+    visitAndExpr?: (ctx: AndExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `NoAssignment`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Visit a parse tree produced by the `IndexAccessExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitNoAssignment?: (ctx: NoAssignmentContext) => Result;
+    visitIndexAccessExpr?: (ctx: IndexAccessExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `Assign`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Visit a parse tree produced by the `DottedIdExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitAssign?: (ctx: AssignContext) => Result;
+    visitDottedIdExpr?: (ctx: DottedIdExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `StructAssign`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Visit a parse tree produced by the `PreFixExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitStructAssign?: (ctx: StructAssignContext) => Result;
+    visitPreFixExpr?: (ctx: PreFixExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `ListAssign`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Visit a parse tree produced by the `StringLiteralExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitListAssign?: (ctx: ListAssignContext) => Result;
+    visitStringLiteralExpr?: (ctx: StringLiteralExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `Ternary`
-     * labeled alternative in `asirParser.ternaryExpr`.
+     * Visit a parse tree produced by the `UnaryNotExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitTernary?: (ctx: TernaryContext) => Result;
+    visitUnaryNotExpr?: (ctx: UnaryNotExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `Quote`
-     * labeled alternative in `asirParser.quoteExpr`.
+     * Visit a parse tree produced by the `RelationalExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitQuote?: (ctx: QuoteContext) => Result;
+    visitRelationalExpr?: (ctx: RelationalExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `QEImpl`
-     * labeled alternative in `asirParser.qeImplExpr`.
+     * Visit a parse tree produced by the `AssignExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitQEImpl?: (ctx: QEImplContext) => Result;
-    /**
-     * Visit a parse tree produced by the `QEnot`
-     * labeled alternative in `asirParser.qeNotExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitQEnot?: (ctx: QEnotContext) => Result;
-    /**
-     * Visit a parse tree produced by the `QEor`
-     * labeled alternative in `asirParser.qeOrExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitQEor?: (ctx: QEorContext) => Result;
-    /**
-     * Visit a parse tree produced by the `QEand`
-     * labeled alternative in `asirParser.qeAndExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitQEand?: (ctx: QEandContext) => Result;
-    /**
-     * Visit a parse tree produced by the `QECompare`
-     * labeled alternative in `asirParser.qeCompareExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitQECompare?: (ctx: QECompareContext) => Result;
-    /**
-     * Visit a parse tree produced by the `Or`
-     * labeled alternative in `asirParser.orExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitOr?: (ctx: OrContext) => Result;
-    /**
-     * Visit a parse tree produced by the `And`
-     * labeled alternative in `asirParser.andExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitAnd?: (ctx: AndContext) => Result;
-    /**
-     * Visit a parse tree produced by the `Compare`
-     * labeled alternative in `asirParser.compareExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitCompare?: (ctx: CompareContext) => Result;
-    /**
-     * Visit a parse tree produced by the `AddSub`
-     * labeled alternative in `asirParser.addSubExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitAddSub?: (ctx: AddSubContext) => Result;
-    /**
-     * Visit a parse tree produced by the `MulDivSur`
-     * labeled alternative in `asirParser.mulDivSurExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitMulDivSur?: (ctx: MulDivSurContext) => Result;
-    /**
-     * Visit a parse tree produced by the `UnaryMinus`
-     * labeled alternative in `asirParser.unaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitUnaryMinus?: (ctx: UnaryMinusContext) => Result;
-    /**
-     * Visit a parse tree produced by the `NotExpr`
-     * labeled alternative in `asirParser.unaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitNotExpr?: (ctx: NotExprContext) => Result;
-    /**
-     * Visit a parse tree produced by the `PowExpr`
-     * labeled alternative in `asirParser.unaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitPowExpr?: (ctx: PowExprContext) => Result;
-    /**
-     * Visit a parse tree produced by the `PowEx`
-     * labeled alternative in `asirParser.powerExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitPowEx?: (ctx: PowExContext) => Result;
+    visitAssignExpr?: (ctx: AssignExprContext) => Result;
     /**
      * Visit a parse tree produced by the `FactorialExpr`
-     * labeled alternative in `asirParser.factExpr`.
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
     visitFactorialExpr?: (ctx: FactorialExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `PreFix`
-     * labeled alternative in `asirParser.prefixExpr`.
+     * Visit a parse tree produced by the `ListLiteralExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitPreFix?: (ctx: PreFixContext) => Result;
+    visitListLiteralExpr?: (ctx: ListLiteralExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `PostFix`
-     * labeled alternative in `asirParser.postfixExpr`.
+     * Visit a parse tree produced by the `PrecharExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitPostFix?: (ctx: PostFixContext) => Result;
+    visitPrecharExpr?: (ctx: PrecharExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `IndexAccess`
-     * labeled alternative in `asirParser.indexAccessExpr`.
+     * Visit a parse tree produced by the `QENotExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitIndexAccess?: (ctx: IndexAccessContext) => Result;
+    visitQENotExpr?: (ctx: QENotExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `MemberAccess`
-     * labeled alternative in `asirParser.memberAccessExpr`.
+     * Visit a parse tree produced by the `VarExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitMemberAccess?: (ctx: MemberAccessContext) => Result;
-    /**
-     * Visit a parse tree produced by the `IndExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitIndExpr?: (ctx: IndExprContext) => Result;
-    /**
-     * Visit a parse tree produced by the `Real`
-     * labeled alternative in `asirParser.primaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitReal?: (ctx: RealContext) => Result;
-    /**
-     * Visit a parse tree produced by the `IdExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitIdExpr?: (ctx: IdExprContext) => Result;
+    visitVarExpr?: (ctx: VarExprContext) => Result;
     /**
      * Visit a parse tree produced by the `FCallExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
     visitFCallExpr?: (ctx: FCallExprContext) => Result;
     /**
+     * Visit a parse tree produced by the `QEAndExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitQEAndExpr?: (ctx: QEAndExprContext) => Result;
+    /**
      * Visit a parse tree produced by the `FunctorCallExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
     visitFunctorCallExpr?: (ctx: FunctorCallExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `Paren`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Visit a parse tree produced by the `TernaryExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitParen?: (ctx: ParenContext) => Result;
+    visitTernaryExpr?: (ctx: TernaryExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `StringLiteral`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Visit a parse tree produced by the `QECompareExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitStringLiteral?: (ctx: StringLiteralContext) => Result;
+    visitQECompareExpr?: (ctx: QECompareExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `ListLiteral`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Visit a parse tree produced by the `IdLiteral`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitListLiteral?: (ctx: ListLiteralContext) => Result;
+    visitIdLiteral?: (ctx: IdLiteralContext) => Result;
     /**
-     * Visit a parse tree produced by the `DpLiteral`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Visit a parse tree produced by the `UnarySignExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitDpLiteral?: (ctx: DpLiteralContext) => Result;
+    visitUnarySignExpr?: (ctx: UnarySignExprContext) => Result;
     /**
-     * Visit a parse tree produced by the `PreChrExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Visit a parse tree produced by the `OrExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitPreChrExpr?: (ctx: PreChrExprContext) => Result;
+    visitOrExpr?: (ctx: OrExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `QEOrExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitQEOrExpr?: (ctx: QEOrExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PowerExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPowerExpr?: (ctx: PowerExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `QEImplExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitQEImplExpr?: (ctx: QEImplExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `DpolyLiteralExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitDpolyLiteralExpr?: (ctx: DpolyLiteralExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `QuoteExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitQuoteExpr?: (ctx: QuoteExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `PostFixExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPostFixExpr?: (ctx: PostFixExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `ParenExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitParenExpr?: (ctx: ParenExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `MemberAccessExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitMemberAccessExpr?: (ctx: MemberAccessExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `AddSubExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitAddSubExpr?: (ctx: AddSubExprContext) => Result;
+    /**
+     * Visit a parse tree produced by the `NumberLiteral`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitNumberLiteral?: (ctx: NumberLiteralContext) => Result;
+    /**
+     * Visit a parse tree produced by the `MulDivSurExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitMulDivSurExpr?: (ctx: MulDivSurExprContext) => Result;
+    /**
+     * Visit a parse tree produced by `asirParser.qualifiedName`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitQualifiedName?: (ctx: QualifiedNameContext) => Result;
+    /**
+     * Visit a parse tree produced by `asirParser.dottedIdentifier`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitDottedIdentifier?: (ctx: DottedIdentifierContext) => Result;
+    /**
+     * Visit a parse tree produced by `asirParser.exprlist`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitExprlist?: (ctx: ExprlistContext) => Result;
+    /**
+     * Visit a parse tree produced by `asirParser.terminator`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitTerminator?: (ctx: TerminatorContext) => Result;
+    /**
+     * Visit a parse tree produced by `asirParser.systemPath`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitSystemPath?: (ctx: SystemPathContext) => Result;
+    /**
+     * Visit a parse tree produced by `asirParser.elifClause`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitElifClause?: (ctx: ElifClauseContext) => Result;
+    /**
+     * Visit a parse tree produced by `asirParser.elseClause`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitElseClause?: (ctx: ElseClauseContext) => Result;
+    /**
+     * Visit a parse tree produced by `asirParser.optionPair`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitOptionPair?: (ctx: OptionPairContext) => Result;
     /**
      * Visit a parse tree produced by the `Dp`
      * labeled alternative in `asirParser.dpoly`.
@@ -695,12 +712,19 @@ export class asirVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      */
     visitImaNum?: (ctx: ImaNumContext) => Result;
     /**
-     * Visit a parse tree produced by the `GenNum`
+     * Visit a parse tree produced by the `AsGenNum`
      * labeled alternative in `asirParser.num`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitGenNum?: (ctx: GenNumContext) => Result;
+    visitAsGenNum?: (ctx: AsGenNumContext) => Result;
+    /**
+     * Visit a parse tree produced by the `ApGenNum`
+     * labeled alternative in `asirParser.num`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitApGenNum?: (ctx: ApGenNumContext) => Result;
     /**
      * Visit a parse tree produced by the `Bef`
      * labeled alternative in `asirParser.id`.
@@ -764,53 +788,5 @@ export class asirVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      * @return the visitor result
      */
     visitSentence1?: (ctx: Sentence1Context) => Result;
-    /**
-     * Visit a parse tree produced by `asirParser.qualifiedName`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitQualifiedName?: (ctx: QualifiedNameContext) => Result;
-    /**
-     * Visit a parse tree produced by `asirParser.dottedIdentifier`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitDottedIdentifier?: (ctx: DottedIdentifierContext) => Result;
-    /**
-     * Visit a parse tree produced by `asirParser.exprlist`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitExprlist?: (ctx: ExprlistContext) => Result;
-    /**
-     * Visit a parse tree produced by `asirParser.terminator`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitTerminator?: (ctx: TerminatorContext) => Result;
-    /**
-     * Visit a parse tree produced by `asirParser.systemPath`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitSystemPath?: (ctx: SystemPathContext) => Result;
-    /**
-     * Visit a parse tree produced by `asirParser.elifClause`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitElifClause?: (ctx: ElifClauseContext) => Result;
-    /**
-     * Visit a parse tree produced by `asirParser.elseClause`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitElseClause?: (ctx: ElseClauseContext) => Result;
-    /**
-     * Visit a parse tree produced by `asirParser.optionPair`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitOptionPair?: (ctx: OptionPairContext) => Result;
 }
 

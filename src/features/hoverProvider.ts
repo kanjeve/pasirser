@@ -2,11 +2,11 @@ import * as ast from '../core/ast/asirAst';
 import { SymbolTable } from '../semantics/symbolTable';
 import { Position } from '../utils/diagnostics';
 import { Scope, Symbol } from '../semantics/types';
-import { Validator } from '../semantics/validator'; // typeToStringのためにインポート
+import { typeToString } from '../semantics/utils/typeFormatter'
 
 export interface HoverInfo {
-    contents: string; // 表示する情報（Markdown形式など）
-    range?: { start: Position; end: Position }; // ホバーの対象範囲
+    contents: string;
+    range?: { start: Position; end: Position };
 }
 
 /**
@@ -44,13 +44,12 @@ export function getHoverInfo(
         if (match.index !== undefined) {
             const start = match.index;
             const end = match.index + match[0].length;
-            const startChar1Based = match.index + 1; // 1-based start character of the word
-            const endChar1Based = match.index + match[0].length; // 1-based end character of the word (inclusive)
+            const startChar = match.index;
+            const endChar = match.index + match[0].length;
 
-            // Check if the 1-based cursor position is within the 1-based word range
-            if (position.character >= startChar1Based && position.character <= endChar1Based) {
+            if (position.character >= startChar && position.character <= endChar) {
                 targetWord = match[0];
-                wordStartChar = startChar1Based;
+                wordStartChar = startChar;
                 break;
             }
         }
@@ -65,16 +64,13 @@ export function getHoverInfo(
 
     if (foundSymbol) {
         try {
-            // ValidatorのtypeToStringメソッドを利用するために、Validatorのインスタンスを一時的に作成
-            // 本来はtypeToStringをユーティリティ関数として切り出すべき
-            const validator = new Validator(astNode); // AST全体を渡す必要がある
-            const typeString = validator.typeToString(foundSymbol.type);
+            const typeString = typeToString(foundSymbol.type);
 
             let contents = `**${foundSymbol.name}**\n`;
             contents += `*Kind*: ${foundSymbol.type.kind}\n`;
             contents += `*Type*: ${typeString}\n`;
             if (foundSymbol.definedAt) {
-                contents += `*Defined at*: L${foundSymbol.definedAt.startLine}:C${foundSymbol.definedAt.startColumn}\n`;
+                contents += `*Defined at*: L${foundSymbol.definedAt.start.line}:C${foundSymbol.definedAt.start.column}\n`;
             }
 
             return {
@@ -89,9 +85,5 @@ export function getHoverInfo(
             return undefined;
         }
     }
-    
-    // 組み込み関数、定数、キーワードのホバー情報も提供可能
-    // BUILTIN_SIGNATURES, BUILTIN_CONSTANTS, ASIR_KEYWORDS を参照
-
     return undefined;
 }

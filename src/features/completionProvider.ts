@@ -9,7 +9,6 @@ import { ctrlCommandNames } from '../semantics/builtins/ctrl_handlers';
 import { PARI_SIGNATURES } from '../data/pariSignatures';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Command } from 'commander';
 
 
 export enum CompletionItemKind {
@@ -134,7 +133,7 @@ export function getCompletions(
                         label: symbol.name,
                         kind: symbol.type.kind === 'function' || symbol.type.kind === 'overloaded_function' ? CompletionItemKind.Function : CompletionItemKind.Variable,
                         detail: `(${symbol.type.kind}) ${symbol.name}`,
-                        documentation: symbol.definedAt ? `Defined at L${symbol.definedAt.startLine}:C${symbol.definedAt.startColumn}` : undefined,
+                        documentation: symbol.definedAt ? `Defined at L${symbol.definedAt.start.line}:C${symbol.definedAt.start.column}` : undefined,
                     });
                 }
             });

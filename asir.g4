@@ -3,154 +3,103 @@ grammar asir;
 // --- Parser Rules ---
 prog : statement* EOF;
 
-statement : expr terminator       #ExprStatement
-          | terminator            #EmptyLineStatement
-          | functionDefinition    #DefinitionStatement
-          | formDeclaration       #ForwardDeclStatement
-          | functionIf            #IfStatement
-          | functionFor           #ForStatement
-          | functionWhile         #WhileStatement
-          | functionDo            #DoStatement
-          | functionReturn        #ReturnStatement
-          | functionBreak         #BreakStatement
-          | functionContinue      #ContinueStatement
-          | functionStruct        #StructStatement
-          | functionEnd           #EndStatement
-          | functionQuit          #QuitStatement
-          | functionDebug         #DebugStatement
-          | functionModule        #ModuleStatement
-          | preprocessor          #PreproStatement
-          ;
+statement
+    : expr terminator                   #ExprStatement
+    | terminator                        #EmptyLineStatement
+    | functionDefinition                #DefinitionStatement
+    | formDeclaration                   #ForwardDeclStatement
+    | functionIf                        #IfStatement
+    | functionFor                       #ForStatement
+    | functionWhile                     #WhileStatement
+    | functionDo                        #DoStatement
+    | functionReturn                    #ReturnStatement
+    | functionBreak                     #BreakStatement
+    | functionContinue                  #ContinueStatement
+    | functionStruct                    #StructStatement
+    | functionEnd                       #EndStatement
+    | functionQuit                      #QuitStatement
+    | functionDebug                     #DebugStatement
+    | functionModule                    #ModuleStatement
+    | preprocessor                      #PreproStatement
+    ;
 
 // プリプロセッサ
-prechar : CHAR ID #PreChr
-        | ID CHARPLUS ID #PreChrPlus
-        ;
-preprocessor : PDEFINE name=ID (LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN)? body=expr #PDef
-             | directive=(PIF | PIFDEF | PIFNDEF) condition=expr thenSymts+=statement* elifs+=elifClause* elseBlk=elseClause? PENDIF #PIf
-             | PINCLUDE (path_sys=systemPath | path_loc=STRING) #PInc
-             ;
+prechar
+    : CHAR ID #PreChr
+    | ID CHARPLUS ID #PreChrPlus
+    ;
 
-// キーワード
+preprocessor
+    : PDEFINE name=ID (LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN)? body=expr #PDef
+    | directive=(PIF | PIFDEF | PIFNDEF) condition=expr thenSymts+=statement* elifs+=elifClause* elseBlk=elseClause? PENDIF #PIf
+    | PINCLUDE (path_sys=systemPath | path_loc=STRING) #PInc
+    ;
+
+// 文・制御構文
 functionDefinition : DEF name=indeterminate LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN body=block #Def;
-formDeclaration :FUNCTION name=indeterminate LPAREN (params+=indeterminate (COMMA params+=indeterminate)*)? RPAREN terminator #FormDecl;
-functionIf : IF LPAREN condition=expr RPAREN thenBlock=block (ELSE elseBlock=block)? #If;
-functionFor : FOR LPAREN init=exprlist? SEMI cond=exprlist? SEMI update=exprlist? RPAREN block #For;
-functionWhile : WHILE LPAREN exprlist? RPAREN block #While;
-functionDo : DO block WHILE LPAREN exprlist? RPAREN SEMI #Do;
-functionReturn : RETURN expr? terminator #Return;
-functionContinue : CONTINUE terminator #Continue;
-functionBreak : BREAK terminator #Break;
-functionStruct : STRUCT name=indeterminate LBRANCE members+=indeterminate (COMMA members+=indeterminate)* RBRANCE terminator #Struct;
-functionEnd : END terminator #End;
-functionQuit : QUIT terminator #Quit;
-functionDebug : DEBUG terminator #Debug;
+formDeclaration    : FUNCTION name=indeterminate LPAREN (params+=indeterminate (COMMA params+=indeterminate)*)? RPAREN terminator #FormDecl;
+functionIf         : IF LPAREN condition=expr RPAREN thenBlock=block (ELSE elseBlock=block)? #If;
+functionFor        : FOR LPAREN init=exprlist? SEMI cond=exprlist? SEMI update=exprlist? RPAREN block #For;
+functionWhile      : WHILE LPAREN exprlist? RPAREN block #While;
+functionDo         : DO block WHILE LPAREN exprlist? RPAREN SEMI #Do;
+functionReturn     : RETURN expr? terminator #Return;
+functionContinue   : CONTINUE terminator #Continue;
+functionBreak      : BREAK terminator #Break;
+functionStruct     : STRUCT name=indeterminate LBRANCE members+=indeterminate (COMMA members+=indeterminate)* RBRANCE terminator #Struct;
+functionEnd        : END terminator #End;
+functionQuit       : QUIT terminator #Quit;
+functionDebug      : DEBUG terminator #Debug;
 
-functionModule : (EXTERN | STATIC | GLOBAL | LOCAL | LOCALF) indeterminate (COMMA indeterminate)* terminator   #ModuleAssign
-               | MODULE indeterminate terminator                                             #ModuleStart
-               | ENDMODULE terminator                                                  #ModuleEnd
-               ;
+functionModule
+    : (EXTERN | STATIC | GLOBAL | LOCAL | LOCALF) indeterminate (COMMA indeterminate)* terminator   #ModuleAssign
+    | MODULE indeterminate terminator                                                               #ModuleStart
+    | ENDMODULE terminator                                                                          #ModuleEnd
+    ;
 
-// 演算子の優先順位を考慮したexprルール
-expr : assignmentExpr #Main;
+// -----------------------------------------------------------------------------
+// Expr (Unified Rule) - 優先順位順
+// -----------------------------------------------------------------------------
+expr
+    : LPAREN expr RPAREN                                                                            #ParenExpr
+    | num                                                                                           #NumberLiteral
+    | id                                                                                            #IdLiteral
+    | STRING                                                                                        #StringLiteralExpr
+    | list                                                                                          #ListLiteralExpr
+    | dpoly                                                                                         #DpolyLiteralExpr
+    | prechar                                                                                       #PrecharExpr
+    | dottedIdentifier                                                                              #DottedIdExpr
+    | indeterminate                                                                                 #VarExpr
+    | is_global=COLON2? path=qualifiedName (LBRANCE diffOrders+=INT (COMMA diffOrders+=INT)* RBRANCE)? LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN #FCallExpr
+    | LPAREN MULT callee=expr RPAREN LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN #FunctorCallExpr
+    | expr (ARROW indeterminate)+                                                                   #MemberAccessExpr
+    | expr (LBRACKET indices+=expr RBRACKET)+                                                       #IndexAccessExpr
+    | expr (INC | DEC)                                                                              #PostFixExpr
+    | expr NOT                                                                                      #FactorialExpr
+    | (INC | DEC) expr                                                                              #PreFixExpr
+    | (PLUS | MINUS) expr                                                                           #UnarySignExpr
+    | NOT expr                                                                                      #UnaryNotExpr
+    | <assoc=right> base=expr POWER exponent=expr                                                   #PowerExpr
+    | expr op=(MULT | DIV | SUR) expr                                                               #MulDivSurExpr
+    | expr op=(PLUS | MINUS) expr                                                                   #AddSubExpr
+    | expr op=(EQ | NEQ | LT | GT | LE | GE) expr                                                   #RelationalExpr
+    | expr AND expr                                                                                 #AndExpr
+    | expr OR expr                                                                                  #OrExpr
+    | expr op=(QE_1 | QE_2 | QE_3 | QE_4 | QE_5 | QE_6 | QE_7) expr                                 #QECompareExpr
+    | expr op=(QE_9 | QE_10) expr                                                                   #QEAndExpr
+    | expr op=(QE_11 | QE_12) expr                                                                  #QEOrExpr
+    | expr QE_8 expr                                                                                #QENotExpr
+    | expr op=(QE_IMPL | QE_REPL | QE_EQUIV) expr                                                   #QEImplExpr
+    | BACK expr                                                                                     #QuoteExpr
+    | <assoc=right> condition=expr (QUESTION consequence=expr COLON alternative=expr)               #TernaryExpr
+    | <assoc=right> left=expr op=(ASSIGN | PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ) right=expr #AssignExpr
+    ;
 
-assignmentExpr : ternaryExpr                                                                                                            #NoAssignment
-               | left=ID (LBRACKET indices+=expr RBRACKET)* op=(PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) right=assignmentExpr         #Assign
-               | ID (ARROW indeterminate)+ (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) assignmentExpr       #StructAssign
-               | LBRACKET ID (COMMA ID)* RBRACKET (PLUSEQ | MINUSEQ | MULTEQ | DIVEQ | SUREQ | POWEREQ | ASSIGN) assignmentExpr #ListAssign
-               ;
-
-ternaryExpr : condition=quoteExpr (QUESTION consequence=expr COLON alternative=expr)? #Ternary;
-
-quoteExpr : (BACK)? qeImplExpr #Quote;
-
-qeImplExpr : qeNotExpr ((QE_IMPL | QE_REPL | QE_EQUIV) qeNotExpr)* #QEImpl;
-
-qeNotExpr : qeOrExpr (QE_8 qeOrExpr)* #QEnot;
-
-qeOrExpr : qeAndExpr ((QE_11 | QE_12) qeAndExpr)* #QEor;
-
-qeAndExpr : qeCompareExpr ((QE_9 | QE_10) qeCompareExpr)* #QEand;
-
-qeCompareExpr : orExpr ((QE_1 | QE_2 | QE_3 | QE_4 | QE_5 | QE_6 | QE_7) orExpr)* #QECompare;
-
-orExpr : andExpr (OR andExpr)* #Or;
-
-andExpr : compareExpr (AND compareExpr)* #And;
-
-compareExpr : addSubExpr ((EQ | NEQ | LT | GT | LE | GE) addSubExpr)* #Compare;
-
-addSubExpr : mulDivSurExpr ((PLUS | MINUS) mulDivSurExpr)* #AddSub;
-
-mulDivSurExpr : unaryExpr ((MULT | DIV | SUR) unaryExpr)* #MulDivSur;
-
-unaryExpr : MINUS unaryExpr         #UnaryMinus
-          | NOT unaryExpr           #NotExpr
-          | powerExpr               #PowExpr
-          ;
-
-powerExpr : base=factExpr (POWER exponent=unaryExpr)? #PowEx;
-
-factExpr : (postfixExpr | prefixExpr | indexAccessExpr) (NOT)? #FactorialExpr;
-
-prefixExpr : (INC | DEC) indexAccessExpr #PreFix;
-
-postfixExpr : indexAccessExpr (INC | DEC) #PostFix; 
-
-indexAccessExpr : memberAccessExpr (LBRACKET expr RBRACKET)* #IndexAccess;
-
-memberAccessExpr : primaryExpr (ARROW indeterminate)* #MemberAccess;
-
-primaryExpr : indeterminate         #IndExpr
-            | num                   #Real
-            | id                    #IdExpr
-            | is_global=COLON2? path=qualifiedName (LBRANCE diffOrders+=INT (COMMA diffOrders+=INT)* RBRANCE)? LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN         #FCallExpr
-            | LPAREN MULT callee=expr RPAREN LPAREN args=exprlist? (MID options+=optionPair (COMMA options+=optionPair)*)? RPAREN #FunctorCallExpr
-            | LPAREN expr RPAREN    #Paren
-            | STRING                #StringLiteral
-            | list                  #ListLiteral
-            | dpoly                 #DpLiteral
-            | prechar               #PreChrExpr
-            ;
-
-// リテラル
-
-dpoly : LTLT INT (COMMA INT)* (COLON INT)? GTGT #Dp;
-
-rational : (MINUS)? INT DIV (MINUS)? INT #Rat;
-
-decimal  : (FLOAT | INT) #Float;
-
-
-num  : HEX        #HexNum
-     | BIT        #BitNum
-     | rational   #RatNum
-     | decimal    #DecNum
-     | IMAGINARY  #ImaNum
-     | AEGEN      #GenNum
-     ;
-
-id   : BEFORE  #Bef
-     | BEFORE_N#BefN
-     | VAR_2   #V2Id
-     ;
-
-indeterminate : ID              #Func
-              | ATFUNC              #AtFunc
-              | NOSTRING            #ChFunc
-              ;
-
-list : LBRACKET (exprlist)? RBRACKET #ListExpr;
-
-block : LBRANCE statement* RBRANCE #Sentence
-      | statement                  #Sentence1
-      ;
+// -----------------------------------------------------------------------------
 
 // 補助
-
 qualifiedName : (moduleName=ID DOT)? funcName=indeterminate;
 
-dottedIdentifier : indeterminate (DOT indeterminate)+;
+dottedIdentifier : indeterminate (DOT indeterminate)+; 
 
 exprlist : expr (COMMA expr)* ;
 
@@ -164,7 +113,58 @@ elseClause : PELSE statements+=statement*;
 
 optionPair : key=indeterminate ASSIGN value=expr;
 
+// リテラル定義
+dpoly : LTLT INT (COMMA INT)* (COLON INT)? GTGT #Dp;
+rational : (MINUS)? INT DIV (MINUS)? INT #Rat;
+decimal  : (FLOAT | INT) #Float;
+num
+    : HEX       #HexNum
+    | BIT       #BitNum
+    | rational  #RatNum
+    | decimal   #DecNum
+    | IMAGINARY #ImaNum
+    | ASGEN     #AsGenNum
+    | APGEN     #ApGenNum
+    ;
+id   : BEFORE   #Bef
+     | BEFORE_N #BefN
+     | VAR_2    #V2Id
+     ;
+indeterminate
+    : ID        #Func
+    | ATFUNC    #AtFunc
+    | NOSTRING  #ChFunc
+    ;
+list : LBRACKET (exprlist)? RBRACKET #ListExpr;
+block
+    : LBRANCE statement* RBRANCE #Sentence
+    | statement                  #Sentence1
+    ;
+
 // --- Lexer Rules ---
+
+DEF      : 'def';
+IF       : 'if';
+FOR      : 'for';
+WHILE    : 'while';
+DO       : 'do';
+ELSE     : 'else';
+RETURN   : 'return';
+CONTINUE : 'continue';
+BREAK    : 'break';
+STRUCT   : 'struct';
+MODULE   : 'module';
+ENDMODULE: 'endmodule';
+EXTERN   : 'extern';
+STATIC   : 'static';
+GLOBAL   : 'global';
+LOCAL    : 'local';
+LOCALF   : 'localf';
+FUNCTION : 'function';
+END      : 'end';
+QUIT     : 'quit';
+DEBUG    : 'debug';
+
 LTLT     : '<<';
 GTGT     : '>>';
 COLON2   : '::';
@@ -206,10 +206,12 @@ COLON    : ':';
 SEMI     : ';';
 DOLLAR   : '$';
 COMMA    : ',';
-HEX      : '0'[Xx][0-9]*;
-BIT      : '0'[Bb][0-9]*;
+
+HEX      : '0'[Xx][0-9a-fA-F]+;
+BIT      : '0'[Bb][0-1]+;
 IMAGINARY: '@i';
-AEGEN    : '@s';
+ASGEN    : '@s';
+APGEN    : '@p';
 BEFORE   : '@@';
 BEFORE_N : '@'[0-9]+;
 QE_1     : '@>=';
@@ -227,41 +229,19 @@ QE_12    : '@|';
 QE_IMPL  : '@impl';
 QE_REPL  : '@repl';
 QE_EQUIV : '@equiv';
-DEF      : 'def';
-IF       : 'if';
-FOR      : 'for';
-WHILE    : 'while';
-DO       : 'do';
-ELSE     : 'else';
-RETURN   : 'return';
-CONTINUE : 'continue';
-BREAK    : 'break';
-STRUCT   : 'struct';
-MODULE   : 'module';
-ENDMODULE: 'endmodule';
-EXTERN   : 'extern';
-STATIC   : 'static';
-GLOBAL   : 'global';
-LOCAL    : 'local';
-LOCALF   : 'localf';
-FUNCTION : 'function';
-END      : 'end';
-QUIT     : 'quit';
-DEBUG    : 'debug';
+
 ATFUNC   : '@'([a-zA-Z])+;
 VAR_2    : '@';
-ID       : [a-zA-Z_]([a-zA-Z0-9_])*;
+ID       : [a-zA-Z_] [a-zA-Z0-9_]*;
+
 FLOAT    : [0-9]+ '.' [0-9]* EXPONENT?
-         | '.' [0-9]* EXPONENT?
+         | '.' [0-9]+ EXPONENT?
          | [0-9]+ EXPONENT
          ;
 INT      : [0-9]+;
 DOT      : '.';
-NEWLINE  : '\n' -> skip;
-WS       : [ \t]+ -> skip;
-COMMENT  : '/*' .*? '*/' -> skip;
-LCOMMENT : '//' ~[\r\n]* -> skip;
-PCOMMENT : '#if 0' .*? '#endif' -> skip;
+
+PCOMMENT : '#if' [ \t]+ '0' .*? '#endif' -> skip;
 PIFDEF   : '#ifdef';
 PIFNDEF  : '#ifndef';
 PIF      : '#if';
@@ -272,20 +252,14 @@ PINCLUDE : '#include';
 PDEFINE  : '#define';
 CHARPLUS : '##';
 CHAR     : '#';
+
 STRING   : '"' ( '\\' . | ~["\\] )* '"';
-NOSTRING : '\'' .*?  '\'';
+NOSTRING : '\'' ( '\\' . | ~['\\] )* '\'';
 SYSTEM_PATH_LITERAL: '<' [a-zA-Z0-9_./\\-]+ '>';
 
-fragment EXPONENT : [Ee] [+\-]?[0-9]*;
+NEWLINE  : [\r\n]+ -> skip;
+WS       : [ \t]+ -> skip;
+COMMENT  : '/*' .*? '*/' -> skip;
+LCOMMENT : '//' ~[\r\n]* -> skip;
 
-/*
-fragment EscapeSequence : '\\'
-     (    [nrt0\\'"?]
-     |    OCTAL_BYTE_ESCAPE
-     |    .
-     );
-fragment OCTAL_BYTE_ESCAPE : [0-7][0-7][0-7]
-                           | [0-7][0-7]
-                           | [0-7]
-                           ;
-*/
+fragment EXPONENT : [Ee] [+\-]?[0-9]+;

@@ -26,7 +26,7 @@ export function getDefinitionLocation(
     position: Position,
     astNode: ast.ProgramNode,
     symbolTable: SymbolTable,
-    currentFilePath: string // 定義場所のファイルパスとして必要
+    currentFilePath: string
 ): DefinitionLocation | undefined {
     // hoverProvider.ts と同様に、カーソル位置の単語を特定する
     const lineContent = code.split('\n')[position.line - 1];
@@ -38,10 +38,10 @@ export function getDefinitionLocation(
 
     for (const match of wordsInLine) {
         if (match.index !== undefined) {
-            const startChar1Based = match.index + 1; // 1-based start character of the word
-            const endChar1Based = match.index + match[0].length; // 1-based end character of the word (inclusive)
+            const startChar1Based = match.index;
+            const endChar1Based = match.index + match[0].length;
 
-            // Check if the 1-based cursor position is within the 1-based word range
+            // カーソルが単語の範囲内にあるか判定
             if (position.character >= startChar1Based && position.character <= endChar1Based) {
                 targetWord = match[0];
                 break;
@@ -62,14 +62,12 @@ export function getDefinitionLocation(
     const symbol = scope.lookup(word);
 
     if (symbol && symbol.definedAt) {
-        // symbol.definedAt は ASTNode['loc'] の型を持つ
-        // これに現在のファイルパスを追加して DefinitionLocation を構築する
         return {
             filePath: currentFilePath, // 現時点では同じファイル内での定義を想定
-            startLine: symbol.definedAt.startLine,
-            startColumn: symbol.definedAt.startColumn,
-            endLine: symbol.definedAt.endLine,
-            endColumn: symbol.definedAt.endColumn,
+            startLine: symbol.definedAt.start.line,
+            startColumn: symbol.definedAt.start.column,
+            endLine: symbol.definedAt.end.line,
+            endColumn: symbol.definedAt.end.column,
         };
     }
 

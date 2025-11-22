@@ -57,19 +57,19 @@ export function getDocumentSymbols(
     class DocumentSymbolCollector extends AsirASTVisitor<void> {
         private currentSymbols: DocumentSymbol[] = documentSymbols;
         private symbolStack: DocumentSymbol[] = [];
-        private symbolTable: SymbolTable; // Add this
+        private symbolTable: SymbolTable;
 
-        constructor(symbolTable: SymbolTable) { // Add constructor argument
+        constructor(symbolTable: SymbolTable) {
             super();
-            this.symbolTable = symbolTable; // Store it
+            this.symbolTable = symbolTable;
         }
 
         // ヘルパー関数：ASTNodeのlocからRangeを作成
         private createRange(loc: ast.ASTNode['loc']): Range | undefined {
             if (!loc) return undefined;
             return {
-                start: { line: loc.startLine, character: loc.startColumn },
-                end: { line: (loc.endLine ?? loc.startLine), character: loc.endColumn ?? loc.startColumn + 1 }
+                start: { line: loc.start.line, character: loc.start.column },
+                end: { line: loc.end.line,  character: loc.end.column }
             };
         }
 

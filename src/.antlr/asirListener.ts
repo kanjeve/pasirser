@@ -42,42 +42,46 @@ import { DebugContext } from "./asirParser.js";
 import { ModuleAssignContext } from "./asirParser.js";
 import { ModuleStartContext } from "./asirParser.js";
 import { ModuleEndContext } from "./asirParser.js";
-import { MainContext } from "./asirParser.js";
-import { NoAssignmentContext } from "./asirParser.js";
-import { AssignContext } from "./asirParser.js";
-import { StructAssignContext } from "./asirParser.js";
-import { ListAssignContext } from "./asirParser.js";
-import { TernaryContext } from "./asirParser.js";
-import { QuoteContext } from "./asirParser.js";
-import { QEImplContext } from "./asirParser.js";
-import { QEnotContext } from "./asirParser.js";
-import { QEorContext } from "./asirParser.js";
-import { QEandContext } from "./asirParser.js";
-import { QECompareContext } from "./asirParser.js";
-import { OrContext } from "./asirParser.js";
-import { AndContext } from "./asirParser.js";
-import { CompareContext } from "./asirParser.js";
-import { AddSubContext } from "./asirParser.js";
-import { MulDivSurContext } from "./asirParser.js";
-import { UnaryMinusContext } from "./asirParser.js";
-import { NotExprContext } from "./asirParser.js";
-import { PowExprContext } from "./asirParser.js";
-import { PowExContext } from "./asirParser.js";
+import { AndExprContext } from "./asirParser.js";
+import { IndexAccessExprContext } from "./asirParser.js";
+import { DottedIdExprContext } from "./asirParser.js";
+import { PreFixExprContext } from "./asirParser.js";
+import { StringLiteralExprContext } from "./asirParser.js";
+import { UnaryNotExprContext } from "./asirParser.js";
+import { RelationalExprContext } from "./asirParser.js";
+import { AssignExprContext } from "./asirParser.js";
 import { FactorialExprContext } from "./asirParser.js";
-import { PreFixContext } from "./asirParser.js";
-import { PostFixContext } from "./asirParser.js";
-import { IndexAccessContext } from "./asirParser.js";
-import { MemberAccessContext } from "./asirParser.js";
-import { IndExprContext } from "./asirParser.js";
-import { RealContext } from "./asirParser.js";
-import { IdExprContext } from "./asirParser.js";
+import { ListLiteralExprContext } from "./asirParser.js";
+import { PrecharExprContext } from "./asirParser.js";
+import { QENotExprContext } from "./asirParser.js";
+import { VarExprContext } from "./asirParser.js";
 import { FCallExprContext } from "./asirParser.js";
+import { QEAndExprContext } from "./asirParser.js";
 import { FunctorCallExprContext } from "./asirParser.js";
-import { ParenContext } from "./asirParser.js";
-import { StringLiteralContext } from "./asirParser.js";
-import { ListLiteralContext } from "./asirParser.js";
-import { DpLiteralContext } from "./asirParser.js";
-import { PreChrExprContext } from "./asirParser.js";
+import { TernaryExprContext } from "./asirParser.js";
+import { QECompareExprContext } from "./asirParser.js";
+import { IdLiteralContext } from "./asirParser.js";
+import { UnarySignExprContext } from "./asirParser.js";
+import { OrExprContext } from "./asirParser.js";
+import { QEOrExprContext } from "./asirParser.js";
+import { PowerExprContext } from "./asirParser.js";
+import { QEImplExprContext } from "./asirParser.js";
+import { DpolyLiteralExprContext } from "./asirParser.js";
+import { QuoteExprContext } from "./asirParser.js";
+import { PostFixExprContext } from "./asirParser.js";
+import { ParenExprContext } from "./asirParser.js";
+import { MemberAccessExprContext } from "./asirParser.js";
+import { AddSubExprContext } from "./asirParser.js";
+import { NumberLiteralContext } from "./asirParser.js";
+import { MulDivSurExprContext } from "./asirParser.js";
+import { QualifiedNameContext } from "./asirParser.js";
+import { DottedIdentifierContext } from "./asirParser.js";
+import { ExprlistContext } from "./asirParser.js";
+import { TerminatorContext } from "./asirParser.js";
+import { SystemPathContext } from "./asirParser.js";
+import { ElifClauseContext } from "./asirParser.js";
+import { ElseClauseContext } from "./asirParser.js";
+import { OptionPairContext } from "./asirParser.js";
 import { DpContext } from "./asirParser.js";
 import { RatContext } from "./asirParser.js";
 import { FloatContext } from "./asirParser.js";
@@ -86,7 +90,8 @@ import { BitNumContext } from "./asirParser.js";
 import { RatNumContext } from "./asirParser.js";
 import { DecNumContext } from "./asirParser.js";
 import { ImaNumContext } from "./asirParser.js";
-import { GenNumContext } from "./asirParser.js";
+import { AsGenNumContext } from "./asirParser.js";
+import { ApGenNumContext } from "./asirParser.js";
 import { BefContext } from "./asirParser.js";
 import { BefNContext } from "./asirParser.js";
 import { V2IdContext } from "./asirParser.js";
@@ -96,14 +101,6 @@ import { ChFuncContext } from "./asirParser.js";
 import { ListExprContext } from "./asirParser.js";
 import { SentenceContext } from "./asirParser.js";
 import { Sentence1Context } from "./asirParser.js";
-import { QualifiedNameContext } from "./asirParser.js";
-import { DottedIdentifierContext } from "./asirParser.js";
-import { ExprlistContext } from "./asirParser.js";
-import { TerminatorContext } from "./asirParser.js";
-import { SystemPathContext } from "./asirParser.js";
-import { ElifClauseContext } from "./asirParser.js";
-import { ElseClauseContext } from "./asirParser.js";
-import { OptionPairContext } from "./asirParser.js";
 
 
 /**
@@ -578,437 +575,469 @@ export class asirListener implements ParseTreeListener {
      */
     exitModuleEnd?: (ctx: ModuleEndContext) => void;
     /**
-     * Enter a parse tree produced by the `Main`
+     * Enter a parse tree produced by the `AndExpr`
      * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterMain?: (ctx: MainContext) => void;
+    enterAndExpr?: (ctx: AndExprContext) => void;
     /**
-     * Exit a parse tree produced by the `Main`
+     * Exit a parse tree produced by the `AndExpr`
      * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitMain?: (ctx: MainContext) => void;
+    exitAndExpr?: (ctx: AndExprContext) => void;
     /**
-     * Enter a parse tree produced by the `NoAssignment`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Enter a parse tree produced by the `IndexAccessExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterNoAssignment?: (ctx: NoAssignmentContext) => void;
+    enterIndexAccessExpr?: (ctx: IndexAccessExprContext) => void;
     /**
-     * Exit a parse tree produced by the `NoAssignment`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Exit a parse tree produced by the `IndexAccessExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitNoAssignment?: (ctx: NoAssignmentContext) => void;
+    exitIndexAccessExpr?: (ctx: IndexAccessExprContext) => void;
     /**
-     * Enter a parse tree produced by the `Assign`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Enter a parse tree produced by the `DottedIdExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterAssign?: (ctx: AssignContext) => void;
+    enterDottedIdExpr?: (ctx: DottedIdExprContext) => void;
     /**
-     * Exit a parse tree produced by the `Assign`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Exit a parse tree produced by the `DottedIdExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitAssign?: (ctx: AssignContext) => void;
+    exitDottedIdExpr?: (ctx: DottedIdExprContext) => void;
     /**
-     * Enter a parse tree produced by the `StructAssign`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Enter a parse tree produced by the `PreFixExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterStructAssign?: (ctx: StructAssignContext) => void;
+    enterPreFixExpr?: (ctx: PreFixExprContext) => void;
     /**
-     * Exit a parse tree produced by the `StructAssign`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Exit a parse tree produced by the `PreFixExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitStructAssign?: (ctx: StructAssignContext) => void;
+    exitPreFixExpr?: (ctx: PreFixExprContext) => void;
     /**
-     * Enter a parse tree produced by the `ListAssign`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Enter a parse tree produced by the `StringLiteralExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterListAssign?: (ctx: ListAssignContext) => void;
+    enterStringLiteralExpr?: (ctx: StringLiteralExprContext) => void;
     /**
-     * Exit a parse tree produced by the `ListAssign`
-     * labeled alternative in `asirParser.assignmentExpr`.
+     * Exit a parse tree produced by the `StringLiteralExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitListAssign?: (ctx: ListAssignContext) => void;
+    exitStringLiteralExpr?: (ctx: StringLiteralExprContext) => void;
     /**
-     * Enter a parse tree produced by the `Ternary`
-     * labeled alternative in `asirParser.ternaryExpr`.
+     * Enter a parse tree produced by the `UnaryNotExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterTernary?: (ctx: TernaryContext) => void;
+    enterUnaryNotExpr?: (ctx: UnaryNotExprContext) => void;
     /**
-     * Exit a parse tree produced by the `Ternary`
-     * labeled alternative in `asirParser.ternaryExpr`.
+     * Exit a parse tree produced by the `UnaryNotExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitTernary?: (ctx: TernaryContext) => void;
+    exitUnaryNotExpr?: (ctx: UnaryNotExprContext) => void;
     /**
-     * Enter a parse tree produced by the `Quote`
-     * labeled alternative in `asirParser.quoteExpr`.
+     * Enter a parse tree produced by the `RelationalExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterQuote?: (ctx: QuoteContext) => void;
+    enterRelationalExpr?: (ctx: RelationalExprContext) => void;
     /**
-     * Exit a parse tree produced by the `Quote`
-     * labeled alternative in `asirParser.quoteExpr`.
+     * Exit a parse tree produced by the `RelationalExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitQuote?: (ctx: QuoteContext) => void;
+    exitRelationalExpr?: (ctx: RelationalExprContext) => void;
     /**
-     * Enter a parse tree produced by the `QEImpl`
-     * labeled alternative in `asirParser.qeImplExpr`.
+     * Enter a parse tree produced by the `AssignExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterQEImpl?: (ctx: QEImplContext) => void;
+    enterAssignExpr?: (ctx: AssignExprContext) => void;
     /**
-     * Exit a parse tree produced by the `QEImpl`
-     * labeled alternative in `asirParser.qeImplExpr`.
+     * Exit a parse tree produced by the `AssignExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitQEImpl?: (ctx: QEImplContext) => void;
-    /**
-     * Enter a parse tree produced by the `QEnot`
-     * labeled alternative in `asirParser.qeNotExpr`.
-     * @param ctx the parse tree
-     */
-    enterQEnot?: (ctx: QEnotContext) => void;
-    /**
-     * Exit a parse tree produced by the `QEnot`
-     * labeled alternative in `asirParser.qeNotExpr`.
-     * @param ctx the parse tree
-     */
-    exitQEnot?: (ctx: QEnotContext) => void;
-    /**
-     * Enter a parse tree produced by the `QEor`
-     * labeled alternative in `asirParser.qeOrExpr`.
-     * @param ctx the parse tree
-     */
-    enterQEor?: (ctx: QEorContext) => void;
-    /**
-     * Exit a parse tree produced by the `QEor`
-     * labeled alternative in `asirParser.qeOrExpr`.
-     * @param ctx the parse tree
-     */
-    exitQEor?: (ctx: QEorContext) => void;
-    /**
-     * Enter a parse tree produced by the `QEand`
-     * labeled alternative in `asirParser.qeAndExpr`.
-     * @param ctx the parse tree
-     */
-    enterQEand?: (ctx: QEandContext) => void;
-    /**
-     * Exit a parse tree produced by the `QEand`
-     * labeled alternative in `asirParser.qeAndExpr`.
-     * @param ctx the parse tree
-     */
-    exitQEand?: (ctx: QEandContext) => void;
-    /**
-     * Enter a parse tree produced by the `QECompare`
-     * labeled alternative in `asirParser.qeCompareExpr`.
-     * @param ctx the parse tree
-     */
-    enterQECompare?: (ctx: QECompareContext) => void;
-    /**
-     * Exit a parse tree produced by the `QECompare`
-     * labeled alternative in `asirParser.qeCompareExpr`.
-     * @param ctx the parse tree
-     */
-    exitQECompare?: (ctx: QECompareContext) => void;
-    /**
-     * Enter a parse tree produced by the `Or`
-     * labeled alternative in `asirParser.orExpr`.
-     * @param ctx the parse tree
-     */
-    enterOr?: (ctx: OrContext) => void;
-    /**
-     * Exit a parse tree produced by the `Or`
-     * labeled alternative in `asirParser.orExpr`.
-     * @param ctx the parse tree
-     */
-    exitOr?: (ctx: OrContext) => void;
-    /**
-     * Enter a parse tree produced by the `And`
-     * labeled alternative in `asirParser.andExpr`.
-     * @param ctx the parse tree
-     */
-    enterAnd?: (ctx: AndContext) => void;
-    /**
-     * Exit a parse tree produced by the `And`
-     * labeled alternative in `asirParser.andExpr`.
-     * @param ctx the parse tree
-     */
-    exitAnd?: (ctx: AndContext) => void;
-    /**
-     * Enter a parse tree produced by the `Compare`
-     * labeled alternative in `asirParser.compareExpr`.
-     * @param ctx the parse tree
-     */
-    enterCompare?: (ctx: CompareContext) => void;
-    /**
-     * Exit a parse tree produced by the `Compare`
-     * labeled alternative in `asirParser.compareExpr`.
-     * @param ctx the parse tree
-     */
-    exitCompare?: (ctx: CompareContext) => void;
-    /**
-     * Enter a parse tree produced by the `AddSub`
-     * labeled alternative in `asirParser.addSubExpr`.
-     * @param ctx the parse tree
-     */
-    enterAddSub?: (ctx: AddSubContext) => void;
-    /**
-     * Exit a parse tree produced by the `AddSub`
-     * labeled alternative in `asirParser.addSubExpr`.
-     * @param ctx the parse tree
-     */
-    exitAddSub?: (ctx: AddSubContext) => void;
-    /**
-     * Enter a parse tree produced by the `MulDivSur`
-     * labeled alternative in `asirParser.mulDivSurExpr`.
-     * @param ctx the parse tree
-     */
-    enterMulDivSur?: (ctx: MulDivSurContext) => void;
-    /**
-     * Exit a parse tree produced by the `MulDivSur`
-     * labeled alternative in `asirParser.mulDivSurExpr`.
-     * @param ctx the parse tree
-     */
-    exitMulDivSur?: (ctx: MulDivSurContext) => void;
-    /**
-     * Enter a parse tree produced by the `UnaryMinus`
-     * labeled alternative in `asirParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterUnaryMinus?: (ctx: UnaryMinusContext) => void;
-    /**
-     * Exit a parse tree produced by the `UnaryMinus`
-     * labeled alternative in `asirParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitUnaryMinus?: (ctx: UnaryMinusContext) => void;
-    /**
-     * Enter a parse tree produced by the `NotExpr`
-     * labeled alternative in `asirParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterNotExpr?: (ctx: NotExprContext) => void;
-    /**
-     * Exit a parse tree produced by the `NotExpr`
-     * labeled alternative in `asirParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitNotExpr?: (ctx: NotExprContext) => void;
-    /**
-     * Enter a parse tree produced by the `PowExpr`
-     * labeled alternative in `asirParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterPowExpr?: (ctx: PowExprContext) => void;
-    /**
-     * Exit a parse tree produced by the `PowExpr`
-     * labeled alternative in `asirParser.unaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitPowExpr?: (ctx: PowExprContext) => void;
-    /**
-     * Enter a parse tree produced by the `PowEx`
-     * labeled alternative in `asirParser.powerExpr`.
-     * @param ctx the parse tree
-     */
-    enterPowEx?: (ctx: PowExContext) => void;
-    /**
-     * Exit a parse tree produced by the `PowEx`
-     * labeled alternative in `asirParser.powerExpr`.
-     * @param ctx the parse tree
-     */
-    exitPowEx?: (ctx: PowExContext) => void;
+    exitAssignExpr?: (ctx: AssignExprContext) => void;
     /**
      * Enter a parse tree produced by the `FactorialExpr`
-     * labeled alternative in `asirParser.factExpr`.
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
     enterFactorialExpr?: (ctx: FactorialExprContext) => void;
     /**
      * Exit a parse tree produced by the `FactorialExpr`
-     * labeled alternative in `asirParser.factExpr`.
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
     exitFactorialExpr?: (ctx: FactorialExprContext) => void;
     /**
-     * Enter a parse tree produced by the `PreFix`
-     * labeled alternative in `asirParser.prefixExpr`.
+     * Enter a parse tree produced by the `ListLiteralExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterPreFix?: (ctx: PreFixContext) => void;
+    enterListLiteralExpr?: (ctx: ListLiteralExprContext) => void;
     /**
-     * Exit a parse tree produced by the `PreFix`
-     * labeled alternative in `asirParser.prefixExpr`.
+     * Exit a parse tree produced by the `ListLiteralExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitPreFix?: (ctx: PreFixContext) => void;
+    exitListLiteralExpr?: (ctx: ListLiteralExprContext) => void;
     /**
-     * Enter a parse tree produced by the `PostFix`
-     * labeled alternative in `asirParser.postfixExpr`.
+     * Enter a parse tree produced by the `PrecharExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterPostFix?: (ctx: PostFixContext) => void;
+    enterPrecharExpr?: (ctx: PrecharExprContext) => void;
     /**
-     * Exit a parse tree produced by the `PostFix`
-     * labeled alternative in `asirParser.postfixExpr`.
+     * Exit a parse tree produced by the `PrecharExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitPostFix?: (ctx: PostFixContext) => void;
+    exitPrecharExpr?: (ctx: PrecharExprContext) => void;
     /**
-     * Enter a parse tree produced by the `IndexAccess`
-     * labeled alternative in `asirParser.indexAccessExpr`.
+     * Enter a parse tree produced by the `QENotExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterIndexAccess?: (ctx: IndexAccessContext) => void;
+    enterQENotExpr?: (ctx: QENotExprContext) => void;
     /**
-     * Exit a parse tree produced by the `IndexAccess`
-     * labeled alternative in `asirParser.indexAccessExpr`.
+     * Exit a parse tree produced by the `QENotExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitIndexAccess?: (ctx: IndexAccessContext) => void;
+    exitQENotExpr?: (ctx: QENotExprContext) => void;
     /**
-     * Enter a parse tree produced by the `MemberAccess`
-     * labeled alternative in `asirParser.memberAccessExpr`.
+     * Enter a parse tree produced by the `VarExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterMemberAccess?: (ctx: MemberAccessContext) => void;
+    enterVarExpr?: (ctx: VarExprContext) => void;
     /**
-     * Exit a parse tree produced by the `MemberAccess`
-     * labeled alternative in `asirParser.memberAccessExpr`.
+     * Exit a parse tree produced by the `VarExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitMemberAccess?: (ctx: MemberAccessContext) => void;
-    /**
-     * Enter a parse tree produced by the `IndExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterIndExpr?: (ctx: IndExprContext) => void;
-    /**
-     * Exit a parse tree produced by the `IndExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitIndExpr?: (ctx: IndExprContext) => void;
-    /**
-     * Enter a parse tree produced by the `Real`
-     * labeled alternative in `asirParser.primaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterReal?: (ctx: RealContext) => void;
-    /**
-     * Exit a parse tree produced by the `Real`
-     * labeled alternative in `asirParser.primaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitReal?: (ctx: RealContext) => void;
-    /**
-     * Enter a parse tree produced by the `IdExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
-     * @param ctx the parse tree
-     */
-    enterIdExpr?: (ctx: IdExprContext) => void;
-    /**
-     * Exit a parse tree produced by the `IdExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
-     * @param ctx the parse tree
-     */
-    exitIdExpr?: (ctx: IdExprContext) => void;
+    exitVarExpr?: (ctx: VarExprContext) => void;
     /**
      * Enter a parse tree produced by the `FCallExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
     enterFCallExpr?: (ctx: FCallExprContext) => void;
     /**
      * Exit a parse tree produced by the `FCallExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
     exitFCallExpr?: (ctx: FCallExprContext) => void;
     /**
+     * Enter a parse tree produced by the `QEAndExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterQEAndExpr?: (ctx: QEAndExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `QEAndExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitQEAndExpr?: (ctx: QEAndExprContext) => void;
+    /**
      * Enter a parse tree produced by the `FunctorCallExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
     enterFunctorCallExpr?: (ctx: FunctorCallExprContext) => void;
     /**
      * Exit a parse tree produced by the `FunctorCallExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
     exitFunctorCallExpr?: (ctx: FunctorCallExprContext) => void;
     /**
-     * Enter a parse tree produced by the `Paren`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Enter a parse tree produced by the `TernaryExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterParen?: (ctx: ParenContext) => void;
+    enterTernaryExpr?: (ctx: TernaryExprContext) => void;
     /**
-     * Exit a parse tree produced by the `Paren`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Exit a parse tree produced by the `TernaryExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitParen?: (ctx: ParenContext) => void;
+    exitTernaryExpr?: (ctx: TernaryExprContext) => void;
     /**
-     * Enter a parse tree produced by the `StringLiteral`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Enter a parse tree produced by the `QECompareExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterStringLiteral?: (ctx: StringLiteralContext) => void;
+    enterQECompareExpr?: (ctx: QECompareExprContext) => void;
     /**
-     * Exit a parse tree produced by the `StringLiteral`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Exit a parse tree produced by the `QECompareExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitStringLiteral?: (ctx: StringLiteralContext) => void;
+    exitQECompareExpr?: (ctx: QECompareExprContext) => void;
     /**
-     * Enter a parse tree produced by the `ListLiteral`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Enter a parse tree produced by the `IdLiteral`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterListLiteral?: (ctx: ListLiteralContext) => void;
+    enterIdLiteral?: (ctx: IdLiteralContext) => void;
     /**
-     * Exit a parse tree produced by the `ListLiteral`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Exit a parse tree produced by the `IdLiteral`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitListLiteral?: (ctx: ListLiteralContext) => void;
+    exitIdLiteral?: (ctx: IdLiteralContext) => void;
     /**
-     * Enter a parse tree produced by the `DpLiteral`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Enter a parse tree produced by the `UnarySignExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterDpLiteral?: (ctx: DpLiteralContext) => void;
+    enterUnarySignExpr?: (ctx: UnarySignExprContext) => void;
     /**
-     * Exit a parse tree produced by the `DpLiteral`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Exit a parse tree produced by the `UnarySignExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitDpLiteral?: (ctx: DpLiteralContext) => void;
+    exitUnarySignExpr?: (ctx: UnarySignExprContext) => void;
     /**
-     * Enter a parse tree produced by the `PreChrExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Enter a parse tree produced by the `OrExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    enterPreChrExpr?: (ctx: PreChrExprContext) => void;
+    enterOrExpr?: (ctx: OrExprContext) => void;
     /**
-     * Exit a parse tree produced by the `PreChrExpr`
-     * labeled alternative in `asirParser.primaryExpr`.
+     * Exit a parse tree produced by the `OrExpr`
+     * labeled alternative in `asirParser.expr`.
      * @param ctx the parse tree
      */
-    exitPreChrExpr?: (ctx: PreChrExprContext) => void;
+    exitOrExpr?: (ctx: OrExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `QEOrExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterQEOrExpr?: (ctx: QEOrExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `QEOrExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitQEOrExpr?: (ctx: QEOrExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `PowerExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterPowerExpr?: (ctx: PowerExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `PowerExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitPowerExpr?: (ctx: PowerExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `QEImplExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterQEImplExpr?: (ctx: QEImplExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `QEImplExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitQEImplExpr?: (ctx: QEImplExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `DpolyLiteralExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterDpolyLiteralExpr?: (ctx: DpolyLiteralExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `DpolyLiteralExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitDpolyLiteralExpr?: (ctx: DpolyLiteralExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `QuoteExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterQuoteExpr?: (ctx: QuoteExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `QuoteExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitQuoteExpr?: (ctx: QuoteExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `PostFixExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterPostFixExpr?: (ctx: PostFixExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `PostFixExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitPostFixExpr?: (ctx: PostFixExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `ParenExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterParenExpr?: (ctx: ParenExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `ParenExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitParenExpr?: (ctx: ParenExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `MemberAccessExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterMemberAccessExpr?: (ctx: MemberAccessExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `MemberAccessExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitMemberAccessExpr?: (ctx: MemberAccessExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `AddSubExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterAddSubExpr?: (ctx: AddSubExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `AddSubExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitAddSubExpr?: (ctx: AddSubExprContext) => void;
+    /**
+     * Enter a parse tree produced by the `NumberLiteral`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterNumberLiteral?: (ctx: NumberLiteralContext) => void;
+    /**
+     * Exit a parse tree produced by the `NumberLiteral`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitNumberLiteral?: (ctx: NumberLiteralContext) => void;
+    /**
+     * Enter a parse tree produced by the `MulDivSurExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    enterMulDivSurExpr?: (ctx: MulDivSurExprContext) => void;
+    /**
+     * Exit a parse tree produced by the `MulDivSurExpr`
+     * labeled alternative in `asirParser.expr`.
+     * @param ctx the parse tree
+     */
+    exitMulDivSurExpr?: (ctx: MulDivSurExprContext) => void;
+    /**
+     * Enter a parse tree produced by `asirParser.qualifiedName`.
+     * @param ctx the parse tree
+     */
+    enterQualifiedName?: (ctx: QualifiedNameContext) => void;
+    /**
+     * Exit a parse tree produced by `asirParser.qualifiedName`.
+     * @param ctx the parse tree
+     */
+    exitQualifiedName?: (ctx: QualifiedNameContext) => void;
+    /**
+     * Enter a parse tree produced by `asirParser.dottedIdentifier`.
+     * @param ctx the parse tree
+     */
+    enterDottedIdentifier?: (ctx: DottedIdentifierContext) => void;
+    /**
+     * Exit a parse tree produced by `asirParser.dottedIdentifier`.
+     * @param ctx the parse tree
+     */
+    exitDottedIdentifier?: (ctx: DottedIdentifierContext) => void;
+    /**
+     * Enter a parse tree produced by `asirParser.exprlist`.
+     * @param ctx the parse tree
+     */
+    enterExprlist?: (ctx: ExprlistContext) => void;
+    /**
+     * Exit a parse tree produced by `asirParser.exprlist`.
+     * @param ctx the parse tree
+     */
+    exitExprlist?: (ctx: ExprlistContext) => void;
+    /**
+     * Enter a parse tree produced by `asirParser.terminator`.
+     * @param ctx the parse tree
+     */
+    enterTerminator?: (ctx: TerminatorContext) => void;
+    /**
+     * Exit a parse tree produced by `asirParser.terminator`.
+     * @param ctx the parse tree
+     */
+    exitTerminator?: (ctx: TerminatorContext) => void;
+    /**
+     * Enter a parse tree produced by `asirParser.systemPath`.
+     * @param ctx the parse tree
+     */
+    enterSystemPath?: (ctx: SystemPathContext) => void;
+    /**
+     * Exit a parse tree produced by `asirParser.systemPath`.
+     * @param ctx the parse tree
+     */
+    exitSystemPath?: (ctx: SystemPathContext) => void;
+    /**
+     * Enter a parse tree produced by `asirParser.elifClause`.
+     * @param ctx the parse tree
+     */
+    enterElifClause?: (ctx: ElifClauseContext) => void;
+    /**
+     * Exit a parse tree produced by `asirParser.elifClause`.
+     * @param ctx the parse tree
+     */
+    exitElifClause?: (ctx: ElifClauseContext) => void;
+    /**
+     * Enter a parse tree produced by `asirParser.elseClause`.
+     * @param ctx the parse tree
+     */
+    enterElseClause?: (ctx: ElseClauseContext) => void;
+    /**
+     * Exit a parse tree produced by `asirParser.elseClause`.
+     * @param ctx the parse tree
+     */
+    exitElseClause?: (ctx: ElseClauseContext) => void;
+    /**
+     * Enter a parse tree produced by `asirParser.optionPair`.
+     * @param ctx the parse tree
+     */
+    enterOptionPair?: (ctx: OptionPairContext) => void;
+    /**
+     * Exit a parse tree produced by `asirParser.optionPair`.
+     * @param ctx the parse tree
+     */
+    exitOptionPair?: (ctx: OptionPairContext) => void;
     /**
      * Enter a parse tree produced by the `Dp`
      * labeled alternative in `asirParser.dpoly`.
@@ -1106,17 +1135,29 @@ export class asirListener implements ParseTreeListener {
      */
     exitImaNum?: (ctx: ImaNumContext) => void;
     /**
-     * Enter a parse tree produced by the `GenNum`
+     * Enter a parse tree produced by the `AsGenNum`
      * labeled alternative in `asirParser.num`.
      * @param ctx the parse tree
      */
-    enterGenNum?: (ctx: GenNumContext) => void;
+    enterAsGenNum?: (ctx: AsGenNumContext) => void;
     /**
-     * Exit a parse tree produced by the `GenNum`
+     * Exit a parse tree produced by the `AsGenNum`
      * labeled alternative in `asirParser.num`.
      * @param ctx the parse tree
      */
-    exitGenNum?: (ctx: GenNumContext) => void;
+    exitAsGenNum?: (ctx: AsGenNumContext) => void;
+    /**
+     * Enter a parse tree produced by the `ApGenNum`
+     * labeled alternative in `asirParser.num`.
+     * @param ctx the parse tree
+     */
+    enterApGenNum?: (ctx: ApGenNumContext) => void;
+    /**
+     * Exit a parse tree produced by the `ApGenNum`
+     * labeled alternative in `asirParser.num`.
+     * @param ctx the parse tree
+     */
+    exitApGenNum?: (ctx: ApGenNumContext) => void;
     /**
      * Enter a parse tree produced by the `Bef`
      * labeled alternative in `asirParser.id`.
@@ -1225,86 +1266,6 @@ export class asirListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitSentence1?: (ctx: Sentence1Context) => void;
-    /**
-     * Enter a parse tree produced by `asirParser.qualifiedName`.
-     * @param ctx the parse tree
-     */
-    enterQualifiedName?: (ctx: QualifiedNameContext) => void;
-    /**
-     * Exit a parse tree produced by `asirParser.qualifiedName`.
-     * @param ctx the parse tree
-     */
-    exitQualifiedName?: (ctx: QualifiedNameContext) => void;
-    /**
-     * Enter a parse tree produced by `asirParser.dottedIdentifier`.
-     * @param ctx the parse tree
-     */
-    enterDottedIdentifier?: (ctx: DottedIdentifierContext) => void;
-    /**
-     * Exit a parse tree produced by `asirParser.dottedIdentifier`.
-     * @param ctx the parse tree
-     */
-    exitDottedIdentifier?: (ctx: DottedIdentifierContext) => void;
-    /**
-     * Enter a parse tree produced by `asirParser.exprlist`.
-     * @param ctx the parse tree
-     */
-    enterExprlist?: (ctx: ExprlistContext) => void;
-    /**
-     * Exit a parse tree produced by `asirParser.exprlist`.
-     * @param ctx the parse tree
-     */
-    exitExprlist?: (ctx: ExprlistContext) => void;
-    /**
-     * Enter a parse tree produced by `asirParser.terminator`.
-     * @param ctx the parse tree
-     */
-    enterTerminator?: (ctx: TerminatorContext) => void;
-    /**
-     * Exit a parse tree produced by `asirParser.terminator`.
-     * @param ctx the parse tree
-     */
-    exitTerminator?: (ctx: TerminatorContext) => void;
-    /**
-     * Enter a parse tree produced by `asirParser.systemPath`.
-     * @param ctx the parse tree
-     */
-    enterSystemPath?: (ctx: SystemPathContext) => void;
-    /**
-     * Exit a parse tree produced by `asirParser.systemPath`.
-     * @param ctx the parse tree
-     */
-    exitSystemPath?: (ctx: SystemPathContext) => void;
-    /**
-     * Enter a parse tree produced by `asirParser.elifClause`.
-     * @param ctx the parse tree
-     */
-    enterElifClause?: (ctx: ElifClauseContext) => void;
-    /**
-     * Exit a parse tree produced by `asirParser.elifClause`.
-     * @param ctx the parse tree
-     */
-    exitElifClause?: (ctx: ElifClauseContext) => void;
-    /**
-     * Enter a parse tree produced by `asirParser.elseClause`.
-     * @param ctx the parse tree
-     */
-    enterElseClause?: (ctx: ElseClauseContext) => void;
-    /**
-     * Exit a parse tree produced by `asirParser.elseClause`.
-     * @param ctx the parse tree
-     */
-    exitElseClause?: (ctx: ElseClauseContext) => void;
-    /**
-     * Enter a parse tree produced by `asirParser.optionPair`.
-     * @param ctx the parse tree
-     */
-    enterOptionPair?: (ctx: OptionPairContext) => void;
-    /**
-     * Exit a parse tree produced by `asirParser.optionPair`.
-     * @param ctx the parse tree
-     */
-    exitOptionPair?: (ctx: OptionPairContext) => void;
 
     visitTerminal(node: TerminalNode): void {}
     visitErrorNode(node: ErrorNode): void {}
