@@ -29,7 +29,7 @@ export function getDefinitionLocation(
     currentFilePath: string
 ): DefinitionLocation | undefined {
     // hoverProvider.ts と同様に、カーソル位置の単語を特定する
-    const lineContent = code.split('\n')[position.line - 1];
+    const lineContent = code.split('\n')[position.line];
     if (!lineContent) { return undefined; }
 
     // Find the word that contains the character at position.character
@@ -54,7 +54,8 @@ export function getDefinitionLocation(
     // const wordStartChar = position.character - word.length; // 現在は未使用だが、範囲特定に使える
 
     // カーソル位置のスコープを見つけ、シンボルをルックアップする
-    const scope = symbolTable.findScopeAt(position);
+    const astPosition = { line: position.line + 1, character: position.character };
+    const scope = symbolTable.findScopeAt(astPosition);
     if (!scope) {
         return undefined;
     }

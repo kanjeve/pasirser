@@ -1,0 +1,9 @@
+def reproduction(A) {
+    if (1) {
+        X = A[0]$
+    } else {
+        A = 0$
+    }
+    Y = A[0]$ 
+    return Y$
+}

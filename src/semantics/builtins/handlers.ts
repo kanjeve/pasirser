@@ -40,7 +40,7 @@ const handleMap: BuiltinFunctionHandler = (validator, node, argResults) => {
         return { type: p_type('any') };
     }
     if (resolvedFuncType.kind === 'overloaded_function') {
-        validator.addDiagnostic(funcArgNode, `map にこの関数を渡した場合の型推論は、まだサポートされていません。`, DiagnosticSeverity.Hint);
+        validator.addDiagnostic(funcArgNode, `map にこの関数を渡した場合の型推論は、まだサポートされていません。`, DiagnosticSeverity.Information);
         return { type: { kind: 'list', elementType: p_type('any')}};
     }
 
@@ -144,7 +144,7 @@ const handlePari: BuiltinFunctionHandler = (validator, node, argResults) => {
     const pariFuncSignature = PARI_SIGNATURES.get(pariFuncName);
 
     if (!pariFuncSignature) {
-        validator.addDiagnostic(funcNameNode, `pari 関数 '${pariFuncName}' の型定義が見つかりません。`, DiagnosticSeverity.Hint);
+        validator.addDiagnostic(funcNameNode, `pari 関数 '${pariFuncName}' の型定義が見つかりません。`, DiagnosticSeverity.Information);
         return { type: p_type('any') };
     }
 
@@ -209,7 +209,7 @@ const handleLoadOrImport: BuiltinFunctionHandler = (validator, node, argResults)
 
     if (funcName === 'import') {
         if (validator.importedFiles.has(resolvedPath)) {
-            validator.addDiagnostic(node, `ファイルは既にimport済みです: ${filePathArgument}`, DiagnosticSeverity.Hint);
+            validator.addDiagnostic(node, `ファイルは既にimport済みです: ${filePathArgument}`, DiagnosticSeverity.Information);
             return { type: p_type('integer'), constantValue: 0 };
         }
         validator.importedFiles.add(resolvedPath);
@@ -265,6 +265,10 @@ const handleCons: BuiltinFunctionHandler = (validator, node, argResults) => {
     }
 
     const isListLikeOrUnknown = (type: AsirType): boolean => {
+        // union チェック
+        if (type.kind === 'union') {
+            return type.types.every(t => isListLikeOrUnknown(t)); // すべてlistlikeならok
+        }
         return type.kind === 'tuple' || type.kind === 'list' || (type.kind === 'primitive' && (type.name === 'parameter' || type.name === 'any'));
     };
 
@@ -280,6 +284,9 @@ const handleCons: BuiltinFunctionHandler = (validator, node, argResults) => {
         } else if (listType.kind === 'list') {
             const commonElementType = getCommonSupertype([itemResult.type, listType.elementType]);
             return { type: { kind: 'list', elementType: commonElementType }, constantValue: newConstantValue };
+        } else if (listType.kind === 'union') {
+            // 厳密には計算しないでおく
+            return { type: l_type(p_type('any')), constantValue: undefined };
         }
     }
 
@@ -482,7 +489,6 @@ const handleNewstruct: BuiltinFunctionHandler = (validator, node, argResults) =>
 };
 
 const handleVtol: BuiltinFunctionHandler = (validator, node, argResults) => {
-    console.log(`[DEBUG] handleVtol: argType=${typeToString(argResults[0].type)}`);
     if (argResults.length !== 1) {
         validator.addDiagnostic(node, `vtol は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
         return { type: p_type('any') };
@@ -498,15 +504,11 @@ const handleVtol: BuiltinFunctionHandler = (validator, node, argResults) => {
     let actualVectorType: VectorAsirType | undefined;
     if (argType.kind === 'union') {
         const findVectorInUnion = (unionType: UnionType): VectorAsirType | undefined => {
-            console.log(`[DEBUG] findVectorInUnion: unionType.types=${unionType.types.map(t => typeToString(t)).join(', ')}`);
             for (const type of unionType.types) {
-                console.log(`[DEBUG] findVectorInUnion: Checking type:`, type);
                 if (type.kind === 'vector') {
-                    console.log(`[DEBUG] findVectorInUnion: Found vector: ${typeToString(type)}`);
                     return type as VectorAsirType;
                 }
                 if (type.kind === 'union') {
-                    console.log(`[DEBUG] findVectorInUnion: Recursing into nested union: ${typeToString(type)}`);
                     const nestedVector = findVectorInUnion(type);
                     if (nestedVector) {
                         return nestedVector;

@@ -1,0 +1,16 @@
+def quad(A,B,C) {
+    if (A!=0) {
+        D = B^2-4*A*C$
+        if (D>=0){
+            DQ = deval(D^(1/2));
+            return([-B/(2*A)+DQ/(2*A),-B/(2*A)-DQ/(2*A)])$
+        } else {
+            DQ = deval((-D)^(1/2));
+            return([-B/(2*A)+@i*DQ/(2*A),-B/(2*A)-@i*DQ/(2*A)])$
+        }
+    } else {
+        B!=0? deval(-C/B) : "x don't exist.";
+    }
+}
+
+quad(1.0,2.0,1.0);

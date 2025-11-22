@@ -16,7 +16,7 @@ describe('Validator Features', () => {
     it('should report unused variables', () => {
         const diagnostics = getDiagnostics('test_unused.rr');
         
-        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Hint);
+        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Information);
         expect(hints).toHaveLength(1);
         expect(hints[0].message).toContain('未使用のシンボル \'UnusedVar\'');
     });
@@ -44,7 +44,7 @@ describe('Validator Features', () => {
         const diagnostics = getDiagnostics('main_chdir_test.rr');
 
         const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
-        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Hint);
+        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Information);
         
         expect(errors).toHaveLength(0);
         // 未使用変数Aに関するヒントが含まれていることを確認
@@ -55,7 +55,7 @@ describe('Validator Features', () => {
         const diagnostics = getDiagnostics('import_test.rr', { loadPaths: [path.resolve(__dirname)] });
 
         const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
-        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Hint);
+        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Information);
 
         // エラーは0件であること（再定義エラーが出ていない）
         expect(errors).toHaveLength(0);
@@ -68,7 +68,7 @@ describe('Validator Features', () => {
         const diagnostics = getDiagnostics('ctrl_cons_test.rr');
 
         const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
-        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Hint);
+        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Information);
 
         // エラーは0件であること
         expect(errors).toHaveLength(0);
@@ -93,7 +93,7 @@ describe('Validator Features', () => {
         const diagnostics = getDiagnostics('ctrl_getter_cons_test.rr');
 
         const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
-        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Hint);
+        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Information);
 
         // エラーは0件であること
         expect(errors).toHaveLength(0);

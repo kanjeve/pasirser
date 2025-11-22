@@ -8,7 +8,7 @@ ctrl("loadpath", ["/initial/path"]);
 CurrentPaths = ctrl("loadpath");
 
 // 3. cons() を使って新しいパスを追加
-NewPaths = cons("tests/new/dynamic/path", CurrentPaths);
+NewPaths = cons("tests/ctrl_test/dynamic", CurrentPaths);
 
 // 4. 新しいパスリストをctrl()で設定
 ctrl("loadpath", NewPaths);

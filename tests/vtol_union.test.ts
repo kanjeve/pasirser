@@ -1,9 +1,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { Validator } from '../../src/semantics/validator';
-import { parseAndBuildAST } from '../../src/core/parser/parserUtils';
-import { DiagnosticSeverity } from '../../src/utils/diagnostics';
+import { Validator } from '../src/semantics/validator';
+import { parseAndBuildAST } from '../src/core/parser/parserUtils';
+import { DiagnosticSeverity } from '../src/utils/diagnostics';
 
 describe('Vtol union type validation', () => {
   it('should correctly infer types for vtol with union types', () => {
@@ -20,12 +20,6 @@ describe('Vtol union type validation', () => {
     if (ast) {
       const validator = new Validator(ast, testFilePath);
       const errors = validator.analyze(ast).filter(e => e.severity === DiagnosticSeverity.Error);
-
-      if (errors.length > 0) {
-        console.log('Found errors:');
-        errors.forEach(e => console.log(`- Line ${e.range.start.line}: ${e.message} (Source: ${e.source})`));
-      }
-
       expect(errors.length).toBe(0);
     }
   });

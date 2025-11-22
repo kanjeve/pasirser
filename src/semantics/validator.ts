@@ -259,12 +259,12 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             if (!symbol.isUsed && symbol.definedAt &&
                 !BUILTIN_SIGNATURES.has(symbol.name) &&
                 !BUILTIN_CONSTANTS.has(symbol.name) &&
-                !(symbol.type.kind === 'primitive' && symbol.type.name === 'parameter') // Exclude function parameters
+                !(symbol.type.kind === 'primitive' && symbol.type.name === 'parameter')
             ) {
                 this.addDiagnostic(
                     symbol.node,
                     `未使用のシンボル '${symbol.name}' が定義されています。`,
-                    DiagnosticSeverity.Hint // Or Warning
+                    DiagnosticSeverity.Information
                 );
             }
         });
@@ -556,15 +556,15 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 }
             } else {
                 const existingType = symbol.type;
-                if (existingType.kind !== 'primitive' || (existingType.name !== 'any' && existingType.name !== 'parameter')) {
-                    if (!isTypeCompatible(finalType, existingType)) {
-                        this.addDiagnostic(
-                            node,
-                            `変数の型が変更されました。 '${typeToString(existingType)}' から ${typeToString(rightResult.type)} に変わっています。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
-                            DiagnosticSeverity.Warning
-                        );
-                    }
-                }
+                // if (existingType.kind !== 'primitive' || (existingType.name !== 'any' && existingType.name !== 'parameter')) {
+                //     if (!isTypeCompatible(finalType, existingType)) {
+                //         this.addDiagnostic(
+                //             node,
+                //             `変数の型が変更されました。 '${typeToString(existingType)}' から ${typeToString(rightResult.type)} に変わっています。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
+                //             DiagnosticSeverity.Warning
+                //         );
+                //     }
+                // }
                 symbol.type = finalType;
                 symbol.constantValue = isCompoundAssignment ? undefined : rightResult.constantValue; 
             }
@@ -578,9 +578,9 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 if (baseSymbol) { baseSymbol.constantValue = undefined; }
             }
             const leftResult= this.visit(node.left);
-            if (leftResult && !isTypeCompatible(finalType, leftResult.type)) {
-                this.addDiagnostic(node.right, `代入の型が一致しません。型 '${typeToString(leftResult.type)}' から型 '${typeToString(finalType)}'へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`, DiagnosticSeverity.Warning);
-            }
+            // if (leftResult && !isTypeCompatible(finalType, leftResult.type)) {
+            //     this.addDiagnostic(node.right, `代入の型が一致しません。型 '${typeToString(leftResult.type)}' から型 '${typeToString(finalType)}'へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`, DiagnosticSeverity.Warning);
+            // }
             // Update the type of the base collection if it's an IndexAccess
             if (node.left.kind === 'IndexAccess') {
                 // let currentBaseNode: ast.ExpressionNode = node.left;
@@ -704,24 +704,24 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                         DiagnosticSeverity.Error
                     );
                 } else {
-                    if (!isTypeCompatible(finalType, expecedType)) {
-                        this.addDiagnostic(
-                            node.right,
-                            `メンバー '${finalMemberName}' の型が一致しません。型 '${typeToString(expecedType)}' から型 '${typeToString(finalType)}' へ変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
-                            DiagnosticSeverity.Warning
-                        );
-                    }
+                    // if (!isTypeCompatible(finalType, expecedType)) {
+                    //     this.addDiagnostic(
+                    //         node.right,
+                    //         `メンバー '${finalMemberName}' の型が一致しません。型 '${typeToString(expecedType)}' から型 '${typeToString(finalType)}' へ変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
+                    //         DiagnosticSeverity.Warning
+                    //     );
+                    // }
                     (currentType as StructAsirType).members.set(finalMemberName, finalType);
                 }
             }
 
-            if (leftResult!.type && !isTypeCompatible(finalType, leftResult!.type)) {
-                this.addDiagnostic(
-                    node.right,
-                    `代入の型が一致しません。型 '${typeToString(leftResult!.type)}' から型 '${typeToString(finalType)}' へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
-                    DiagnosticSeverity.Warning
-                );
-            }
+            // if (leftResult!.type && !isTypeCompatible(finalType, leftResult!.type)) {
+            //     this.addDiagnostic(
+            //         node.right,
+            //         `代入の型が一致しません。型 '${typeToString(leftResult!.type)}' から型 '${typeToString(finalType)}' へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`,
+            //         DiagnosticSeverity.Warning
+            //     );
+            // }
 
             if (isCompoundAssignment) {
                 let baseNode: ast.ExpressionNode = node.left;
@@ -750,9 +750,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         if (funcName === 'format_f_rp') {
             const matrixParam = node.parameters[0];
             const symbol = this.symbolTable.currentScope.lookup(matrixParam.name);
-            if (symbol) {
-                console.log(`[DEBUG] format_f_rp: MATRIX parameter type at start: ${typeToString(symbol.type)}`);
-            }
         }
 
         // モジュール内の宣言チェック
@@ -938,10 +935,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             const argResult = this.visit(arg) || { type: p_type('any') };
             argResults.push(argResult);
         }
-        
-        if (funcName === 'format_f_rp') {
-            console.log(`[DEBUG] Calling format_f_rp with FRP type: ${typeToString(argResults[0].type)}`);
-        }
 
         if (builtinHandlers.has(funcName)) {
             const handler = builtinHandlers.get(funcName)!;
@@ -1016,11 +1009,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                     }
                                 // 各固定引数の型をチェック
                                 const fixedArgCount = Math.min(actualArgTypes.length, expectedParams.length);
-                                if (funcName === 'diff') {
-                                    console.log(`[DEBUG] funcName: ${funcName}`);
-                                    console.log(`[DEBUG] actualArgTypes: ${actualArgTypes.map(t => typeToString(t)).join(', ')}`);
-                                    console.log(`[DEBUG] expectedParams: ${expectedParams.map(p => typeToString(p.type)).join(', ')}`);
-                                }
                                 for (let i = 0; i < fixedArgCount; i++) {
                                     // --- Start of type refinement for parameters ---
                                     if (node.args[i].kind === 'Indeterminate') {
@@ -1109,6 +1097,8 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         const leftType = leftResult.type;
         const rightType = rightResult.type;
         const operator = node.operator;
+        const isLeftAny = leftType.kind === 'primitive' && leftType.name === 'any';
+        const isRightAny = rightType.kind === 'primitive' && rightType.name === 'any';
 
         // union型の処理
         if (leftType.kind === 'union' || rightType.kind === 'union') {
@@ -1126,6 +1116,28 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 this.addDiagnostic(node, `演算子 '${operator}' は、型 '${typeToString(leftType)}' と '${typeToString(rightType)}' の組み合わせの一部に適用できない可能性があります。`, DiagnosticSeverity.Warning);
             }
             return { type: finalType };
+        }
+
+        // parameter の型推論
+        const isLeftParameter = leftType.kind === 'primitive' && leftType.name === 'parameter';
+        const isRightParameter = rightType.kind === 'primitive' && rightType.name === 'parameter';
+
+        if (['+', '-', '*', '/', '%', '<', '>', '<=', '>='].includes(operator)) {
+            if (isLeftParameter && !isRightParameter && isSubtypeOf(rightType.kind === 'primitive' ? rightType.name : 'number', 'number')) {
+                if (node.left.kind === 'Indeterminate') {
+                    const symbol = this.symbolTable.currentScope.lookup(node.left.name);
+                    if (symbol && symbol.type.kind === 'primitive' && symbol.type.name === 'parameter') {
+                        symbol.type = p_type('integer')
+                    }
+                }
+            } else if (!isLeftParameter && isRightParameter && isSubtypeOf(leftType.kind === 'primitive' ? leftType.name : 'number', 'number')) {
+                if (node.right.kind === 'Indeterminate') {
+                    const symbol = this.symbolTable.currentScope.lookup(node.right.name);
+                    if (symbol && symbol.type.kind === 'primitive' && symbol.type.name === 'parameter') {
+                        symbol.type = p_type('integer');
+                    }
+                }
+            }
         }
 
         this.checkUsageAsValue(node.left, leftType);
@@ -1170,14 +1182,16 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
 
         if (['<', '>', '<=', '>=', '&&', '||'].includes(operator)) {
             if (leftType.kind === 'primitive' && rightType.kind === 'primitive') {
-                const isNumeric = isSubtypeOf(leftType.name, 'number') && isSubtypeOf(rightType.name, 'number');
-                const isString = leftType.name === 'string' && rightType.name === 'string';
-                if (!isNumeric && !isString) {
-                    this.addDiagnostic(
-                        node,
-                        `この演算は意図しない値を返す可能性があります。型 '${typeToString(leftType)}' と型 '${typeToString(rightType)}' の間での '${operator}' 演算は意図しない結果になる可能性があります。`,
-                        DiagnosticSeverity.Warning
-                    );
+                if (!isLeftParameter && !isRightParameter && !isLeftAny && !isRightAny) {
+                    const isNumeric = isSubtypeOf(leftType.name, 'number') && isSubtypeOf(rightType.name, 'number');
+                    const isString = leftType.name === 'string' && rightType.name === 'string';
+                    if (!isNumeric && !isString) {
+                        this.addDiagnostic(
+                            node,
+                            `この演算は意図しない値を返す可能性があります。型 '${typeToString(leftType)}' と型 '${typeToString(rightType)}' の間での '${operator}' 演算は意図しない結果になる可能性があります。`,
+                            DiagnosticSeverity.Warning
+                        );
+                    }
                 }
             } else {
                 this.addDiagnostic(
@@ -1191,11 +1205,13 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         const resultType = getBinaryOperationResultType(leftType, rightType, operator);
 
         if (resultType.kind === 'primitive' && resultType.name === 'any') {
-            this.addDiagnostic(
-                node,
-                `演算子 '${operator}' は、型 '${typeToString(leftType)}' と '${typeToString(rightType)}' には適用できません。`,
-                DiagnosticSeverity.Error
-            );
+            if (!isLeftAny && !isRightAny && !isLeftParameter && !isRightParameter) {
+                this.addDiagnostic(
+                    node,
+                    `演算子 '${operator}' は、型 '${typeToString(leftType)}' と '${typeToString(rightType)}' には適用できません。`,
+                    DiagnosticSeverity.Error
+                );
+            }
         }
 
         // 定数畳み込み
@@ -1349,7 +1365,10 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
 
         const isBaseNumeric = baseType.kind === 'primitive' && isSubtypeOf(baseType.name, 'number');
         const isBaseStdPoly = baseType.kind === 'standard_polynomial';
-        if (!isBaseNumeric && !isBaseStdPoly) {
+        const isBaseParameter = baseType.kind === 'primitive' && baseType.name === 'parameter';
+        const isBasePolyVar = baseType.kind === 'primitive' && isSubtypeOf(baseType.name, 'pp');
+
+        if (!isBaseNumeric && !isBaseStdPoly && !isBaseParameter && !isBasePolyVar) {
             this.addDiagnostic(
                 node.base,
                 `演算子 '^' の底は、数値または多項式で得ある必要がありますが、 型 '${typeToString(baseType)}' が指定されました。`,
@@ -1357,25 +1376,34 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             );
             return { type: p_type('any') };
         }
+
+        if (isBaseParameter && node.base.kind === 'Indeterminate') {
+            const symbol = this.symbolTable.currentScope.lookup(node.base.name);
+            if (symbol && symbol.type.kind === 'primitive' && symbol.type.name === 'parameter') {
+                symbol.type = p_type('integer');
+            }
+        }
+
         if (exponentValue !== null) {
             if (exponentValue > 0) {
-                resultType = baseType;
+                resultType = isBaseParameter ? p_type('number') : baseType;
             } else {
                 if (baseType.kind === 'primitive' && baseType.name === 'integer') { resultType = p_type('rational'); }
                 if (baseType.kind === 'standard_polynomial') { resultType = rat_type(baseType.coefficientType); }
-                resultType = baseType;
+                if (isBasePolyVar) { resultType = stdpoly_type(p_type('integer')); }
+                resultType = isBaseParameter ? p_type('number') : baseType;
             }
-        }
-        if (exponentType.kind === 'primitive' && exponentType.name === 'integer') {
+        } else if (exponentType.kind === 'primitive' && exponentType.name === 'integer') {
             const possibleTypes: AsirType[] = [baseType, p_type('integer')];
             if (baseType.kind === 'primitive' && baseType.name === 'integer') {
                 possibleTypes.push(p_type('rational'));
             } else if (baseType.kind === 'standard_polynomial') {
                 possibleTypes.push(rat_type(baseType.coefficientType));
+            } else if (isBasePolyVar) {
+                resultType = rat_type(p_type('integer'));
             } else { possibleTypes.push(baseType); }
             resultType = getCommonSupertype(possibleTypes);
-        }
-        resultType = p_type('form');
+        }else { resultType = p_type('form'); }
         return { type: resultType, constantValue };
     }
 
@@ -1437,6 +1465,11 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             const currentType = currentResult.type;
             let nextType: AsirType = p_type('any');
             let nextConstantValue: ConstantValue | undefined = undefined;
+
+            if (currentType.kind === 'primitive' && currentType.name === 'any') {
+                currentResult = { type: p_type('any'), constantValue: undefined };
+                continue;
+            }
 
             switch (currentType.kind) {
                 case 'matrix':

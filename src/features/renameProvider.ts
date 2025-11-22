@@ -31,7 +31,7 @@ export function getRenameEdits(
 ): TextEdit[] | undefined {
     // 1. カーソル位置のシンボルの定義を特定する
     // getDefinitionLocationのロジックを再利用して、シンボルと定義位置を取得
-    const lineContent = code.split('\n')[position.line - 1];
+    const lineContent = code.split('\n')[position.line];
     if (!lineContent) { return undefined; }
 
     const wordsInLine = lineContent.matchAll(/[a-zA-Z_][a-zA-Z0-9_]*/g);
@@ -56,7 +56,8 @@ export function getRenameEdits(
 
     if (!targetWord) { return undefined; }
 
-    const scope = symbolTable.findScopeAt(position);
+    const astPosition = { line: position.line + 1, character: position.character };
+    const scope = symbolTable.findScopeAt(astPosition);
     if (!scope) { return undefined; }
 
     const targetSymbol = scope.lookup(targetWord);

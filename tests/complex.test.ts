@@ -9,14 +9,23 @@ describe('Complex code analysis', () => {
     const code = fs.readFileSync(filePath, 'utf-8');
     const { diagnostics } = analyze(code);
     const errors = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
-    
-    // デバッグのため、エラー内容をコンソールに出力します
+    const warns = diagnostics.filter(d => d.severity === DiagnosticSeverity.Warning);
+
     if (errors.length > 0) {
       console.log('Found errors:');
       errors.forEach(e => {
         console.log(`- Line ${e.range.start.line}: ${e.message} (Source: ${e.source})`);
       });
     }
+
+    if (warns.length > 0) {
+      console.log('Found Warning:');
+      warns.forEach(e => {
+        console.log(`- Line ${e.range.start.line}: ${e.message} (Source: ${e.source})`);
+      });
+    }
+
+    // expect(warns.length).toBe(0);
 
     expect(errors.length).toBe(0);
   });

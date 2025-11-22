@@ -48,6 +48,10 @@ export function checkNumericTypeMismatch(type1: AsirType, type2: AsirType): stri
 }
 
 export function getBinaryOperationResultType(leftType: AsirType, rightType: AsirType, operator: string): AsirType {
+    if (['==', '!=', '<', '>', '<=', '>=', '&&', '||'].includes(operator)) {
+        return p_type('integer');
+    }
+
     if ((leftType.kind === 'primitive' && leftType.name === 'parameter') || (rightType.kind === 'primitive' && rightType.name === 'parameter')) {
         return p_type('parameter');
     }

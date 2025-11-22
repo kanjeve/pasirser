@@ -112,7 +112,7 @@ export function getDocumentSymbols(
 
         visitAssignmentExpression(node: ast.AssignmentExpressionNode): void {
             if (node.left.kind === 'Indeterminate' && node.left.loc) {
-                const symbol = this.symbolTable.currentScope.lookup(node.left.name); // Use this.symbolTable
+                const symbol = this.symbolTable.currentScope.lookup(node.left.name);
                 if (symbol && symbol.definedAt) {
                     const range = this.createRange(node.loc);
                     const selectionRange = this.createRange(symbol.definedAt);

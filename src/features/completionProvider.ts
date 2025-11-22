@@ -85,7 +85,7 @@ export function getCompletions(
     symbolTable: SymbolTable | null
 ): CompletionItem[] {
     const completions: CompletionItem[] = [];
-    const lineContent = code.split('\n')[position.line - 1] || '';
+    const lineContent = code.split('\n')[position.line] || '';
     const lineUnitilCursor = lineContent.substring(0, position.character);
 
     // pari補完
@@ -124,7 +124,8 @@ export function getCompletions(
     const typedPrefix = identifierMatch ? identifierMatch[1] : '';
     if (ast && symbolTable) {
         // 1. 現在のスコープ内のシンボルを収集
-        const scope = symbolTable.findScopeAt(position);
+        const astPosition = { line: position.line + 1, character: position.character };
+        const scope = symbolTable.findScopeAt(astPosition);
         let currentScope: Scope | null = scope;
         while (currentScope) {
             currentScope.symbols.forEach(symbol => {

@@ -287,9 +287,23 @@ export function isTypeCompatible(sourceType: AsirType, targetType: AsirType): bo
 
 export function getCommonSupertype(types: AsirType[]): AsirType {
     if (types.length === 0) { return p_type('any'); }
+
+    // union 型ならフラットにする
+    const flattenedInputTypes: AsirType[] = [];
+    const stack = [...types];
+    while (stack.length > 0) {
+        const t = stack.pop()!;
+        if (t.kind === 'union') {
+            stack.push(...t.types);
+        } else {
+            flattenedInputTypes.push(t);
+        }
+    }
+
     const uniqueTypes: AsirType[] = [];
     let hasAnyOrParameter = false;
-    for (const type of types) {
+
+    for (const type of flattenedInputTypes) {
         if (type.kind === 'primitive' && (type.name === 'any' || type.name === 'parameter')) {
             hasAnyOrParameter = true;
             continue;

@@ -3,6 +3,7 @@ import { SymbolTable } from '../semantics/symbolTable';
 import { AsirASTVisitor } from '../semantics/validator';
 import { ALL_ASIR_BUILTIN } from '../data/builtins';
 import { BUILTIN_CATEGORIES, BuiltinFunctionCategory } from '../data/builtinCategories';
+import { IndexAccessResult } from '../semantics/types';
 
 export enum SemanticTokenTypes {
     struct,
@@ -10,7 +11,7 @@ export enum SemanticTokenTypes {
     parameter,
     variable,
     property,
-    function, // 5 (original)
+    function,
     macro,
     keyword,
     comment,
@@ -19,7 +20,7 @@ export enum SemanticTokenTypes {
     operator,
     builtinFunction_keyword,
     formFunction,
-    builtinFunction_default, // 14 (original)
+    builtinFunction_default,
 }
 
 export enum SemanticTokenModifiers {
@@ -67,8 +68,27 @@ export function getSemanticTokens(
             });
         }
 
+        visitAssignmentExpression(node: ast.AssignmentExpressionNode): void {
+            if (node.left.kind === 'Indeterminate') {
+                const variableNode = node.left as ast.IndeterminateNode;
+                let tokenType = SemanticTokenTypes.variable;
+                if (variableNode.resolvedSymbol) {
+                    if (variableNode.resolvedSymbol.type.kind === 'primitive' && variableNode.resolvedSymbol.type.name === 'parameter') {
+                        tokenType = SemanticTokenTypes.parameter;
+                    }
+                }
+                this.addToken(variableNode, tokenType);
+            }
+            this.visitChildren(node);
+        }
+
+        visitModuleVariableDeclaration(node: ast.ModuleVariableDeclarationNode): void {
+            node.variables.forEach(variable => {
+                this.addToken(variable, SemanticTokenTypes.variable, [SemanticTokenModifiers.declaration]);
+            });
+        }
+
         visitIndeterminate(node: ast.IndeterminateNode): void {
-            console.log(`Visiting Indeterminate: ${node.name}, resolvedSymbol: ${node.resolvedSymbol ? 'present' : 'absent'}`);
             if (node.resolvedSymbol && node.loc) {
                 const symbol = node.resolvedSymbol;
                 let type: SemanticTokenTypes;
