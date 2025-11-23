@@ -1,0 +1,17 @@
+module k$
+localf foo$
+def foo() {
+    local A;
+    A = 10$
+    B = 5$
+    return A+B+C$
+}
+extern D$
+static E$
+D=12$
+E=88$
+endmodule$
+
+k.foo();
+[D,E];
+end$

@@ -1,0 +1,13 @@
+def f(L) {
+    T = type(L)$
+    if (T == 1 && L == 1) {
+        R = L - 1$
+    } else if (T == 4) {
+        R = cons(1,L)$
+    } else {
+        R = L$
+    }
+    return R$
+}
+
+f(2)$

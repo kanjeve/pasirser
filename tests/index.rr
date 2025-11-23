@@ -1,0 +1,13 @@
+def f(L) {
+    I = 1$
+    Llen = length(L)$
+    RESULT = 0$
+    while (1) {
+        if (Llen == I) { break$ }
+        RESULT = RESULT + L[I]$
+        I++$
+    }
+    return RESULT$
+}
+
+f([1]);

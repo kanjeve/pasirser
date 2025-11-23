@@ -1,0 +1,263 @@
+def all_type() {
+    O_0 = 0$ /* ZERO */
+    O_1 = 1$ /* NUM */
+    O_2 = x$ /* POLY */
+    O_3 = x/x$ /* RAT */
+    O_4 = []$ /* LIST */
+    O_5 = vect(1)$ /* VECT */
+    O_6 = matrix(1,1)$ /* MAT */
+    O_7 = "this is a string"$ /* STR */
+
+    struct person {name, age}$
+    O_8 = newstruct(person)$ /* COMP */
+
+    O_9 = <<1>>$ /* DP */
+    O_10 = ntoint32(1)$ /* USINT */
+
+    Id = ox_launch_nox()$
+    ox_cmo_rpc(Id,"fctr",[])$
+    O_11 = ox_pop_cmo(Id)$ /* ERR */
+    ox_push_cmd(Id,264)$
+    ox_push_cmd(Id,262)$
+    O_13 = ox_get(Id)$ /* MATHCAP */
+    ox_shutdown(Id)$
+
+    O_12 = mulmat_gf2n(x^2+x+1)$ /* GF2MAT */
+    O_14 = all(x@>3)$ /* QEF */
+    O_15 = mat_to_gfmmat(newmat(2,2,[[23,56],[15,19]]),3)$ /* GFMMAT */
+    O_16 = newbytearray(1)$ /* BYTEARRAY */
+    O_17 = `x+1$ /* QUOTE */
+    O_18 = 0 /* type() = 18 はoptlist型。多分、取ることはできない。 */ $ /* OPTLIST */
+    O_19 = @lex$ /* SYMBOL */
+    O_20 = range(x,y)$ /* RANGE */
+    O_21 = string_to_tb(O_7)$ /* TB */
+    O_22 = dp_ltod([x,y],[x,y])$ /* DPV */
+    X = quote_to_funargs(O_17)$
+    O_23 = X[1]$ /* QUOTEARG */
+    O_24 = newimat(2,2)$ /* IMAT */
+    O_25 = qt_to_nbp(O_17)$ /* NBP */
+    O_26 = <<1:1>>$ /* DPM */
+    O_void = getopt(k)$ /* VOID */
+
+    L = [O_0, O_1, O_2, O_3, O_4, O_5, O_6, O_7, O_8, O_9, O_10, O_11, O_12, O_13, O_14, O_15, O_16, O_17, O_18, O_19, O_20, O_21, O_22, O_23, O_24, O_25, O_26, O_void]$
+    TL = map(type, L)$
+    return [L,TL]$
+}
+
+def type_description() {
+    OS = sysinfo()[0]$
+    if (OS == "windows") {
+        OE = "oe"$
+    } else {
+        OE = "ö"$
+    }
+
+    print("This function is intended to explain \"Types in Asir\". Provides a Type description for the identification number you enterd.Please select one number from 0 to 26 or -1 and enter it.\n",1)$
+    print("Enter a Number: ",2)$
+    purge_stdin()$
+    INPUT = get_line()$
+    INPUT = eval_str(INPUT)$
+    I = INPUT$
+
+    print("----------------------------------------",1)$
+
+    if (INPUT == 0) {
+        print("Identification 0 is Type 0. ",2)$
+        print("But, in really, no object exists that has 0 as its identification number. ",2)$
+        print("In C language, 0 is implemented as a null pointer. ",2)$
+        print("In Asir, the input \"type(0);\" returns 0 for convenience.\n",1)$
+        print("e.g.",1)$
+        print("[0] type(0);\n0",1)$
+    } else if (INPUT == 1) {
+        print("Identification 1 is Type Number. ",2)$
+        print("Number has sub-types: rational number, floating point number, etc. ",2)$
+        print("If you want to know sub-types Number N, enter \"ntype(N);\".\n",1)$
+        print("e.g.",1)$
+        print("[0] type(1);\n1\n[1] ntype(1);\n0\n[2] type(1.0);\n1\n[3] ntype(1.0);\n1\n[4] type(1.0*@i);\n1\n[5] ntype(1.0*@i);\n4",1)$
+    } else if (INPUT == 2) {
+        print("Identification 2 is Type Polynomial. ",2)$
+        print("Polynomial is an expression of sums, products, and powers of one or more indeterminates and Number. ",2)$
+        print("Without going into detail, indeterminates have sub-types.\n",1)$
+        print("e.g.",1)$
+        print("[0] type(x);\n2\n[1] type(sin(x)^y+@e*2);\n2",1)$
+    } else if (INPUT == 3) {
+        print("Identification 3 is Type Rational expression. ",2)$
+        print("Its denominator is Polynomial. ",2)$
+        print("Rational expression is not simplified by common divisors even if it is possible.\n",1)$
+        print("e.g.",1)$
+        print("[0] x/x;\n(x)/(x)\n[1] type(x/x);\n3",1)$
+    } else if (INPUT == 4) {
+        print("Identification 4 is Type List. ",2)$
+        print("A List consisting of A and B is represented as [A,B]. ",2)$
+        print("Also, null List is specified by []. ",2)$
+        print("And further more, element referencing by indexing is available. ",2)$
+        print("However, you cannot edit it like this: \"[1,2][0]\".\n",1)$
+        print("e.g.",1)$
+        print("[0] Null = []$\n[1] L = [1,2]$\n[2] type(Null);\n4\n[3] type(L);\n4\n[4] L[1];\n2",1)$
+    } else if (INPUT == 5) {
+        print("Identification 5 is Type Vector (Array). ",2)$
+        print("Vector is created by explicit execution of \"newvect()\", so entering somthing like [ 0 0 ] directly will not create a vector. ", 2)$
+        print("For example, input \"newvect(3,[1,2]);\" created a Vector [ 1 2 0 ]. ",2)$
+        print("Just like List, Vector elements can be designated by indexing.\n",1)$
+        print("e.g.",1)$
+        print("[0] V1 = vect(1);\n[ 1 ]\n[1] V2 = newvect(3,[1,2]);\n[ 1 2 0 ]\n[2] type(V1);\n5\n[3] type(V2);\n5",1)$
+    } else if (INPUT == 6) {
+        print("Identification 6 is Type Matrix. ",2)$
+        print("Just like Vector, Matrix is created by explicit execution of \"newmat()\". ",2)$
+        print("Referencing by indexing is available, so, for example, M[1] is Vector in the 2nd row of M, also M[1][1] is element in (2,2) of M.\n",1)$
+        print("e.g.",1)$
+        print("[0] M1 = matrix(1,1);\n[ 0 ]\n[1] M2 = newmat(2,3,[[x,y],[z]]);\n[ x y 0 ]\n[ z 0 0 ]\n[2] M2[1];\n[ z 0 0 ]\n[3] M2[1][0];\nz\n[4] type(M1);\n6\n[5] type(M2);\n6\n[6] type(M2[1]);\n5",1)$
+    } else if (INPUT == 7) {
+        print("Identification 7 is Type String. ",2)$
+        print("String is used mainly for naming files. ",2)$
+        print("By the way, Asir does not have Type Char, so cannot create character (or string) with single quotes (\' \').\n",1)$
+        print("e.g.",1)$
+        print("[0] A = \"this is a string\";\nthis is a string\n[1] B = \'this is an ordinary indeterminate\';\nthis is an ordinary indeterminate\n[2] type(A);\n7\n[3] type(B);\n2",1)$
+    } else if (INPUT == 8) {
+        print("Identification 8 is Type Structure (Composition). ",2)$
+        print("To create Structure, first define the base Structure with command like this: \"struct person \{name, age\};\", then execute \"newstruct(person);\". ",2)$
+        print("Using arrow \"->\" can reference member of Structure.\n",1)$
+        print("e.g.",1)$
+        print("[0] struct person {name, age};\n[1] S = newstruct(person);\n{0,0}\n[2] type(S);\n8\n[3] S->name = \"Santa\";\nSanta\n[4] S->age = 24;\n24\n[5] S;\n{Santa,24}",1)$
+    } else if (INPUT == 9) {
+        print("Identification 9 is Type Distributed representation of Polynomial (hereinafter referred to as DP). ",2)$
+        print("DP is a representation of a polynomial as the sum of the products of the powers of the variable and the coefficients (See below). ",2)$
+        print("To create DP, apply \"dp_ptod()\" to a polynomial, or enter something like \"<<1,0,0>>+2*<<1,1,1>>\" directly. ",2)$
+        print("Type DP is specially devised for computation of Gr"+OE+"bner bases.\n",1)$
+        print("e.g.",1)$
+        print("[0] D1 = <<1>>; \/\* x \*\/\n(1)*<<1>> \n[1] D2 = dp_ptod((x+y+z)^2,[x,y,z]); \/\* x^2+2xy+y^2+2xz+2yz+z^2 \*\/\n(1)*<<2,0,0>>+(2)*<<1,1,0>>+(1)*<<0,2,0>>+(2)*<<1,0,1>>+(2)*<<0,1,1>>+(1)*<<0,0,2>>\n[2] type(D1);\n9\n[3] type(D2);\n9",1)$
+    } else if (INPUT == 10) {
+        print("Identification 10 is Type 32bit Unsigned Integer (hereinafter referred to as USINT). ",2)$
+        print("USINT is a fundamental OpenXM and one often has to send an integer to a server as USINT. ",2)$
+        print("USINT is created by explicit execution of \"ntoint32()\".\n",1)$
+        print("e.g.",1)$
+        print("[0] I = ntoint32(1);\n1\n[1] type(I);\n10\n[2] ntoint32(-1);\n4294967295",1)$
+    } else if (INPUT == 11) {
+        print("Identification 11 is Type Error object. ",2)$
+        print("Error object is used for OpenXM. ",2)$
+        print("It consists of the Stackmachine command and the error message. ",2)$
+        print("When an error has occurred on an OpenXM server, Error object is pushed to the stack. ",2)$
+        print("With \"ox_pop_cmo()\", can pop out objects from the stack.\n", 2)$
+        print("e.g.",1)$
+        print("[0] ID = ox_launch();\n0\n[1] ox_cmo_rpc(ID,\"fctr\",[]);\n0\n[2] ERR = ox_pop_cmo(ID);\nerror([271,4294967295, : invalid argument,[asir_where,[[toplevel,0]]]])\n\/\* 271,4294967295(-1) : SM command | invalid argument : error message \*\/\n[3] type(ERR);\n11\n[4] ox_shutdown(ID);\n0",1)$
+    } else if (INPUT == 12) {
+        print("Identification 12 is Type Matrix over GF(2) (hereinafter referred to as GF2MAT). ",2)$
+        print("GF2MAT, as the name suggests, represents a matrix over the finite field GF(2). ",2)$
+        print("GF2MAT is created by explicit execution of \"mulmat_gf2n()\". ",2)$
+        print("GF2MAT is primarily used to perform fast linear algebra and arithmetic operations within extension fields, such as GF(2^n).\n",1)$
+        print("e.g.",1)$
+        print("[0] mulmat_gf2n(x^2+x+1);\n11\n10\n\n[1] mulmat_gf2n(x^2+2*x+1);\n10\n10\n\n[2] type(@@);\n12",1)$
+        print("Note: mulmat_gf2n(poly) returns the matrix that maltiplies x over GF(2)/poly. In [1] case, output is companion matrix.\n",1)$
+    } else if (INPUT == 13) {
+        print("Identification 13 is Type Mathcap. ", 2)$
+        print("OpenXM provides a scheme not to send data unknown to peers, so it's realized by excanging the list of supported CMO and SM. ",2)$
+        print("The list is Mathcap. ",2)$
+        print("The list of Mathcap infomation can be got with \"ox_get_serverinfo()\", but its Type is List. ",2)$
+        print("If you want this Type Mathcap object, See below.\n",1)$
+        print("e.g.",1)$
+        print("[0] ID = ox_launch()$\n[1] M1 = ox_get_serverinfo(ID);\n[[199901160,ox_asir],[276,275,258,262,263,277,266,267,268,274,269,272,265,264,273,300,270,271,400,278,279,280,281,282,283],[[514,[1,2,3,4,5,2130706433,2130706434,17,19,20,21,22,24,25,26,31,34,27,33,60,61,52,35]],[2144202544,[0,1]]]]\n[2] ox_push_cmd(ID,264)$\n[3] ox_push_cmd(ID,262)$\n[4] M2 = ox_get(ID);\n[[199901160,ox_asir],[276,275,258,262,263,277,266,267,268,274,269,272,265,264,273,300,270,271,400,278,279,280,281,282,283],[[514,[1,2,3,4,5,2130706433,2130706434,17,19,20,21,22,24,25,26,31,34,27,33,60,61,52,35]],[2144202544,[0,1]]]]\n[5] type(M1);\n4\n[6] type(M2);\n13\n[7] ox_shutdown(ID)$",1)$
+    } else if (INPUT == 14) {
+        print("Identification 14 is Type First order formula (hereinafter referred to as QEF). ", 2)$
+        print("QEF expresses a first order formula used in quantifier elimination (QE). ",2)$
+        print("For QEF, binary and infix operators are these: @==, @!=, @<=, @<, @>, @>=, @&&, @||, @!, @impl, @repl, @equiv, ex(), all().\n",1)$
+        print("e.g.",1)$
+        print("[0] all(x@>3);\nall(x,x-3 @> 0)\n[1] type(@@);\n14",1)$
+    } else if (INPUT == 15) {
+        print("Identification 15 is Type Matrix over GF(p) (hereinafter referred to as GFMMAT). ",2)$
+        print("GFMMAT, as the name suggests, represents a matrix over the finite field GF(p). ",2)$
+        print("Unlike GF2MAT, GFMMAT can be generated from Matrix with \"mat_to_gfmmat()\". ",2)$
+        print("GFMMAT is used to solve systems of linear equations using LU decomposition.\n",1)$
+        print("e.g.",1)$
+        print("[0] M = newmat(2,2,[[23,56],[15,19]])$\n[1] GFM = mat_to_gfmmat(M,3);\n[       2       2]\n[       0       1]\n\n[2] type(GFM);\n15",1)$
+    } else if (INPUT == 16) {
+        print("Identification 16 is Type Byte array. ",2)$
+        print("Byte array is used when reading a file into a binary format ... maybe. ",2)$
+        print("Using Byte array, may also be able to plot images.\n",1)$
+        print("e.g.",1)$
+        print("[0] BA = newbytearray(1);\n|00|\n[1] BAA = newbytearray(2, \"kp\");\n|6b 70|\n[2] map(type,[BA,BAA]);\n[16,16]\n[3] BAA[0];\n107",1)$
+    } else if (INPUT == 17) {
+        print("Identification 17 is Type Quote. ",2)$
+        print("Quote has a tree structure (before being evaluated as an object) called FNODE. ",2)$
+        print("Quote is used to hold formulas as you are entered, and so has applications in LaTeX conversion and non-commutative algebric calculations. ",2)$
+        print("To create Quote, enter \"quote()\" command or put a backtick (\`) before fomula.\n",1)$
+        print("e.g.",1)$
+        print("[0] A = x+1$\n[1] Q1 = quote(A);\n<...quoted...>\n[2] Q2 = `A;\n<...quoted...>\n[3] map(type,[Q1,Q2]);\n[17,17]",1)$
+    } else if (INPUT == 18) {
+        print("Identification 18 is Type Option List. ",2)$
+        print("Option List is one of arguments to a function, and is the one on the right side separated by vertical bar (|). ",2)$
+        print("It takes the form of an assignment expression with an ordinary indeterminate on the left side and an appropriate object on the right side, or a list consisting of these. ",2)$
+        print("So, unfortunately, you can't get the Option List, and there is no X that satisfies \"type(X)=18\".\n",1)$
+        print("e.g.",1)$
+        print("[0] def foo() { A = getopt()$ return A$ }\n[1] foo(| key = 2);\n[[key,2]]\n[2] foo(| option_list = [[\"key1\",1],[\"key2\",2]]);\n[[key1,1],[key2,2]]",1)$
+    } else if (INPUT == 19) {
+        print("Identification 19 is Type Symbol. ",2)$
+        print("There are three types of Symbol: @lex, @glex, and @grlex. ",2)$
+        print("Used to define the term order in newer functions that compute Gr"+OE+"bner bases, such as \"dp_gr_main()\".\n",2)$
+        print("e.g.",1)$
+        print("[0] S = @lex;\n@lex\n[1] type(S);\n19\n[2] dp_gr_main([x+y-3,x-y-1] | order=[[S,range(x,y)]]);\n[y-1,x-2]",1)$
+    } else if (INPUT == 20) {
+        print("Identification 20 is Type Range. ",2)$
+        print("Used to define the set of variables in newer functions that compute Gr"+OE+"bner bases, such as \"dp_gr_main()\".\n",2)$
+        print("To create Range, enter \"range(var1,var2)\".\n",1)$
+        print("e.g.",1)$
+        print("[0] R = range(x,y);\nrange(x,y)\n[1] type(R);\n20\n[2] dp_gr_main([x+y-3,x-y-1] | order=[[@lex,R]]);\n[y-1,x-2]",1)$
+    } else if (INPUT == 21) {
+        print("Identification 21 is Type Text Buffer (hereinafter referred to as TB). ",2)$
+        print("TB can be generated from String by \"string_to_tb()\" command. ",2)$
+        print("String can be added using the addition operator (+), but this wastes a lot of memory. ",2)$
+        print("On the other hand, TB has a memory-friendly structure, so if you want to add characters, it has better to use \"write_to_tb\".\n",1)$
+        print("e.g.",1)$
+        print("[0] S = \"this is a string\"$\n[1] TB = string_to_tb(S);\nthis is a string\n[2] type(TB);\n21\n[3] write_to_tb(\" (not really)\",TB);\n0\n[4] TB;\nthis is a string (not really)",1)$
+    } else if (INPUT == 22) {
+        print("Identification 22 is Type Distributed representation of Polynomial Vector (hereinafter referred to as DPV). ",2)$
+        print("DPV is created with \"dp_ltod(polylist,varlist)\". ",2)$
+        print("However, I don't know how to use it currently.\n",1)$
+        print("e.g.",1)$
+        print("[0] P = [x,y]$\n[1] V = [x,y]$\n[2] DPV = dp_ltod(P,V);\nmodvect((1)*<<1,0>>,(1)*<<0,1>>)\n[3] type(DPV);\n22",1)$
+    } else if (INPUT == 23) {
+        print("Identification 23 is Type funarg format operator (hereinafter referred to as QUOTEARG). ",2)$
+        print("Quote can be converted to funarg format with \"quote_to_funargs()\". ",2)$
+        print("The return value is List and has the structure [fid, op, arg1, arg2, ...]. ",2)$
+        print("This op is QUOTEARG, and the operator that works on arg1, arg2, ... (these type is Quote).\n",1)$
+        print("e.g.",1)$
+        print("[0] Q = `x+1$\n[1] F = quote_to_funargs(Q);\n[0,<...quoted...>,<...quoted...>,<...quoted...>]\n[2] F[1];\n<...quoted...>\n[3] type(@@);\n23\n[4] get_function_name(@2);\n+",1)$
+    } else if (INPUT == 24) {
+        print("Identification 24 is Type sparse matrix (hereinafter referred to as IMAT). ",2)$
+        print("IMAT is a matrix that only keeps track of the values and positions of non-zero components, and nothing else. ",2)$
+        print("If the matrix you are considering is sparse, it is better to use IMAT than Matrix.\n",1)$
+        print("e.g.",1)$
+        print("[0] I1 = newimat(2,2);\n( 0 0 )\n( 0 0 )\n[1] M = newmat(3,3,[[1,2],[3]])$\n[2] I2 = m2im(M);\n( 1 2 0 )\n( 3 0 0 )\n( 0 0 0 )\n[3] map(type,[I1,I2]);\n[24,24]",1)$
+    } else if (INPUT == 25) {
+        print("Identification 25 is Type Non-commutative Polynomial (hereinafter referred to as NBP). ",2)$
+        print("Quote preserves the state of the input polynomials, making it suitable for non-commutative algebra. ",2)$
+        print("So, NBP is created by transforming Quote and can be used in non-commutative algebra.\n",2)$
+        print("e.g.",1)$
+        print("[0] Q = `x+1$\n[1] NBP = qt_to_nbp(Q);\n(1)*x+(1)*1\n[2] type(NBP);\n25\n[3] `(x+y)^2$\n[4] qt_to_nbp(@@);\n(1)*xx+(1)*xy+(1)*yx+(1)*yy",1)$
+    } else if (INPUT == 26) {
+        print("Identification 26 is Type Distributed represented of Module Polynomial (hereinafter referred to as DPM). ",2)$
+        print("DPM is an element of a free module over a polynomial ring. ",2)$
+        print("The form is like this: (c)*<<d1,d2,...,dn:i>>. The defference from DP is that it includes i which represents position.\n",1)$
+        print("e.g.",1)$
+        print("[0] DPM = <<1:1>>;\n(1)*<<1:1>>\n[1] type(DPM);\n26\n[2] P = [x,y,x]$\n[3] V = [x,y]$\n[4] dpm_ltod(P,V);\n(1)*<<1,0:1>>+(1)*<<1,0:3>>+(1)*<<0,1:2>>",1)$
+    } else if (INPUT == -1) {
+        print("Identification -1 is Type VOID. ",2)$
+        print("VOID indicates that a return value of a function is void. ",2)$
+        print("The main use is to make function arguments variable by taking advantage of the fact that \"getopt(key)\" returns VOID when an option (key) is not specified.\n",1)$
+        print("e.g.",1)$
+        print("[0] def foo() {  V = getopt(key)$ return type(V)$ }\n[1] foo(|key = 0);\n0\n[2] foo();\n-1",1)$
+        I = 27$
+    } else {
+        print("no exist.",1)$
+        print("----------------------------------------",1)$
+        return []$
+    }
+
+    print("----------------------------------------",1)$
+    ALL = all_type()$
+    OL = ALL[0]$
+    TL = ALL[1]$
+    print("[print, id]: ",2)$
+    return [OL[I], TL[I]]$
+}
+
+end$

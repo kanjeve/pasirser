@@ -2709,7 +2709,7 @@ export const BUILTIN_SIGNATURES = new Map<string, FunctionAsirType | OverloadedF
                 { name: 'row', type: p_type('integer') },
                 { name: 'col', type: p_type('integer') }
             ],
-            restParameter: { name: 'vectors', type: v_type(p_type('any')) },
+            restParameter: { name: 'vectors', type: l_type(p_type('any')) },
             returnType: m_type(p_type('any')),
             behavior: 'callable_and_symbol'
         }

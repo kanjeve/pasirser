@@ -1,0 +1,83 @@
+def digit(N) {
+    LOG = dlog(N) / dlog(10)$
+    DIG = floor(LOG) + 1$
+    return DIG$
+}
+
+def isint(N) {
+    if ( ntype(N) == 0) {
+        return dn(N) == 1 ? 1 : 0$
+    } else {
+        F = floor(N)$
+        return N == F ? 1 : 0$
+    }
+}
+
+def ntoones(N) {
+    if ( type(N) != 1 ) {
+        return []$
+    } else if ( isint(N) ) {
+        if ( ntype(N) != 0 ) { N = floor(N)$ }
+        if ( N % 5 == 0 || N % 2 == 0) { return []$ }
+        D = digit(N)$
+        ONES = (10^D-1)/9$
+        if ( N == ONES) {
+            print(N,0)$
+            print(" is already \"ones\".",1)$
+            return [1, N]$
+        }
+        A = inv(N,10)$
+        I = 0$
+        RESULT = 0$
+        while (1) {
+            if ( I == 0) {
+                M = (N*A-1)/10$
+                RESULT += A$
+            } else {
+                BM = M$
+                M = (1-M)%10$
+                AI = (A*M)%10$
+                M = (N*AI+BM-1)/10$
+                RESULT += AI*10^I$
+            }
+            I += 1$
+            if ( M == 0) {
+                RESULTONE = N * RESULT$
+                print(N,0)$
+                print("*",0)$
+                print(RESULT,0)$
+                print("=", 0)$
+                print(RESULTONE, 1)$
+                return [RESULT, RESULTONE]$
+            }
+        }
+    } else { return []$}
+}
+
+def nto10toones(N) {
+    BIGT = (10^N-1)/9$
+    BIGR = BIGT%N$
+    for ( I = 1; I <= N; I++) {
+        T = (10^I-1)/9$
+        R = T%N$
+        if ( R == 0) {
+            RESULT = T/N$
+            print(N,0)$
+            print("*",0)$
+            print(RESULT,0)$
+            print("=", 0)$
+            print(T, 1)$
+            return [RESULT,T]$
+        } else if ( R == BIGR) {
+            A = BIGT-T$
+            while ( A%10 == 0 ) { A /= 10$ }
+            RESULT = A/N$
+            print(N,0)$
+            print(" * ",0)$
+            print(RESULT,0)$
+            print("=", 0)$
+            print(A, 1)$
+            return [RESULT,A]$
+        }
+    }
+}

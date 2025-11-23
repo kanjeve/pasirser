@@ -8,7 +8,7 @@ describe('Completion Provider', () => {
     it('should provide command suggestions for ctrl()', () => {
         // 準備: ユーザーが `ctrl("l` まで入力した状況をシミュレート
         const code = 'ctrl("l';
-        const position: Position = { line: 1, character: 8 }; // カーソルは 'l' の直後
+        const position: Position = { line: 0, character: 8 }; // カーソルは 'l' の直後
 
         // 実行: 補完候補を取得
         const completions = getCompletions(code, position, null, null);
@@ -24,7 +24,7 @@ describe('Completion Provider', () => {
         // 準備: ユーザーが `pari(s` まで入力した状況をシミュレート
         const code = 'pari(s';
         // カーソルは 's' の直後 (1行目, 7文字目)
-        const position: Position = { line: 1, character: 7 };
+        const position: Position = { line: 0, character: 7 };
 
         // 実行: 補完候補を取得 (ASTとシンボルテーブルは不要なのでnullを渡す)
         const completions = getCompletions(code, position, null, null);

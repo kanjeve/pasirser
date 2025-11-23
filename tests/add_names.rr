@@ -1,0 +1,922 @@
+/* chdir("C:/Users/kaAAA/all_working/kanji-abacus/begginer--asir/others"); */
+/* https://bitbucket.org/teamsnactsukuba/rast2013/src/master/ */
+
+/* rover_xy.rr */
+load("names.rr")$
+
+def r1(X,Y) {
+    R=eval(-14.69*log((X^2+Y^2)^(1/2)+0.31)-49.17-10*Y^2/(X^2+Y^2));
+    return R;
+}
+
+def r2(X,Y) {
+    R=eval(-14.69*log((X^2+Y^2)^(1/2)+0.31)-49.17-10*X^2/(X^2+Y^2));
+    return R;
+}
+
+
+def estimatez(X,Y){
+    if (-0.5<(r1(X,Y)-number_floor(r1(X,Y))) && (r1(X,Y)-number_floor(r1(X,Y)))<0.5) {
+        R1=number_floor(r1(X,Y));
+    } else {
+        R1=number_floor(r1(X,Y))+1;
+    }
+
+    if (-0.5<(r2(X,Y)-number_floor(r1(X,Y))) && (r2(X,Y)-number_floor(r2(X,Y)))<0.5) {
+        R2=number_floor(r2(X,Y));
+    } else {
+        R2=number_floor(r2(X,Y))+1;
+    }
+
+    H1 = -100*R1-1469*a-4917+500*(c-1); 
+    H2 = R1-R2-10*c;
+    C = pari(roots,H2);
+    if (C!=0) {C=C[0];} else {;}
+    A = pari(roots,subst(H1,c,C));
+    Dxy = eval(@e^A[0]-0.31);
+    X = Dxy*dsqrt((1+C)/2);
+    Y = dsqrt(Dxy^2-X^2);
+
+    return [X,Y];
+}
+
+
+def estimate(X,Y) {
+    R1 = r1(X,Y);
+    R2 = r2(X,Y);
+
+    H1 = -R1-14.69*a-49.17+5*(c-1); 
+    H2 = R1-R2-10*c;
+    C = pari(roots,H2);
+    if (C!=0) {C=C[0];} else {;}
+    A = pari(roots,subst(H1,c,C));
+    Dxy = eval(@e^A[0]-0.31);
+    X = Dxy*dsqrt((1+C)/2);
+    Y = dsqrt(Dxy^2-X^2);
+
+    return [X,Y];
+}
+
+
+def rover_xy_error(X,Y,EX,EY) {
+    Error = dsqrt(((X-EX)^2+(Y-EY)^2)/(X^2+Y^2));
+    return Error;
+}
+
+def rover_xy_error2(X,Y,EX,EY) {
+    Error = dabs(dsqrt(X^2+Y^2)-dsqrt(EX^2+EY^2))/dsqrt(X^2+Y^2);
+    return Error;
+}
+
+def rover_xy_error3(X,Y,EX,EY) {
+    Error = dabs(dsqrt(X^2+Y^2)-dsqrt(EX^2+EY^2));
+    return Error;
+}
+
+def rover_xy_error4(X,Y,EX,EY) {
+    Error = dsqrt((X-EX)^2+(Y-EY)^2);
+    return Error;
+}
+
+/* --------------------------------------------------------------- */
+/* roverz_xy_many.rr */
+
+def rref(A) {
+    S=size(A); 
+    M=S[0]; 
+    N=S[1];
+    I=0;
+    for (J = 0; J < N; J++ ) {
+        P = -1;
+        for ( K = I; K < M; K++ )
+            if ( P < 0 && A[K][J] != 0 ) P = K;
+        if ( P >= 0 ) {
+            if ( P != I ) {
+                for ( L = J; L < N; L++ ) {
+                    T = A[I][L]; A[I][L] = A[P][L];
+                    A[P][L] = T;
+                }
+            }
+            for ( L = J+1; L < N; L++ ) A[I][L] = A[I][L]/A[I][J];
+            A[I][J] = 1;
+            for ( K = 0; K < M; K++ ) {
+                if ( K != I ) {
+                    for ( L = J+1; L < N; L++ ) A[K][L] = A[K][L] - A[K][J]*A[I][L];
+                    A[K][J] = 0;
+                }
+            }
+            I = I+1; /* 本来のコードは` I++ `だが、enhancer0.4.1ではエラーになるので、書き換えた */
+        }
+    }
+    return I;
+}
+
+def const(F,VL){
+    for (I=0;I<length(VL);I++){
+        F=F-coef(F,1,VL[I])*VL[I];
+    };
+    return F;
+}
+
+def solver_eq(FL,VL,N) {
+    A = matrix(N-1,N);
+
+    for (I=0;I<N-1;I++) {
+        for (J=0;J<N-1;J++) {
+            A[I][J] = coef(FL[I],1,VL[J]);
+        }
+    }
+
+    for (I=0;I<N-1;I++) {
+        A[I][N-1] = -const(FL[I],VL);
+    }
+    rref(A); /* これっていいの？（要観察） */
+
+    I = 0;
+    J = 0;
+    X = [];
+    while (J<N-1) {
+        if (A[I][J]==1) {
+            X = cons(A[I][N-1],X);
+            I=I+1;
+            J=J+1; /* 本来のコードは` I++ (J++) `だが、enhancer0.4.1ではエラーになるので、書き換えた */
+        } else {
+            X=cons(0,X);
+            J=J+1;
+        }
+    }
+    return X;
+}
+
+
+def signad(D) {
+    if ( dabs(D[0][0]+D[1][0]-D[2][0]) < dabs(dabs(D[0][0]-D[1][0])-D[2][0]) ) {
+        D=[D[0],[-D[1][0],D[1][1]],D[2]];
+    } else {;}
+    
+    if (D[1][0]-D[0][0] < 0) {
+        D=[D[0],D[1],[-D[2][0],D[2][1]]];
+    } else{;}
+
+    if ( dabs(D[0][1]+D[1][1]-D[2][1]) < dabs(dabs(D[0][1]-D[1][1])-D[2][1]) ) {
+        D=[D[0],[D[1][0],-D[1][1]],D[2]];
+    } else{;}
+    
+    if (D[1][1]-D[0][1] < 0) {
+        D=[D[0],D[1],[D[2][0],-D[2][1]]];
+    } else{;}
+        
+    return D;
+}
+
+
+def estimate_n(L,N){
+    D=[];
+    D2=[estimatez(L[1][0],L[1][1]),[0,0]];
+    D3=[];
+
+    for (I=0;I<N;I++){
+        for (J=I+1;J<N;J++){
+            Error=estimatez(L[J][0]-L[I][0],L[J][1]-L[I][1]);
+
+            if (I>0) {
+                A = signad([reverse(D)[I-1],reverse(D)[J-1],Error]);
+                if (I==1) {
+                    D2 = cons(A[1],D2);
+                } else {;}
+                D3 = cons(A[2],D3);
+            } else {;}
+
+
+            D = cons(Error,D);
+        }
+
+        if (I==1) {
+            D = reverse(cdr(reverse(D2)));
+        } else {;}
+    }
+
+    return append(reverse(D2),reverse(D3));
+}
+
+def estimatezmany(L,N){
+    D=estimate_n(L,N);
+
+    VL=[0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x20];
+    VL2=[];
+    for(I=0;I<N;I++){
+        VL2=cons(VL[I],VL2);
+    }
+    VL=reverse(VL2);
+
+    Fx=0;
+    Fy=0;
+    D=cdr(D);
+    for (I=0;I<N-1;I++){
+        for (J=I+1;J<N;J++){
+            A=dsqrt(car(D)[0]^2+car(D)[1]^2);
+            if (A<25) {Fx=Fx+(VL[J]-VL[I]-car(D)[0])^2;} else {;}
+            if (A<25) {Fy=Fy+(VL[J]-VL[I]-car(D)[1])^2;} else {;}
+            D=cdr(D);
+        }
+    }
+
+    FLx=[];
+    FLy=[];
+    VLx=[];
+    VLy=[];
+    for(I=1;I<N;I++){
+        DFx=diff(Fx,VL[I]);
+        /*if (DFx!=0) {FLx=cons(DFx,FLx);VLx=cons(VL[I],VLx);} else {;}*/
+        FLx=cons(DFx,FLx);
+        DFy=diff(Fy,VL[I]);
+        /*if (DFy!=0) {FLy=cons(DFy,FLy);VLy=cons(VL[I],VLy);} else {;}*/
+        FLy=cons(DFy,FLy);
+    }
+
+    VL=cdr(VL);
+    X=solver_eq(FLx,VL,N);
+    Y=solver_eq(FLy,VL,N);
+
+    R=[];
+    for(I=0;I<N-1;I++){
+        R=cons([X[I],Y[I]],R);
+    }
+
+    return R;
+}
+
+
+def errormany(L,N){
+    A=estimatezmany(L,N);
+    Error=[];
+    EE=0;
+    for (I=0;I<N-1;I++) {
+        X=rover_xy_error(L[I+1][0],L[I+1][1],A[I][0],A[I][1]);
+        EE=EE+X;
+        Error=cons(X,Error);
+    }
+    return [reverse(Error),EE/(N-1)];
+}
+
+
+/* ---------------------------------------- */
+/* rover_xyl.rr */
+
+def logtaylor(N) {
+    T=0;
+    for (I=1;I<N+1;I++){
+        T=T+((-1)^(I+1))*(x^I)/I;
+    }
+    return T;
+}
+
+def tana1a2(X,Y,O,L) {
+    C=eval(cos(O));
+    S=eval(sin(O));
+    if (X+L*(1-C)==0) {
+        return 10^10;
+    } else {
+        T=(Y-L*S)/(X+L*(1-C));
+        return T;
+    }
+}
+
+def rha1a2(X,Y,O,L) {
+    if (tana1a2(X,Y,O,L)==10^10) {
+        return -5;
+    } else {
+        Rh=(5/2)*(-2*tana1a2(X,Y,O,L)^2/(1+tana1a2(X,Y,O,L)^2));
+        return Rh;
+    }
+}
+
+def tana2a1(X,Y,O,L) {
+    C=eval(cos(O));
+    S=eval(sin(O));
+    if (L-(X+L)*C-Y*S==0) {
+        return 10^10;
+    } else {
+        T=((X+L)*S-Y*C)/(L-(X+L)*C-Y*S);
+        return T;
+    }
+}
+
+def rha2a1(X,Y,O,L) {
+    if (tana2a1(X,Y,O,L)==10^10) {
+        return -5;
+    } else {
+        Rh=(5/2)*(-2*tana2a1(X,Y,O,L)^2/(1+tana2a1(X,Y,O,L)^2));
+        return Rh;
+    }
+}
+
+def ra1a2(X,Y,O,L) {
+    R=eval(-14.69*log((X^2+Y^2)^(1/2)+0.31)-49.17+rha1a2(X,Y,O,L)+rha2a1(X,Y,O,L));
+    return R;
+}
+
+def tanb1b2(X,Y,O,L) {
+    C=eval(cos(O));
+    S=eval(sin(O));
+    if (-L*(1-C)-Y==0) {
+        return 10^10;
+    } else {
+        T=(X+L*S)/(-L*(1-C)-Y);
+        return T;
+    }
+}
+
+def rhb1b2(X,Y,O,L) {
+    if (tanb1b2(X,Y,O,L)==10^10) {
+        return -5;
+    } else {
+        Rh=(5/2)*(-2*tanb1b2(X,Y,O,L)^2/(1+tanb1b2(X,Y,O,L)^2));
+        return Rh;
+    }
+}
+
+def tanb2b1(X,Y,O,L) {
+    C=eval(cos(O));
+    S=eval(sin(O));
+    if (L+X*S-(Y+L)*C==0) {
+        return 10^10;
+    } else {
+        T=(X*C+(Y+L)*S)/(L+X*S-(Y+L)*C);
+        return T;
+    }
+}
+
+def rhb2b1(X,Y,O,L) {
+    if (tanb2b1(X,Y,O,L)==10^10) {
+        return -5;
+    } else {
+        Rh=(5/2)*(-2*tanb2b1(X,Y,O,L)^2/(1+tanb2b1(X,Y,O,L)^2));
+        return Rh;
+    }
+}
+
+def rb1b2(X,Y,O,L) {
+    R=eval(-14.69*log((X^2+Y^2)^(1/2)+0.31)-49.17+rhb1b2(X,Y,O,L)+rhb2b1(X,Y,O,L));
+    return R;
+}
+
+def tana1b2(X,Y,O,L) {
+    C=eval(cos(O));
+    S=eval(sin(O));
+    if (X+L*(1+S)==0) {
+        return 10^10;
+    } else {
+        T=(Y-L*C)/(X+L*(1+S));
+        return T;
+    }
+}
+
+def rha1b2(X,Y,O,L) {
+    if (tana1b2(X,Y,O,L)==10^10) {
+        return -5;
+    } else {
+        Rh=(5/2)*(-2*tana1b2(X,Y,O,L)^2/(1+tana1b2(X,Y,O,L)^2));
+        return Rh;
+    }
+}
+
+def tanb2a1(X,Y,O,L) {
+    C=eval(cos(O));
+    S=eval(sin(O));
+    if (L-Y*C+(X+L)*S==0) {
+        return 10^10;
+    } else {
+        T=(Y*S+(X+L)*C)/(L-Y*C+(X+L)*S);
+        return T;
+    }
+}
+
+def rhb2a1(X,Y,O,L) {
+    if (tanb2a1(X,Y,O,L)==10^10) {
+        return -5;
+    } else {
+        Rh=(5/2)*(-2*tanb2a1(X,Y,O,L)^2/(1+tanb2a1(X,Y,O,L)^2));
+        return Rh;
+    }
+}
+
+def ra1b2(X,Y,O,L) {
+    R=eval(-14.69*log((X^2+Y^2)^(1/2)+0.31)-49.17+rha1b2(X,Y,O,L)+rhb2a1(X,Y,O,L));
+    return R;
+}
+
+def ra1a2z(X,Y,O,L){
+    if (-0.5<(ra1a2(X,Y,O,L)-number_floor(ra1a2(X,Y,O,L))) && (ra1a2(X,Y,O,L)-number_floor(ra1a2(X,Y,O,L)))<0.5) {
+      R1=number_floor(ra1a2(X,Y,O,L));
+    } else {
+        R1=number_floor(ra1a2(X,Y,O,L))+1;
+    }
+    return R1;
+}
+
+def rb1b2z(X,Y,O,L){
+    if (-0.5<(rb1b2(X,Y,O,L)-number_floor(rb1b2(X,Y,O,L))) && (rb1b2(X,Y,O,L)-number_floor(rb1b2(X,Y,O,L)))<0.5) {
+        R1=number_floor(rb1b2(X,Y,O,L));
+    } else {
+        R1=number_floor(rb1b2(X,Y,O,L))+1;
+    }
+    return R1;
+}
+
+def ra1b2z(X,Y,O,L){
+    if (-0.5<(ra1b2(X,Y,O,L)-number_floor(ra1b2(X,Y,O,L))) && (ra1b2(X,Y,O,L)-number_floor(ra1b2(X,Y,O,L)))<0.5) {
+        R1=number_floor(ra1b2(X,Y,O,L));
+    } else {
+        R1=number_floor(ra1b2(X,Y,O,L))+1;
+    }
+    return R1;
+}
+
+def estimatexyl(X,Y,L) {
+    if (L<deval(-@pi/2)) {L=deval(L+@pi);} else {;}
+    if (L>deval(@pi/2)) {L=deval(L-@pi);} else {;}
+
+    Raa12=ra1a2(X,Y,L,0.015);
+    Rbb12=rb1b2(X,Y,L,0.015);
+    Rab12=ra1b2(X,Y,L,0.015);
+
+    H1=-Raa12-14.69*a-49.17+(5/2)*(c12-1)+(5/2)*(c21-1);
+
+    C2=(1/5)*(Raa12-Rab12);
+    C1=(1/5)*(Raa12-Rbb12)-C2;
+
+    A=pari(roots,subst(subst(H1,c12,C1),c21,C2));
+    Dxy=eval(@e^A[0]-0.31);
+    X=Dxy*dsqrt((1+C1)/2);
+    Y=dsqrt(Dxy^2-X^2);
+
+    if(X^2<0){X=0;}else{;}
+
+    F=(C2+1)*((1-t^2)^2*Dxy^2+4*t^2*Dxy^2)-2*(X*(1-t^2)+2*Y*t)^2;
+    T=pari(roots,F);
+
+    L=[];
+    if (T==0) {T=[0];} else {;}
+    for(I=0;I<length(T);I++){
+        A=2*datan(T[I]);
+        if (dabs(A)<eval(@pi/2)) {L=cons(A,L);} else {;}
+    }
+
+    if (L==[0,0,0,0]) {
+       L=[];
+       Dif=diff(F,t);
+       T=pari(roots,Dif);
+       if (T==0) {T=[0];} else {;}
+       for(I=0;I<length(T);I++){
+           A=2*datan(T[I]);
+           if (dabs(A)<eval(@pi/2)) {L=cons(A,L);} else {;}
+        }
+    } else {;}
+
+    return [X,Y,reverse(L)];
+}
+
+def estimatezxyl(X,Y,L) {
+    if (L<deval(-@pi/2)) {L=deval(L+@pi);} else {;}
+    if (L>deval(@pi/2)) {L=deval(L-@pi);} else {;}
+
+    Raa12=ra1a2z(X,Y,L,0.015);
+    Rbb12=rb1b2z(X,Y,L,0.015);
+    Rab12=ra1b2z(X,Y,L,0.015);
+
+    H1=-Raa12-14.69*a-49.17+(5/2)*(c12-1)+(5/2)*(c21-1);
+
+    C2=(1/5)*(Raa12-Rab12);
+    C1=(1/5)*(Raa12-Rbb12)-C2;
+
+    A=pari(roots,subst(subst(H1,c12,C1),c21,C2));
+    Dxy=eval(@e^A[0]-0.31);
+    X=Dxy*dsqrt((1+C1)/2);
+    Y=dsqrt(Dxy^2-X^2);
+
+    if(X^2<0){X=0;}else{;}
+
+    F=(C2+1)*((1-t^2)^2*Dxy^2+4*t^2*Dxy^2)-2*(X*(1-t^2)+2*Y*t)^2;
+    T=pari(roots,F);
+
+    L=[];
+    if (T==0) {T=[0];} else {;}
+    for(I=0;I<length(T);I++){
+        A=2*datan(T[I]);
+        if(dabs(A)<eval(@pi/2)+0.01){
+            L=cons(A,L);
+        }else{;}
+    }
+
+    if (L==[0,0,0,0]) {
+        L=[];
+        Dif=diff(F,t);
+        T=pari(roots,Dif);
+        if (T==0) {T=[0];} else {;}
+        for(I=0;I<length(T);I++){
+            A=2*datan(T[I]);
+            if (dabs(A)<eval(@pi/2)) {L=cons(A,L);} else {;}
+        }
+    } else {;}
+
+    return [X,Y,reverse(L)];
+}
+
+def rover_xy_error(X,Y,EX,EY) {
+    Error = dsqrt(((X-EX)^2+(Y-EY)^2)/(X^2+Y^2));
+    return Error;
+}
+
+def rover_xy_error2(X,Y,EX,EY) {
+    Error = dabs(dsqrt(X^2+Y^2)-dsqrt(EX^2+EY^2))/dsqrt(X^2+Y^2);
+    return Error;
+}
+
+
+/* --------------------------------------------------- */
+/* roverz_xyl_many.rr */
+
+def lsign(L){
+    N=length(L);
+    L2=[];
+    for (I=0;I<N;I++){
+        A=car(L);
+        L2=cons(-A,L2);
+        L=cdr(L);
+    }
+    return reverse(L2); 
+}
+
+/* --- 前に定義しているためコメントアウト ---
+def rref(A) {
+    S=size(A); 
+    M=S[0]; 
+    N=S[1];
+    I=0;
+    for (J = 0; J < N; J++ ) {
+        P = -1;
+        for ( K = I; K < M; K++ )
+        if ( P < 0 && A[K][J] != 0 ) P = K;
+        if ( P >= 0 ) {
+            if ( P != I ) {
+                for ( L = J; L < N; L++ ) {
+                    T = A[I][L]; A[I][L] = A[P][L]; A[P][L] = T;
+                }
+            }
+            for ( L = J+1; L < N; L++ ) A[I][L] = A[I][L]/A[I][J];
+            A[I][J] = 1;
+            for ( K = 0; K < M; K++ ) {
+                if ( K != I ) {
+                    for ( L = J+1; L < N; L++ ) A[K][L] = A[K][L] - A[K][J]*A[I][L];
+                    A[K][J] = 0;
+                }
+            }
+            I++;
+        }
+    }
+    return I;
+}
+
+def const(F,VL){
+    for (I=0;I<length(VL);I++){
+        F=F-coef(F,1,VL[I])*VL[I];
+    }
+    return F;
+}
+
+def solver_eq(FL,VL,N) {
+    A=matrix(N-1,N);
+    for(I=0;I<N-1;I++){
+        for(J=0;J<N-1;J++){
+            A[I][J]=coef(FL[I],1,VL[J]);
+        }
+    }
+
+    for(I=0;I<N-1;I++){
+        A[I][N-1]=-const(FL[I],VL);
+    }
+    
+    rref(A);
+
+    I=0;
+    J=0;
+    X=[];
+    while(J<N-1){
+        if(A[I][J]==1){
+            X=cons(A[I][N-1],X);
+            I++;
+            J++;
+        } else {
+            X=cons(0,X);
+            J++;
+        }
+    }
+    return X;
+}
+*/
+
+def signadl(D){
+    if ( dabs(D[0][0]+D[1][0]-D[2][0]) < dabs(dabs(D[0][0]-D[1][0])-D[2][0]) ) {
+        D=[D[0],[-D[1][0],D[1][1],D[1][2]],D[2]];
+    } else{;}
+    
+    if (D[1][0]-D[0][0] < 0) {
+        D=[D[0],D[1],[-D[2][0],D[2][1],D[2][2]]];
+    } else{;}
+
+    if ( dabs(D[0][1]+D[1][1]-D[2][1]) < dabs(dabs(D[0][1]-D[1][1])-D[2][1]) ) {
+        D=[D[0],[D[1][0],-D[1][1],D[1][2]],D[2]];
+    } else{;}
+    
+    if (D[1][1]-D[0][1] < 0) {
+        D=[D[0],D[1],[D[2][0],-D[2][1],D[2][2]]];
+    } else{;}
+
+    return D;
+}
+
+def signadl2(D){
+    if (D[1][0]-D[0][0] < 0) {
+        D=[D[0],D[1],[-D[2][0],D[2][1],D[2][2]]];
+    } else{;}
+    
+    if (D[1][1]-D[0][1] < 0) {
+        D=[D[0],D[1],[D[2][0],-D[2][1],D[2][2]]];
+    } else{;}
+        
+    return D;
+}
+
+def signl(D){
+    X = 4;
+    for (I = 0; I < length(D[0][2]); I++){
+        for(J = 0; J < length(D[1][2]); J++){
+            for(K = 0; K < length(D[2][2]); K++){
+                B = D[1][2][J] - D[0][2][I] - D[2][2][K];
+                if(B > eval(@pi/2)) {
+                    B = eval(B - @pi);
+                } else {;}
+                if(B < eval(-@pi/2)) {
+                    B = eval(B + @pi);
+                } else {;}
+                A = dabs(B);
+                if(A < X) {
+                    X = A;
+                    D2=[[D[0][0],D[0][1],[D[0][2][I]]],
+                        [D[1][0],D[1][1],[D[1][2][J]]],
+                        [D[2][0],D[2][1],[D[2][2][K]]]];
+                } else {;}
+            }
+        }
+    }
+    return D2;
+} 
+
+def estimatexyl_n(L,N){
+    D=[];
+
+    D2=[estimatezxyl(L[1][0],L[1][1],L[1][2]),[0,0,[0]]];
+
+    D3=[];
+    C=0;
+
+    for (I=0;I<N;I++){
+        for (J=I+1;J<N;J++){
+            Es=estimatezxyl(L[J][0]-L[I][0],L[J][1]-L[I][1],L[J][2]-L[I][2]);
+
+            if (I>0) {
+                if (I>1) {
+                   A=signadl2([reverse(D2)[I],reverse(D2)[J],Es]);
+                } else {
+                   A=signadl([reverse(D)[0],reverse(D)[J-1],Es]);
+                }
+
+                if (I==1) {
+                    if (A[1][0]*A[1][1]<0) {
+                        A=[A[0],[A[1][0],A[1][1],lsign(A[1][2])],A[2]];
+                    } else {;}
+                } else {;}
+                
+                if (A[2][0]*A[2][1]<0) {
+                    A=[A[0],A[1],[A[2][0],A[2][1],lsign(A[2][2])]];
+                } else {;}
+                
+                B=signl(A);
+                if (C==0) {
+                    D2=cons(B[0],cdr(D2));
+                    C=C+1; /* C++ */
+                } else {;}
+
+                if (I==1) {D2=cons(B[1],D2);} else {;}
+                D3=cons(B[2],D3);
+            } else{;}
+
+            D=cons(Es,D);
+        }
+    }
+
+    return append(reverse(D2),reverse(D3));
+}
+
+def xylmany(L,N){
+
+    D=estimatexyl_n(L,N);
+
+    VL=[0,l1,l2,l3,l4,l5,l6,l7,l8,l9,l10,l11,l12,l13,l14,l15,l16,l17,l18,l19,l20];
+    VL2=[];
+    for(I=0;I<N;I++){
+        VL2=cons(VL[I],VL2);
+    }
+    VL=reverse(VL2);
+
+    Fl=0;
+
+    D2=cdr(D);
+    for (I=0;I<N-1;I++){
+        for (J=I+1;J<N;J++){
+            A=0;
+            B=D[J][2][0]-D[I][2][0]-car(D2)[2][0];
+            if(B>1){A=eval(-@pi);}else{;}
+            if(B<-1){A=eval(@pi);}else{;}
+            Fl=Fl+(VL[J]-VL[I]-car(D2)[2][0]+A)^2;
+            D2=cdr(D2);
+        }
+    }
+
+    FLl=[];
+    VLl=[];
+    
+    for(I=1;I<N;I++){
+        DFl=diff(Fl,VL[I]);
+        FLl=cons(DFl,FLl);
+    }
+
+    VL=cdr(VL);
+    Lam=solver_eq(FLl,VL,N);
+
+    VL=[0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x20];
+    VL2=[];
+    for(I=0;I<N;I++){
+        VL2=cons(VL[I],VL2);
+    }
+    VL=reverse(VL2);
+
+    Fx=0;
+    Fy=0;
+    D=cdr(D);
+    for (I=0;I<N-1;I++){
+        for (J=I+1;J<N;J++){
+            A=dsqrt(car(D)[0]^2+car(D)[1]^2);
+            if (0<dabs(car(D)[0]) && dabs(car(D)[0])<25) {Fx=Fx+(VL[J]-VL[I]-car(D)[0])^2;} else {;}
+            if (0<dabs(car(D)[1]) && dabs(car(D)[1])<25) {Fy=Fy+(VL[J]-VL[I]-car(D)[1])^2;} else {;}
+            D=cdr(D);
+        }
+    }
+
+    FLx=[];
+    FLy=[];
+    VLx=[];
+    VLy=[];
+    for(I=1;I<N;I++){
+        DFx=diff(Fx,VL[I]);
+        FLx=cons(DFx,FLx);
+        DFy=diff(Fy,VL[I]);
+        FLy=cons(DFy,FLy);
+    }
+
+    VL=cdr(VL);
+    X=solver_eq(FLx,VL,N);
+    Y=solver_eq(FLy,VL,N);
+
+    R=[];
+    for(I=0;I<N-1;I++){
+        R=cons([X[I],Y[I],Lam[I]],R);
+    }
+
+    return R;
+}
+
+def estimatexyl_n2(L,N){
+    D=[];
+
+    D2=[estimatexyl(L[1][0],L[1][1],L[1][2]),[0,0,[0]]];
+
+    D3=[];
+    C=0;
+
+    for (I=0;I<N;I++){
+        for (J=I+1;J<N;J++){
+            Es=estimatexyl(L[J][0]-L[I][0],L[J][1]-L[I][1],L[J][2]-L[I][2]);
+
+            if (I>0) {
+               if (I>1) {
+                   A=signadl2([reverse(D2)[I],reverse(D2)[J],Es]);
+                } else {
+                    A=signadl([reverse(D)[0],reverse(D)[J-1],Es]);
+                }
+
+                if(I==1){
+                    if(A[1][0]*A[1][1]<0){
+                        A=[A[0],[A[1][0],A[1][1],lsign(A[1][2])],A[2]];
+                    } else {;}
+                } else {;}
+                
+                if(A[2][0]*A[2][1]<0){
+                    A=[A[0],A[1],[A[2][0],A[2][1],lsign(A[2][2])]];
+                } else {;}
+                
+                B=signl(A);
+
+                if (C==0) {
+                    D2=cons(B[0],cdr(D2));
+                    C=C+1; /* C++ */
+                } else {;}
+
+                if (I==1) {D2=cons(B[1],D2);} else {;}
+
+                D3=cons(B[2],D3);
+            } else{;}
+            D=cons(Es,D);
+        }
+    }
+    return append(reverse(D2),reverse(D3));
+}
+
+def xylmany2(L,N){
+    D=estimatexyl_n2(L,N);
+
+    VL=[0,l1,l2,l3,l4,l5,l6,l7,l8,l9,l10,l11,l12,l13,l14,l15,l16,l17,l18,l19,l20];
+    VL2=[];
+    for(I=0;I<N;I++){
+        VL2=cons(VL[I],VL2);
+    };
+    VL=reverse(VL2);
+
+    Fl=0;
+    D2=cdr(D);
+    for (I=0;I<N-1;I++){
+        for (J=I+1;J<N;J++){
+            A=0;
+            B=D[J][2][0]-D[I][2][0]-car(D2)[2][0];
+            if(B>1){A=eval(-@pi);}else{;}
+            if(B<-1){A=eval(@pi);}else{;}
+            Fl=Fl+(VL[J]-VL[I]-car(D2)[2][0]+A)^2;
+            D2=cdr(D2);
+        }
+    }
+
+    FLl=[];
+    VLl=[];
+    for(I=1;I<N;I++){
+        DFl=diff(Fl,VL[I]);
+        /*if (DFl!=0) {FLl=cons(DFl,FLl);VLl=cons(VL[I],VLl);} else {;}*/
+        FLl=cons(DFl,FLl);
+    }
+
+    VL=cdr(VL);
+    Lam=solver_eq(FLl,VL,N);
+
+    VL=[0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x20];
+    VL2=[];
+    for(I=0;I<N;I++){
+        VL2=cons(VL[I],VL2);
+    }
+    VL=reverse(VL2);
+
+    Fx=0;
+    Fy=0;
+    D=cdr(D);
+    for (I=0;I<N-1;I++){
+        for (J=I+1;J<N;J++){
+            A=dsqrt(car(D)[0]^2+car(D)[1]^2);
+            if (dabs(car(D)[0])<25) {Fx=Fx+(VL[J]-VL[I]-car(D)[0])^2;} else {;}
+            if (dabs(car(D)[1])<25) {Fy=Fy+(VL[J]-VL[I]-car(D)[1])^2;} else {;}
+            D=cdr(D);
+        }
+    }
+
+    FLx=[];
+    FLy=[];
+    VLx=[];
+    VLy=[];
+    for(I=1;I<N;I++){
+        DFx=diff(Fx,VL[I]);
+        FLx=cons(DFx,FLx);
+        DFy=diff(Fy,VL[I]);
+        FLy=cons(DFy,FLy);
+    }
+
+    VL=cdr(VL);
+    X=solver_eq(FLx,VL,N);
+    Y=solver_eq(FLy,VL,N);
+
+    R=[];
+    for(I=0;I<N-1;I++){
+        R=cons([X[I],Y[I],Lam[I]],R);
+    }
+
+    return R;
+}
+
+end$

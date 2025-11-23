@@ -8,9 +8,9 @@ import { Diagnostic, DiagnosticSeverity } from '../utils/diagnostics.js';
 import { ALL_ASIR_BUILTIN, ASIR_KEYWORDS } from '../data/builtins.js';
 import { BUILTIN_SIGNATURES } from '../data/builtinSignatures.js';
 import { BUILTIN_CONSTANTS } from '../data/builtinConstants.js';
-import { builtinHandlers } from './builtins/handlers.js';
+import { builtinHandlers } from './builtins/index.js';
 import { typeToString } from './utils/typeFormatter.js';
-import { isSubtypeOf, isPolynomialType, areTypesDeeplyEqual, isTypeCompatible, getCommonSupertype } from './utils/typeSystem.js';
+import { isSubtypeOf, isPolynomialType, areTypesDeeplyEqual, isTypeCompatible, getCommonSupertype, getTypeFromCode } from './utils/typeSystem.js';
 import { getWiderNumericType, checkNumericTypeMismatch, getBinaryOperationResultType } from './utils/operatorLogic.js';
 
 // TODO: データフロー解析
@@ -183,9 +183,9 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     public loadPaths: string[];
     public importedFiles: Set<string> = new Set();
     public effectiveCwd: string;
-    private isReachable: boolean = true; // For local block/function reachability
-    private isProgramTerminated: boolean = false; // New flag for global program termination
-    private analysisStack: ast.DefinitionStatementNode[] = []; // Stack to detect recursion
+    private isReachable: boolean = true;
+    private isProgramTerminated: boolean = false;
+    private analysisStack: ast.DefinitionStatementNode[] = [];
 
     constructor(programNode: ast.ProgramNode, filePath: string | null = null, systemIncludePaths: string[] = [], loadPaths: string[] = []) {
         super();
@@ -202,6 +202,8 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         }
         this.registerBuiltinFunctions();
     }
+
+    // --- ヘルパー ---
 
     private checkVariableNameConvention(IdentifierNode: ast.IndeterminateNode): void {
         if (!IdentifierNode.name.match(/^(?:[A-Z]|_[A-Z])/)) {
@@ -250,12 +252,9 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         this.isProgramTerminated = false;
         this.visit(node);
         this.isReachable = previousIsReachable;
-        this.isProgramTerminated = previousIsProgramTerminated; // Restore global state
+        this.isProgramTerminated = previousIsProgramTerminated;
 
-        // Add post-analysis check for unused symbols
         this.symbolTable.getAllSymbols().forEach(symbol => {
-            // Exclude built-in functions and parameters from unused check
-            // Also exclude symbols without a definedAt location (e.g., some builtins)
             if (!symbol.isUsed && symbol.definedAt &&
                 !BUILTIN_SIGNATURES.has(symbol.name) &&
                 !BUILTIN_CONSTANTS.has(symbol.name) &&
@@ -280,8 +279,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             this.diagnostics.push({ range, message, severity, source: 'AsirValidator', filePath: this.currentFilePath ?? undefined });
         }
     }
-
-    // ヘルパー
 
     private handleReturn(node: ast.ReturnStatementNode, returnType: AsirType): void {
         if (!this.currentFunction) {
@@ -438,22 +435,18 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         return null;
     }
 
-    // --- 具体的な意味解析 ---
-
     private analyzeFunctionBodyWithArgs(funcNode: ast.DefinitionStatementNode, parameterTypes: AsirType[]): AsirType {
         // Detect recursion
         if (this.analysisStack.includes(funcNode)) {
-            // If we detect recursion, return 'any' to break the cycle and prevent stack overflow
             return p_type('any');
         }
 
-        this.analysisStack.push(funcNode); // Push current function onto the stack
+        this.analysisStack.push(funcNode); 
 
         const oldFunction = this.currentFunction;
         this.currentFunction = funcNode;
         this.symbolTable.enterScope(funcNode);
 
-        // Define parameters in the new scope with the provided types
         funcNode.parameters.forEach((param, i) => {
             if (param.loc) {
                 this.checkVariableNameConvention(param);
@@ -471,16 +464,61 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             }
         });
 
-        // Visit the function body to infer the return type
         this.visit(funcNode.body);
         const inferredReturnType = (this.symbolTable.currentScope.lookup(funcNode.name.name)?.type as FunctionAsirType)?.returnType || p_type('any');
 
         this.symbolTable.exitScope();
         this.currentFunction = oldFunction;
-        this.analysisStack.pop(); // Pop current function from the stack
+        this.analysisStack.pop(); 
 
         return inferredReturnType;
     }
+
+    // type()用
+    private refineTypesFromCondition(condition: ast.ExpressionNode): void {
+        if (condition.kind !== 'BinaryOperation' || condition.operator !== '==') {
+            return;
+        }
+
+        const matchTypeCheck = (expr: ast.ExpressionNode, value: ast.ExpressionNode): [string, number] | null => {
+            if (expr.kind === 'FunctionCall' &&
+                expr.callee.kind === 'QualifiedName' &&
+                expr.callee.functionName.name === 'type' &&
+                expr.args.length === 1 &&
+                expr.args[0].kind === 'Indeterminate' &&
+                value.kind === 'NumberLiteral'
+            ) {
+                return [expr.args[0].name, Number(value.value)];
+            }
+            return null;
+        };
+
+        const match = matchTypeCheck(condition.left, condition.right) || matchTypeCheck(condition.right, condition.left);
+        if (match) {
+            const [varName, typeCode] = match;
+            const refinedType = getTypeFromCode(typeCode);
+
+            if (refinedType) {
+                const symbol = this.symbolTable.currentScope.lookup(varName);
+                if (symbol) {
+                    if (symbol.type.kind === 'union') {
+                        const filteredTypes = symbol.type.types.filter(t => isTypeCompatible(t, refinedType));
+                        if (filteredTypes.length === 1) {
+                            symbol.type = filteredTypes[0];
+                        } else if (filteredTypes.length > 0) {
+                            symbol.type = { kind: 'union', types: filteredTypes };
+                        } else {
+                            symbol.type = refinedType;
+                        }
+                    } else {
+                        symbol.type = refinedType;
+                    }
+                }
+            }
+        }
+    }
+
+    // --- visitメソッド ---
 
     override visitProgram(node: ast.ProgramNode): EvaluationResult {
         for (const stmt of node.statements) {
@@ -581,39 +619,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             // if (leftResult && !isTypeCompatible(finalType, leftResult.type)) {
             //     this.addDiagnostic(node.right, `代入の型が一致しません。型 '${typeToString(leftResult.type)}' から型 '${typeToString(finalType)}'へと変更されました。これは意図しないエラーの原因になる可能性があるため、型を一致させることを推奨します。`, DiagnosticSeverity.Warning);
             // }
-            // Update the type of the base collection if it's an IndexAccess
             if (node.left.kind === 'IndexAccess') {
-                // let currentBaseNode: ast.ExpressionNode = node.left;
-                // let lastIndexAccessNode: ast.IndexAccessNode | undefined;
-                // while (currentBaseNode.kind === 'IndexAccess') {
-                //     lastIndexAccessNode = currentBaseNode;
-                //     currentBaseNode = currentBaseNode.base;
-                // }
-                // if (currentBaseNode.kind === 'Indeterminate') {
-                //     const baseSymbol = this.symbolTable.currentScope.lookup(currentBaseNode.name);
-                //     if (baseSymbol) {
-                //         // Re-evaluate the type of the collection based on the new element type
-                //         let newCollectionType = baseSymbol.type;
-                //         console.log(`[DEBUG] IndexAccess: baseSymbol.type=${typeToString(baseSymbol.type)}, finalType=${typeToString(finalType)}`);
-                //         if (newCollectionType.kind === 'list' || newCollectionType.kind === 'vector' || newCollectionType.kind === 'matrix' || newCollectionType.kind === 'tuple') {
-                //             if (newCollectionType.kind === 'tuple') {
-                //                 // タプルの場合は要素の型を更新
-                //                 const updatedElements = newCollectionType.elements.map(elm => ({
-                //                     ...elm,
-                //                     type: getCommonSupertype([elm.type, finalType])
-                //                 }));
-                //                 newCollectionType = { ...newCollectionType, elements: updatedElements };
-                //             } else {
-                //                 // リスト、ベクトル、行列の場合は elementType を更新
-                //                 const existingElementType = newCollectionType.elementType;
-                //                 const updatedElementType = getCommonSupertype([existingElementType, finalType]);
-                //                 newCollectionType = { ...newCollectionType, elementType: updatedElementType };
-                //             }
-                //         }
-                //         console.log(`[DEBUG] IndexAccess: newCollectionType=${typeToString(newCollectionType)}`);
-                //         baseSymbol.type = newCollectionType;
-                //     }
-                // }
                 const IndexAccessNode = node.left;
                 const IndexAccessResult = this.visit(IndexAccessNode) as IndexAccessResult;
 
@@ -640,7 +646,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                                     }
                                     return { ...collectionType, elements: updatedElements };
                                 } else {
-                                    // Index is not a literal. The tuple with known elements becomes a list with a general element type.
                                     const originalElementType = getCommonSupertype(collectionType.elements.map(e => e.type));
                                     const updatedElementType = updateTypeRecursively(originalElementType, remainingIndices, newElementType);
                                     
@@ -940,6 +945,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             const handler = builtinHandlers.get(funcName)!;
             return handler(this, node, argResults)
         }
+
         const calleeResult = this.visit(calleeNode.functionName);
         const actualArgTypes = argResults.map(r => r.type);
                 let calleeType: AsirType | undefined = calleeResult?.type;
@@ -1225,6 +1231,15 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 case '*': constantValue = leftConst * rightConst; break;
                 case '/': if (rightConst !== 0) constantValue = leftConst / rightConst; break;
                 case '%': if (rightConst !== 0) constantValue = leftConst % rightConst; break;
+
+                case '==': constantValue = (leftConst === rightConst) ? 1 : 0; break;
+                case '!=': constantValue = (leftConst !== rightConst) ? 1 : 0; break;
+                case '<':  constantValue = (leftConst < rightConst) ? 1 : 0; break;
+                case '>':  constantValue = (leftConst > rightConst) ? 1 : 0; break;
+                case '<=': constantValue = (leftConst <= rightConst) ? 1 : 0; break;
+                case '>=': constantValue = (leftConst >= rightConst) ? 1 : 0; break;
+                case '&&': constantValue = (leftConst !== 0 && rightConst !== 0) ? 1 : 0; break;
+                case '||': constantValue = (leftConst !== 0 || rightConst !== 0) ? 1 : 0; break;
             }
         }
         return { type: resultType, constantValue };
@@ -1427,16 +1442,16 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
 
         accessPath.push(node);
 
-        if (baseNode.kind === 'IndexAccess') {
-            // インデックスアクセスのインデックスアクセスで変数の型が不明な場合、行列とする。
-            const innerBaseNode = (baseNode as ast.IndexAccessNode).base;
-            if (innerBaseNode.kind === 'Indeterminate') {
-                const symbol = this.symbolTable.currentScope.lookup(innerBaseNode.name);
-                if (symbol && (symbol.type.kind === 'primitive' && symbol.type.name === 'parameter')) {
-                    symbol.type = m_type(p_type('any'));
-                }
-            }
-        } 
+        // if (baseNode.kind === 'IndexAccess') {
+        //     // インデックスアクセスのインデックスアクセスで変数の型が不明な場合、行列とする。
+        //     const innerBaseNode = (baseNode as ast.IndexAccessNode).base;
+        //     if (innerBaseNode.kind === 'Indeterminate') {
+        //         const symbol = this.symbolTable.currentScope.lookup(innerBaseNode.name);
+        //         if (symbol && (symbol.type.kind === 'primitive' && symbol.type.name === 'parameter')) {
+        //             symbol.type = m_type(p_type('any'));
+        //         }
+        //     }
+        // } 
 
         // インデックスアクセスの変数の型が不明な場合、行列かベクトルか、リストと見なす。
         if (baseResult!.type.kind === 'primitive' && baseResult!.type.name === 'parameter') {
@@ -1614,18 +1629,32 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     }
 
     visitIfStatement(node: ast.IfStatementNode): EvaluationResult {
-        this.visit(node.condition);
+        const conditionResult = this.visit(node.condition);
 
+        // 条件がfalseならthenをスキップ
+        if (conditionResult && conditionResult.constantValue === 0) {
+            if (node.elseStatement) {
+                this.visit(node.elseStatement);
+            }
+            return { type: p_type('undefined') };
+        }
+        // 条件がtrueならelseをスキップ
+        if (conditionResult && typeof conditionResult.constantValue === 'number' && conditionResult.constantValue !== 0) {
+            this.visit(node.thenStatement);
+            return { type: p_type('undefined') };
+        }
         // --- Capture pre-branch state ---
         const originalTypes = new Map<string, AsirType>();
         const symbolsToTrack = this.symbolTable.currentScope.symbols;
         symbolsToTrack.forEach((s: Symbol) => originalTypes.set(s.name, s.type));
 
+        // --- Type Guard ---
+        this.refineTypesFromCondition(node.condition);
+
         // --- Analyze 'then' branch ---
         this.visit(node.thenStatement);
         const thenTypes = new Map<string, AsirType>();
         symbolsToTrack.forEach((s: Symbol) => {
-            // Record type if it changed from the original
             if (!areTypesDeeplyEqual(originalTypes.get(s.name)!, s.type)) {
                 thenTypes.set(s.name, s.type);
             }
@@ -1644,7 +1673,6 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
         if (node.elseStatement) {
             this.visit(node.elseStatement);
             symbolsToTrack.forEach((s: Symbol) => {
-                // Record type if it changed from the original
                 if (!areTypesDeeplyEqual(originalTypes.get(s.name)!, s.type)) {
                     elseTypes.set(s.name, s.type);
                 }

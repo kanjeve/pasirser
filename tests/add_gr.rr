@@ -1,0 +1,208 @@
+/* 項順序を整理する関数 */
+def block_order(VarList, ParamList, Order) {
+    VaL = length(VarList)$
+    PaL = length(ParamList)$
+
+    T = type(Order)$
+    if (T == 1 && (Order == 0 || Order == 1 || Order == 2)) {
+        O = Order$
+        BO = [[Order, VaL], [Order, PaL]]$
+        BaO = [[Order, 1], [Order, VaL], [Order, PaL]]$
+    } else if (T == 4) { /* リストは[[O1,L1],[O2,L2],...] の形を想定 */
+        I = 0$
+        VL_temp = 0$
+        while (1) { /* リストの場合は変数部分だけを取り出した順序も作りたい */
+            VL_temp += Order[I][1]$
+            if (VaL == VL_temp) {
+                O = []$
+                for (J=I; J>=0; J--) {
+                    O = cons([Order[J][0], Order[J][1]], O)$
+                }
+                break$
+            }
+            I = I + 1$
+        }
+        BO = Order$
+        BaO = cons([0, 1], Order)$
+    } else if (T == 6) { /* 行列は重み行列を想定 */
+        O = Order$ /* 行列の場合はパラメータも考慮されているとする */
+        BO = Order$
+        [MR, MC] = size(Order)$
+        M = newmat(MR+1, MC+1, [[1]])$
+        BaO = M + Order$
+    } else { /* それ以外の場合はgrevlexによるブロック順序 */
+        O = 0$
+        BO = [[0, VaL], [0, PaL]]$
+        BaO = [[0, 1], [0, VaL], [0, PaL]]$
+    }
+
+    return [O, BO, BaO]$
+}
+
+/* F∩G のグレブナー基底を計算する関数 */
+def cap_gb(PolyList1, PolyList2, VarList, ParamList, Order) {
+    PoL1 = length(PolyList1)$
+    PoL2 = length(PolyList2)$
+    ALL_VAR = append(VarList, ParamList)$
+
+    /* 項順序を整理する */
+    BaO = block_order(VarList, ParamList, Order)[2]$
+
+    /* 多項式に未定の変数を掛ける */
+    A = uc()$
+    ord([A])$
+    Fa = []$
+    Ga = []$
+    I1 = 0$
+    while (1) {
+        if (length(Fa) == PoL1) break$
+        Fa = cons(A*PolyList1[I1], Fa)$
+        I1 = I1 + 1$
+    }
+    I2 = 0$
+    while (1) {
+        if (length(Ga) == PoL2) break$
+        Ga = cons((1-A)*PolyList2[I2], Ga)$
+        I2 = I2 + 1$
+    }
+    A_poly_list = append(Fa, Ga)$
+
+    /* ideal intersection algorithm */
+    GA_temp = nd_gr(A_poly_list, cons(A, ALL_VAR), 0, BaO)$
+    I3 = 0$
+    F_cap_G = []$
+    while (1) {
+        Ga_temp = GA_temp[I3]$
+        Va_temp = var(Ga_temp)$
+        if (Va_temp != A) {
+            F_cap_G = cons(Ga_temp, F_cap_G)$
+        } else { break$ }
+        I3 = I3 + 1$
+        if (I3 > length(GA_temp)-1) { /*error("A is nothing")$*/ break$ } /* 到達しないと思っていたが普通にするかもしれない */
+    }
+    F_cap_G = reverse(F_cap_G)$
+    return F_cap_G$
+}
+
+/* F:Gのグレブナー基底を求める関数 */
+def colon_gb(PolyList1, PolyList2, VarList, ParamList, Order) {
+    PoL1 = length(PolyList1)$
+    PoL2 = length(PolyList2)$
+
+    /* 各 F:g (g∈G) のグレブナー基底を計算する */
+    I1 = 0$
+    FCg_all = []$
+    while (1) {
+        F_colon_g = []$
+        Poly_g = PolyList2[I1]$
+        F_cap_g = cap_gb(PolyList1, [Poly_g], VarList, ParamList, Order)$
+        Fcg_L = length(F_cap_g)$
+        for (J=0; J<Fcg_L; J++) {
+            F_colon_g_temp = sqr(F_cap_g[J], Poly_g)$
+            if (F_colon_g_temp[1] != 0) { error("maybe indivisible")$ } /* 理論上余りは0になるはず */
+            F_colon_g = cons(F_colon_g_temp[0], F_colon_g)$
+        }
+        F_colon_g = reverse(F_colon_g)$
+        FCg_all = cons(F_colon_g, FCg_all)$
+        I1 = I1 + 1$
+        if (I1 >= PoL2) break$
+    }
+    FCg_all = reverse(FCg_all)$
+
+    /* F:G=(F:g1)∩...∩(F:gn)よりcap、_gbを繰り返し使えば求まる */
+    FCg_all_L = length(FCg_all)$
+    F_colon_G_temp = FCg_all[0]$
+    I2 = 0$
+    while (1) {
+        I2 = I2 + 1$
+        if (I2 == FCg_all_L) { break$ }
+        F_colon_G_temp = cap_gb(F_colon_G_temp, FCg_all[I2], VarList, ParamList, Order)$   
+    }
+    F_colon_G = reverse(F_colon_G_temp)$
+
+    return F_colon_G$
+}
+
+/* 要素を全部掛ける関数 */
+def multiple_list(List) {
+    LL = length(List)$
+    K = 1$
+    for (I=0; I<LL; I++) {
+        K *= List[I]$
+    }
+    return K$
+}
+
+/* 変数が含まれているかを確認する関数 */
+def is_var(Poly, VarList) {
+    PV = vars(Poly)$
+    if (length(PV) == 0) { return 0$ }
+    ALL = append(PV, VarList)$
+    Sorted = vtol(qsort(ltov(ALL)))$
+
+    while (1) {
+        ALL_L = length(Sorted)$
+        if (ALL_L < 2) { return 0$ }
+        if (Sorted[0] == Sorted[1]) { return 1$ }
+        Sorted = cdr(Sorted)$
+    }
+}
+
+/* map で car を使うための関数 */
+def ccar(L) { return car(L)$ }
+
+/* 例題のやつ */
+def example(PolyList, VarList, ParamList, Order) {
+    /* F:G のグレブナー基底を計算する */
+    [O, BO, BaO] = block_order(VarList, ParamList, Order)$
+    Switch = getopt(switch)$
+    if (Switch == 1) { /* パラメータも変数と見なしブロック順序で計算する（こちらの方が即していると考えて実装したが、うまくいかないので使わない方が良いかもしれない） */
+        ALL_VAR = append(VarList, ParamList)$
+        G = nd_gr(PolyList, ALL_VAR, 0, BO)$
+    } else { /* 係数体を有理関数体と見なす */
+        G = nd_gr(PolyList, VarList, 0, O)$
+    }
+    Colon = colon_gb(PolyList, G, VarList, ParamList, Order)$
+
+    printf("The Groebner base of F:g is %a\n", Colon)$
+    
+    /* Them3を適用 */
+    LCG = []$
+    Default_ord = dp_ord()$
+    dp_ord(O)$
+    for (J=0; J<length(G); J++) {
+        DP_g = dp_ptod(G[J], VarList)$
+        LC = dp_hc(DP_g)$
+        LCG = cons(LC, LCG)$
+    }
+    dp_ord(Default_ord)$
+    H0 = multiple_list(LCG)$
+    H1 = sqfr(H0)$
+    H2 = map(ccar, H1)$
+    H = multiple_list(H2)$
+
+    S = []$
+    CL = length(Colon)$
+    for (J=0; J<CL; J++) {
+        CJ = Colon[J]$
+        if (!is_var(CJ, VarList)) {
+            S = cons(CJ, S)$
+        }
+    }
+    if (S == []) { S = [0]$ } /* 理論上は到達しないが一応 */
+
+    V = vtol(H*ltov(S))$
+    printf(" Using Theorem3 : %a\n", V)$
+
+    /* Cor4を適用 */
+    Final_V = H*S[0]$
+    printf(" Using Corllary3 : %a\n", [Final_V])$
+
+    return [Final_V, G]$
+}
+
+// F3 = [x^2*y+s*x^2+y^2,x*y+t*y^2]$ example(F3,[x,y],[s,t],1);
+// F4 = [s*x^2-x*y+y^2,t*x*y+y,s*x^2-y,(t+1)*x*y^2+s*x]$ example(F4,[x,y],[s,t],[[2,2],[1,2]]);
+
+
+end$

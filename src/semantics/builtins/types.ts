@@ -1,4 +1,3 @@
-
 import { EvaluationResult } from '../types';
 import { FunctionCallNode } from '../../core/ast/asirAst';
 import { Validator } from '../validator';
