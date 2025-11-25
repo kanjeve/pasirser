@@ -1,8 +1,25 @@
 import { BuiltinFunctionHandler } from '../types.js';
-import { p_type, ConstantValue, TupleType, ListAsirType, VectorAsirType, UnionType } from '../../types.js';
+import { p_type, l_type, ConstantValue, TupleType, ListAsirType, VectorAsirType, UnionType, AsirType } from '../../types.js';
 import { DiagnosticSeverity } from '../../../utils/diagnostics.js';
 import { getCommonSupertype } from '../../utils/typeSystem.js';
+import arg from 'arg';
 
+// ----------------------------------------
+// ベクトルとして扱えるか
+export function isVectorLike(type: AsirType): boolean {
+    if (type.kind === 'union') {
+        return type.types.some(t => isVectorLike(t));
+    }
+    return type.kind === 'vector' || (type.kind === 'primitive' && (type.name === 'parameter' || type.name === 'any'));
+}
+// 行列として扱えるか
+export function isMatrixLike(type: AsirType): boolean {
+    if (type.kind === 'union') {
+        return type.types.some(t => isMatrixLike(t));
+    }
+    return type.kind === 'matrix' || (type.kind === 'primitive' && (type.name === 'parameter' || type.name === 'any'));
+}
+// ----------------------------------------
 
 export const handleLtov: BuiltinFunctionHandler = (validator, node, argResults) => {
     if (argResults.length !== 1) {
@@ -63,31 +80,16 @@ export const handleVtol: BuiltinFunctionHandler = (validator, node, argResults) 
         newConstantValue = [...argResult.constantValue]; // ベクトルからリストへの変換では要素の順序は変わらない
     }
 
-    let actualVectorType: VectorAsirType | undefined;
-    if (argType.kind === 'union') {
-        const findVectorInUnion = (unionType: UnionType): VectorAsirType | undefined => {
-            for (const type of unionType.types) {
-                if (type.kind === 'vector') {
-                    return type as VectorAsirType;
-                }
-                if (type.kind === 'union') {
-                    const nestedVector = findVectorInUnion(type);
-                    if (nestedVector) {
-                        return nestedVector;
-                    }
-                }
-            }
-            return undefined;
-        };
-        actualVectorType = findVectorInUnion(argType);
-    } else if (argType.kind === 'vector') {
-        actualVectorType = argType;
+    if (isVectorLike(argType)) {
+        if (argType.kind === 'primitive' && (argType.name === 'parameter' || argType.name === 'any')) {
+            return { type: l_type(p_type('any')), constantValue: undefined };
+        } else if (argType.kind === 'union') {
+            return { type: l_type(p_type('any')), constantValue: undefined };
+        } else if (argType.kind === 'vector') {
+            return { type: l_type(argType.elementType), constantValue: newConstantValue };
+        }
     }
-
-    if (actualVectorType) {
-        return { type: { kind: 'list', elementType: (actualVectorType as VectorAsirType).elementType }, constantValue: newConstantValue };
-    } else {
-        validator.addDiagnostic(node, `vtol の引数はベクトルでなければなりません。`, DiagnosticSeverity.Error);
-        return { type: p_type('any') };
-    }
+    
+    validator.addDiagnostic(node, `vtol の引数はベクトルでなければなりません。`, DiagnosticSeverity.Error);
+    return { type: p_type('any') };
 };

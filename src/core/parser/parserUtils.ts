@@ -61,9 +61,9 @@ export function parseAndBuildAST(code: string, filePathForErrors: string): { ast
         });
     });
 
-    if (syntaxErrors.length > 0) {
-        return { ast: null, diagnostics };
-    }
+    // if (syntaxErrors.length > 0) {
+    //     return { ast: null, diagnostics };
+    // }
 
     const astBuilder = new AsirASTBuilder();
     try {
@@ -83,9 +83,9 @@ export function parseAndBuildAST(code: string, filePathForErrors: string): { ast
     } catch (e) {
         if (e instanceof ASTBuilderError) {
             const errorInfo: SyntaxErrorInfo = {
-                line: e.loc?.start.line ?? 0, // 1-based への対応をどうするか？
+                line: e.loc?.start.line ?? 1,
                 column: e.loc?.start.column ?? 0,
-                endLine: e.loc?.end.line ?? e.loc?.start.line ?? 0,
+                endLine: e.loc?.end.line ?? e.loc?.start.line ?? 1,
                 endColumn: e.loc?.end.column ?? e.loc?.start.column ?? 0,
                 message: e.message,
                 offendingSymbol: null,
@@ -105,7 +105,7 @@ export function parseAndBuildAST(code: string, filePathForErrors: string): { ast
         } else {
             const fatalError: Diagnostic = {
                 severity: DiagnosticSeverity.Error,
-                range: { start: { line: 1, character: 0 }, end: { line: 1, character: 1 } },
+                range: { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } },
                 message: `致命的なエラー: ${e}`,
                 source: 'Fatal',
                 filePath: filePathForErrors,

@@ -1,0 +1,3 @@
+A;
+load("./tests/loaded_file.rr")
+B;

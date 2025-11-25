@@ -1,13 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { BuiltinFunctionHandler } from '../types.js';
+import { BuiltinFunctionHandler, ValidatorInterface } from '../types.js';
 import { p_type, l_type, } from '../../types.js';
 import { DiagnosticSeverity } from '../../../utils/diagnostics.js';
 import { parseAndBuildAST } from '../../../core/parser/parserUtils.js';
 import { ctrlSubHandlers } from '../ctrl_handlers.js';
+import { ASTCache } from '../../../analysis/astCache.js';
 
 // パスに関する関数
-export const handleChdir: BuiltinFunctionHandler = (validator, node, argResults) => {
+export const handleChdir: BuiltinFunctionHandler = (validator: ValidatorInterface, node, argResults) => {
     if (argResults.length !== 1) {
         validator.addDiagnostic(node, `chdir 関数には、引数としてパスの文字列が1つだけ必要です。`, DiagnosticSeverity.Error);
         return { type: p_type('integer'), constantValue: -1 };
@@ -22,7 +23,7 @@ export const handleChdir: BuiltinFunctionHandler = (validator, node, argResults)
 };
 
 // ファイルを読む関数
-export const handleLoadOrImport: BuiltinFunctionHandler = (validator, node, argResults) => {
+export const handleLoadOrImport: BuiltinFunctionHandler = (validator: ValidatorInterface, node, argResults) => {
     // メモ: `load`におけるOS依存のパス解決（CWD対asir.exeのパス）は、ここでは処理しない。
     // 呼び出し元（例: VSCode拡張機能）が、環境に応じた正しい検索パスを
     // コンストラクタ引数 `loadPaths` 経由で提供する責務を負う。
@@ -62,33 +63,38 @@ export const handleLoadOrImport: BuiltinFunctionHandler = (validator, node, argR
         return { type: p_type('integer'), constantValue: 0 };
     }
 
-    let loadedCode: string;
-    try {
-        loadedCode = fs.readFileSync(resolvedPath, 'utf-8');
-    } catch (e) {
-        validator.addDiagnostic(node.args[0], `ファイルを読み込めません: ${resolvedPath}`, DiagnosticSeverity.Error);
-        return { type: p_type('integer'), constantValue: 0 };
-    }
+    const { ast: loadedAst, diagnostics: loadDiagnostics } =  ASTCache.getInstance().getAST(resolvedPath);
 
-    const { ast: loadedAst, diagnostics: loadDiagnostics } = parseAndBuildAST(loadedCode, resolvedPath);
-    validator.diagnostics.push(...loadDiagnostics);
+    if (!validator.isHeaderMode) {
+        validator.diagnostics.push(...loadDiagnostics);
+    }
 
     if (loadedAst) {
         const previousFilePath = validator.currentFilePath;
         validator.currentFilePath = resolvedPath;
         validator.inclusionStack.push(resolvedPath);
+
+        const previousMode = validator.isHeaderMode;
+        validator.isHeaderMode = true;
+        const previousReachable = validator.isReachable;
+        validator.isReachable = true;
+        const previousProgramTerminated = validator.isProgramTerminated;
+        validator.isProgramTerminated = false;
         try {
             validator.visit(loadedAst);
         } finally {
+            validator.isHeaderMode = previousMode;
             validator.inclusionStack.pop();
             validator.currentFilePath = previousFilePath;
+            validator.isReachable = previousReachable;
+            validator.isProgramTerminated = previousProgramTerminated;
         }
     }
     
     return { type: p_type('integer'), constantValue: 1 };
 };
 
-export const handleCtrl: BuiltinFunctionHandler = (validator, node, argResults) => {
+export const handleCtrl: BuiltinFunctionHandler = (validator: ValidatorInterface, node, argResults) => {
     if (argResults.length === 0) { return { type: l_type(l_type(p_type('any'))) } };
 
     const commandResult = argResults[0];

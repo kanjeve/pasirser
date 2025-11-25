@@ -1,12 +1,11 @@
-import { BuiltinFunctionHandler } from '../types.js';
+import { BuiltinFunctionHandler, ValidatorInterface } from '../types.js';
 import { p_type, u_type, AsirType } from '../../types.js';
 import { DiagnosticSeverity } from '../../../utils/diagnostics.js';
 import { getCommonSupertype } from '../../utils/typeSystem.js';
 import * as ast from '../../../core/ast/asirAst.js';
-import { Validator } from '../../validator.js';
 import { typeToString } from '../../utils/typeFormatter.js';
 
-function devalTypeTransform(this: Validator, inputType: AsirType, node: ast.ASTNode): AsirType {
+function devalTypeTransform(this: ValidatorInterface, inputType: AsirType, node: ast.ASTNode): AsirType {
     switch (inputType.kind) {
         case 'primitive':
             if (inputType.name === 'complex') {

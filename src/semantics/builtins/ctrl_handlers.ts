@@ -1,7 +1,7 @@
 import { EvaluationResult, l_type, p_type } from '../types';
-import { Validator } from '../validator';
 import { DiagnosticSeverity } from '../../utils/diagnostics';
 import { FunctionCallNode } from '../../core/ast/asirAst';
+import { ValidatorInterface } from './types'
 
 /**
  * ctrl() のサブコマンドを処理するハンドラーの共通インターフェース
@@ -10,7 +10,7 @@ import { FunctionCallNode } from '../../core/ast/asirAst';
  * @param argResult ctrl() の第2引数を評価した結果
  */
 export type CtrlSubHandler = (
-    validator: Validator,
+    validator: ValidatorInterface,
     node: FunctionCallNode,
     argResult: EvaluationResult[]
 ) => EvaluationResult;

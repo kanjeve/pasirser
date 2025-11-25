@@ -8,15 +8,16 @@ import * as KeywordHandlers from './handlers/keyword';
 
 export const builtinHandlers = new Map<string, BuiltinFunctionHandler>([
     // List
-    ['cons', ListHandlers.handleCons],
     ['append', ListHandlers.handleAppend],
+    ['cons', ListHandlers.handleCons],
+    ['length', ListHandlers.handleLength],
     ['reverse', ListHandlers.handleReverse],
 
     // System
-    ['load', SystemHandlers.handleLoadOrImport],
-    ['import', SystemHandlers.handleLoadOrImport],
     ['chdir', SystemHandlers.handleChdir],
     ['ctrl', SystemHandlers.handleCtrl],
+    ['import', SystemHandlers.handleLoadOrImport],
+    ['load', SystemHandlers.handleLoadOrImport],
 
     // Type
     ['type', TypeHandlers.handleType],

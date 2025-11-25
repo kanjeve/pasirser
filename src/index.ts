@@ -4,7 +4,7 @@ export type { AnalysisResult } from './services/languageService.js';
 
 // クライアント側で必要となる共通の型定義
 export * from './core/ast/asirAst.js';
-export { Diagnostic, DiagnosticSeverity, Position } from './utils/diagnostics.js';
+export { Diagnostic, DiagnosticSeverity, Position, DiagnosticTag } from './utils/diagnostics.js';
 export { SymbolTable } from './semantics/symbolTable.js';
 export { Symbol, AsirType, Scope } from './semantics/types.js';
 

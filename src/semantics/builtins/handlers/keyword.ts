@@ -1,10 +1,11 @@
 import { BuiltinFunctionHandler } from '../types.js';
-import { p_type, ConstantValue, AsirType, FunctionAsirType, TupleType } from '../../types.js';
+import { p_type, l_type, ConstantValue, AsirType, FunctionAsirType, TupleType, StructDefinitionType } from '../../types.js';
 import { DiagnosticSeverity } from '../../../utils/diagnostics.js';
 import { isTypeCompatible } from '../../utils/typeSystem.js';
 import { typeToString } from '../../utils/typeFormatter.js';
 import { BUILTIN_SIGNATURES } from '../../../data/builtinSignatures.js';
 import { PARI_SIGNATURES } from '../../../data/pariSignatures.js'; 
+import { isListLikeOrUnknown } from './list.js';
 
 export const handleCar: BuiltinFunctionHandler = (validator, node, argResults) => {
     if (argResults.length !== 1) {
@@ -13,20 +14,24 @@ export const handleCar: BuiltinFunctionHandler = (validator, node, argResults) =
     }
     const argResult = argResults[0];
     const argType = argResult.type;
-    if (argType.kind === 'tuple') {
-        let resultType: AsirType;
-        if (argType.elements.length > 0) {
-            resultType = argType.elements[0].type;
+    if (isListLikeOrUnknown(argType)) {
+        if (argType.kind === 'tuple') {
+            let resultType: AsirType;
+            if (argType.elements.length > 0) {
+                resultType = argType.elements[0].type;
+            } else {
+                resultType = { kind: 'tuple', elements: [] };
+            }
+            let constantValue: ConstantValue | undefined = undefined;
+            if (Array.isArray(argResult.constantValue) && argResult.constantValue.length > 0) {
+                constantValue = argResult.constantValue[0] ?? undefined;
+            }
+            return { type: resultType, constantValue }; 
+        } else if (argType.kind === 'list') {
+            return { type: argType.elementType };
         } else {
-            resultType = { kind: 'tuple', elements: [] };
+            return { type: p_type('any') }; // union を厳密にやってもいいかも
         }
-        let constantValue: ConstantValue | undefined = undefined;
-        if (Array.isArray(argResult.constantValue) && argResult.constantValue.length > 0) {
-            constantValue = argResult.constantValue[0] ?? undefined;
-        }
-        return { type: resultType, constantValue }; 
-    } else if (argType.kind === 'list') {
-        return { type: argType.elementType };
     } else {
         validator.addDiagnostic(node.args[0], `car 関数の引数はリストでなければなりません。`, DiagnosticSeverity.Error);
         return { type: p_type('any') };
@@ -41,19 +46,23 @@ export const handleCdr: BuiltinFunctionHandler = (validator, node, argResults) =
     const argResult = argResults[0];
     const argType = argResult.type;
 
-    if (argType.kind === 'tuple') {
-        const resultElements = (argType.elements.length > 1) ? argType.elements.slice(1) : [];
-        const resultType: TupleType = { kind: 'tuple', elements: resultElements };
+    if (isListLikeOrUnknown(argType)) {
+        if (argType.kind === 'tuple') {
+            const resultElements = (argType.elements.length > 1) ? argType.elements.slice(1) : [];
+            const resultType: TupleType = { kind: 'tuple', elements: resultElements };
 
-        let constantValue: ConstantValue | undefined = undefined;
-        if (Array.isArray(argResult.constantValue) && argResult.constantValue.length > 1) {
-            constantValue = argResult.constantValue.slice(1);
-        } else if (Array.isArray(argResult.constantValue)) {
-            constantValue = [];
+            let constantValue: ConstantValue | undefined = undefined;
+            if (Array.isArray(argResult.constantValue) && argResult.constantValue.length > 1) {
+                constantValue = argResult.constantValue.slice(1);
+            } else if (Array.isArray(argResult.constantValue)) {
+                constantValue = [];
+            }
+            return { type: resultType, constantValue };
+        } else if (argType.kind === 'list') {
+            return { type: argType };
+        } else {
+            return { type: l_type(p_type('any')) };
         }
-        return { type: resultType, constantValue };
-    } else if (argType.kind === 'list') {
-        return { type: argType };
     } else {
         validator.addDiagnostic(node.args[0], `cdr 関数の引数はリストでなければなりません。`, DiagnosticSeverity.Error);
         return { type: p_type('any') };
@@ -172,6 +181,22 @@ export const handleMap: BuiltinFunctionHandler = (validator, node, argResults) =
     return { type: p_type('any') };
 };
 
+export const handleNewstruct: BuiltinFunctionHandler = (validator, node, argResults) => {
+    if (argResults.length !== 1) {
+        validator.addDiagnostic(node, `newstruct は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
+        return { type: p_type('any') };
+    }
+    const argNode = node.args[0];
+    const argResult = argResults[0];
+    if (argResult.type.kind === 'structure_definition') {
+        const defType = argResult.type as StructDefinitionType;
+        console.log('[DEBUG] Newstruct returning:', typeToString(defType.instanceType));
+        return { type: defType.instanceType };
+    }
+    validator.addDiagnostic(argNode,`newstruct の引数は定義済みの構造体名である必要があります。`, DiagnosticSeverity.Error);
+    return { type: p_type('any') };
+};
+
 export const handlePari: BuiltinFunctionHandler = (validator, node, argResults) => {
     if (argResults.length < 2) {
         validator.addDiagnostic(node, `pari 関数には、少なくとも2つの引数が必要です。`, DiagnosticSeverity.Error);
@@ -209,19 +234,3 @@ export const handlePari: BuiltinFunctionHandler = (validator, node, argResults) 
     return { type: pariFuncSignature.returnType };
 };
 
-export const handleNewstruct: BuiltinFunctionHandler = (validator, node, argResults) => {
-    if (argResults.length !== 1) {
-        validator.addDiagnostic(node, `newstruct は引数を1つだけ取ります。`, DiagnosticSeverity.Error);
-        return { type: p_type('any') };
-    }
-    const argNode = node.args[0];
-    if (argNode.kind === 'Indeterminate') {
-        const structName = argNode.name;
-        const typeSymbol = validator.symbolTable.currentScope.lookup(structName);
-        if (typeSymbol && typeSymbol.type.kind === 'struct') {
-            return { type: typeSymbol.type };
-        }
-    }
-    validator.addDiagnostic(argNode,`newstruct の引数は定義済みの構造体名である必要があります。`, DiagnosticSeverity.Error);
-    return { type: p_type('any') };
-};

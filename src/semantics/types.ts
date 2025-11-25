@@ -74,6 +74,7 @@ export type FunctionBehavior =
     | 'callable_and_symbol';
 export type FunctionAsirType = { kind: 'function', parameters: { name: string, type: AsirType }[], restParameter?: { name: string, type: AsirType }, returnType: AsirType, allowesOptions?: Map<string, AsirType>, behavior: FunctionBehavior };
 export type StructAsirType = { kind: 'struct', name: string, members: Map<string, AsirType> };
+export type StructDefinitionType = { kind: 'structure_definition', name: string, instanceType: StructAsirType };
 export type ModuleAsirType = { kind: 'module', name: string, members: Map<string, Symbol> };
 export type StandardPolynomialType = { kind: 'standard_polynomial', coefficientType: AsirType };
 export type DistributedPolynomialType = { kind: 'distributed_polynomial', coefficientType: AsirType };
@@ -94,6 +95,7 @@ export type AsirType =
     | MatrixAsirType
     | FunctionAsirType
     | StructAsirType
+    | StructDefinitionType
     | ModuleAsirType
     | PolynomialAsirType
     | LiteralUnionType
@@ -166,7 +168,7 @@ export class Scope {
 }
 
 // 型生成用ヘルパー
-export const p_type = (name: PrimitiveAsirTypeName): PrimitiveAsirType => ({ kind: 'primitive', name });
+// export const p_type = (name: PrimitiveAsirTypeName): PrimitiveAsirType => ({ kind: 'primitive', name });
 export const u_type = (types: AsirType[]): UnionType => ({ kind: 'union', types });
 export const l_type = (elementType: AsirType): ListAsirType => ({ kind: 'list', elementType });
 export const v_type = (elementType: AsirType): VectorAsirType => ({ kind: 'vector', elementType });
@@ -182,3 +184,26 @@ export const type_1: LiteralUnionType = { kind: 'literal_union', values: [1] };
 export const type_0_1: LiteralUnionType = { kind: 'literal_union', values: [0, 1] };
 export const type_m1_0_1: LiteralUnionType = { kind: 'literal_union', values: [-1, 0, 1] };
 export const type_0_1_2: LiteralUnionType = { kind: 'literal_union', values: [0, 1, 2] };
+
+
+// メモリ消費とGC負荷の軽減用
+export const ANY_TYPE: PrimitiveAsirType = { kind: 'primitive', name: 'any' };
+export const INTEGER_TYPE: PrimitiveAsirType = { kind: 'primitive', name: 'integer' };
+export const NUMBER_TYPE: PrimitiveAsirType = { kind: 'primitive', name: 'number' };
+export const STRING_TYPE: PrimitiveAsirType = { kind: 'primitive', name: 'string' };
+export const UNDEFINED_TYPE: PrimitiveAsirType = { kind: 'primitive', name: 'undefined' };
+export const VOID_TYPE: PrimitiveAsirType = { kind: 'primitive', name: 'void' };
+export const PARAMETER_TYPE: PrimitiveAsirType = { kind: 'primitive', name: 'parameter' };
+
+export const p_type = (name: PrimitiveAsirTypeName): PrimitiveAsirType => {
+    switch (name) {
+        case 'any': return ANY_TYPE;
+        case 'integer': return INTEGER_TYPE;
+        case 'number': return NUMBER_TYPE;
+        case 'string': return STRING_TYPE;
+        case 'undefined': return UNDEFINED_TYPE;
+        case 'void': return VOID_TYPE;
+        case 'parameter': return PARAMETER_TYPE;
+        default: return { kind: 'primitive', name };
+    }
+};

@@ -1,14 +1,16 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import * as ast from '../core/ast/asirAst';
 import { SymbolTable } from '../semantics/symbolTable';
-import { ALL_ASIR_BUILTIN, ASIR_KEYWORDS, functionNames } from '../data/builtins';
+import { ALL_ASIR_BUILTIN, ASIR_KEYWORDS } from '../data/builtins';
 import { BUILTIN_CONSTANTS } from '../data/builtinConstants';
 import { BUILTIN_SIGNATURES } from '../data/builtinSignatures';
 import { Position } from '../utils/diagnostics';
-import { Scope, Symbol } from '../semantics/types';
+import { Scope, Symbol, AsirType, ModuleAsirType, StructAsirType, FunctionAsirType, LiteralUnionType } from '../semantics/types';
 import { ctrlCommandNames } from '../semantics/builtins/ctrl_handlers';
 import { PARI_SIGNATURES } from '../data/pariSignatures';
-import * as fs from 'fs';
-import * as path from 'path';
+import { findNodeStackAtPosition } from './utils/astUtils';
+
 
 
 export enum CompletionItemKind {
@@ -52,6 +54,7 @@ export interface CompletionItem {
     documentation?: string;
     insertText?: string; 
     insertTextFormat?: InsertTextFormat;
+    sortText?: string;
 }
 
 interface AsirSnippet {
@@ -78,6 +81,16 @@ function loadSnippets(): { [key: string]: AsirSnippet } {
     }
 }
 
+function getCompletionKindFromType(type: AsirType): CompletionItemKind {
+    switch(type.kind) {
+        case 'function':
+        case 'overloaded_function': return CompletionItemKind.Function;
+        case 'struct': return CompletionItemKind.Struct;
+        case 'module': return CompletionItemKind.Module;
+        default: return CompletionItemKind.Variable;
+    }
+}
+
 export function getCompletions(
     code: string,
     position: Position,
@@ -88,6 +101,75 @@ export function getCompletions(
     const lineContent = code.split('\n')[position.line] || '';
     const lineUnitilCursor = lineContent.substring(0, position.character);
 
+    // --- 1. ::補完 ---
+    const globalMatch = lineUnitilCursor.match(/::([a-zA-Z0-9_]*)$/);
+    if (globalMatch) {
+        if (symbolTable) {
+            const rootScope = symbolTable.getRootScope();
+            rootScope.symbols.forEach(symbol => {
+                completions.push({
+                    label: symbol.name,
+                    kind: getCompletionKindFromType(symbol.type),
+                    detail: `(grobal) ${symbol.name}`,
+                    documentation: symbol.definedAt ? `Defined as L${symbol.definedAt.start.line}` : undefined
+                });
+            });
+        }
+        return completions;
+    }
+
+    // --- 2. ->補完 ---
+    const structMatch = lineUnitilCursor.match(/([a-zA-Z_][a-zA-Z0-9_]*)\s*->\s*([a-zA-Z0-9_]*)$/);
+    if (structMatch && symbolTable) {
+        const varName = structMatch[1];
+        const scope = symbolTable.findScopeAt({ line: position.line + 1, character: position.character });
+        let symbol = scope ? scope.lookup(varName) : undefined;
+        if (!symbol) { symbol = symbolTable.getRootScope().lookup(varName); }
+
+        if (symbol && symbol.type.kind === 'struct') {
+            const structType = symbol.type as StructAsirType;
+            structType.members.forEach((memberType, memberName) => {
+                completions.push({
+                    label: memberName,
+                    kind: CompletionItemKind.Field,
+                    detail: `(member) ${memberName}`,
+                    // documentation: typeToString(memberType)
+                });
+            });
+            return completions;
+        }
+    }
+
+    // --- 3. module関数補完 ---
+    const moduleMatch = lineUnitilCursor.match(/([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z0-9_]*)$/);
+    if (moduleMatch && symbolTable) {
+        const moduleName = moduleMatch[1];
+        let symbol: Symbol | undefined;
+        const scope = symbolTable.findScopeAt({ line: position.line + 1, character: position.character });
+
+        if (scope) {
+            symbol = scope.lookup(moduleName);
+        }
+        if (!symbol) {
+            symbol = symbolTable.getRootScope().lookup(moduleName);
+        }
+
+        if (symbol && symbol.type.kind === 'module') {
+            const moduleType = symbol.type as ModuleAsirType;
+            moduleType.members.forEach((memberSymbol, memberName) => {
+                if (memberSymbol.type.kind === 'function' || memberSymbol.type.kind === 'overloaded_function') {
+                    completions.push({
+                        label: memberName,
+                        kind: CompletionItemKind.Function,
+                        detail: `(module function) ${moduleName}.${memberName}`,
+                    });
+                }
+            });
+            return completions;
+        }
+    }
+
+    // --- 4. 特殊補完 ---
     // pari補完
     const pariMatch = lineUnitilCursor.match(/\bpari\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)$/);
     if (pariMatch) {
@@ -120,9 +202,10 @@ export function getCompletions(
         return completions;
     }
 
+    // --- 5. 標準補完 ---
     const identifierMatch =lineUnitilCursor.match(/([a-zA-Z_][a-zA-Z0-9_]*)$/);
     const typedPrefix = identifierMatch ? identifierMatch[1] : '';
-    if (ast && symbolTable) {
+    if (symbolTable) {
         // 1. 現在のスコープ内のシンボルを収集
         const astPosition = { line: position.line + 1, character: position.character };
         const scope = symbolTable.findScopeAt(astPosition);
@@ -195,7 +278,78 @@ export function getCompletions(
         }
     }
 
-    // TODO: モジュール名、構造体名、型名なども収集する
+    if (ast) {
+        const nodeStack = findNodeStackAtPosition(ast, position);
+        if (nodeStack.length > 0) {
+            const currentNode = nodeStack[nodeStack.length - 1];
+            const parentNode = nodeStack.length > 1 ? nodeStack[nodeStack.length - 2] : undefined;
+
+            if (currentNode.kind === 'OptionPair') {
+                const optPair = currentNode as ast.OptionPairNode;
+                const funcCallNode = nodeStack.find(n => n.kind === 'FunctionCall') as ast.FunctionCallNode | undefined;
+
+                if (funcCallNode) {
+                    const funcName = funcCallNode.callee.functionName.name;
+                    const sig = BUILTIN_SIGNATURES.get(funcName);
+
+                    if (sig && (sig.kind === 'function' || sig.kind === 'overloaded_function')) {
+                        const funcType = (sig.kind === 'function' ? sig : sig.signatures[0]) as FunctionAsirType;
+                        const optName = optPair.key.name;
+
+                        if (funcType.allowesOptions && funcType.allowesOptions.has(optName)) {
+                            const optType = funcType.allowesOptions.get(optName)!;
+
+                            if (optType.kind === 'literal_union') {
+                                (optType as LiteralUnionType).values.forEach(val => {
+                                    completions.push({
+                                        label: String(val),
+                                        kind: CompletionItemKind.EnumMember,
+                                        detail: `Value for ${optName}`,
+                                        insertText: typeof val === 'string' ? `"${val}"` : String(val)
+                                    });
+                                });
+                                return completions;
+                            }
+                            if (optType.kind === 'primitive' && optType.name === 'integer') {
+                                completions.push({ label: '1', kind: CompletionItemKind.Value, detail:'True (Enable)' });
+                                completions.push({ label: '2', kind: CompletionItemKind.Value, detail:'False (Enable)' });
+                            }
+                        }
+                    }
+                }
+            }
+            const funcCallNode = nodeStack.find(n => n.kind === 'FunctionCall') as ast.FunctionCallNode | undefined;
+
+            if (funcCallNode) {
+                const lineText = code.split('\n')[position.line];
+                const hasMid = lineText.lastIndexOf('|');
+
+                if (hasMid !== -1 && position.character > hasMid) {
+                    const funcName = funcCallNode.callee.functionName.name;
+                    const sig = BUILTIN_SIGNATURES.get(funcName);
+
+                    if (sig) {
+                        const signatures = sig.kind === 'overloaded_function' ? sig.signatures : [sig as FunctionAsirType];
+                        signatures.forEach(s => {
+                            if (s.allowesOptions) {
+                                s.allowesOptions.forEach((type, key) => {
+                                    completions.push({
+                                        label: key,
+                                        kind: CompletionItemKind.Property,
+                                        detail: `Option (${type.kind})`,
+                                        insertText: `${key} = `
+                                    });
+                                });
+                            }
+                        });
+                        if (completions.length > 0) return completions;
+                    }
+                }
+            }
+        }
+    }
+
+    // TODO: モジュール名、構造体名なども収集する
 
     return completions;
 }

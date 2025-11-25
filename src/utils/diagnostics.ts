@@ -5,6 +5,11 @@ export enum DiagnosticSeverity {
     Hint = 4,
 }
 
+export enum DiagnosticTag {
+    Unnecessary = 1,
+    Deprecated = 2,
+}
+
 export interface Position {
     line: number;
     character: number;
@@ -21,4 +26,5 @@ export interface Diagnostic {
     message: string;
     source: string; 
     filePath?: string;
+    tags?: DiagnosticTag[];
 }

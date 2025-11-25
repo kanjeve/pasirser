@@ -1,6 +1,22 @@
 import { EvaluationResult } from '../types';
-import { FunctionCallNode } from '../../core/ast/asirAst';
-import { Validator } from '../validator';
+import { SymbolTable } from '../symbolTable';
+import { DiagnosticSeverity, Diagnostic } from '../../utils/diagnostics';
+import * as ast from '../../core/ast/asirAst';
+
+export interface ValidatorInterface {
+    symbolTable: SymbolTable;
+    addDiagnostic(node: ast.ASTNode, message: string, severity: DiagnosticSeverity): void;
+    effectiveCwd: string;
+    importedFiles: Set<string>;
+    loadPaths: string[];
+    inclusionStack: string[];
+    visit(node: ast.ASTNode): EvaluationResult | any;
+    diagnostics: Diagnostic[];
+    currentFilePath: string | null;
+    isHeaderMode: boolean;
+    isReachable: boolean;
+    isProgramTerminated: boolean;
+}
 
 /**
  * 組み込み関数を処理するハンドラーの共通インターフェース
@@ -10,7 +26,7 @@ import { Validator } from '../validator';
  * @returns 関数の評価結果
  */
 export type BuiltinFunctionHandler = (
-    validator: Validator,
-    node: FunctionCallNode,
+    validator: ValidatorInterface,
+    node: ast.FunctionCallNode,
     argResults: EvaluationResult[]
 ) => EvaluationResult;

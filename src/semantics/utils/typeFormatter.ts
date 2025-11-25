@@ -1,4 +1,4 @@
-import { AsirType, PrimitiveAsirType, ListAsirType, TupleType, VectorAsirType, ModuleAsirType, UnionType, LiteralUnionType, PolynomialAsirType, MatrixAsirType, FunctionAsirType, OverloadedFunctionType } from '../types';
+import { AsirType, PrimitiveAsirType, ListAsirType, TupleType, VectorAsirType, ModuleAsirType, UnionType, LiteralUnionType, PolynomialAsirType, MatrixAsirType, FunctionAsirType, OverloadedFunctionType, StructDefinitionType } from '../types';
 
 export function typeToString(type: AsirType, simplify: boolean = false): string {
     if (!type) return 'undefined';
@@ -62,6 +62,9 @@ export function typeToString(type: AsirType, simplify: boolean = false): string 
 
         case 'struct':
             return `struct ${type.name}`;
+
+        case 'structure_definition':
+            return `struct definition ${(type as StructDefinitionType).name}`;
 
         case 'module':
             return `module ${type.name}`;

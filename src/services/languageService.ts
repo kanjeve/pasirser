@@ -29,7 +29,7 @@ export class LanguageService {
     private currentSymbolTable: SymbolTable | null = null;
     private currentDiagnostics: Diagnostic[] = [];
     private currentFilePath: string;
-    private semanticValidationEnabled = false; // 意味解析の有効/無効フラグ
+    private semanticValidationEnabled = true; // 意味解析の有効/無効フラグ
 
     constructor(filePath: string) {
         this.currentFilePath = filePath;
