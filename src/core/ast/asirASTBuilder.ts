@@ -638,13 +638,21 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode> implem
     // --- 21. Struct Statements ---
     
     visitStruct(ctx: parser.StructContext): ast.StructStatementNode {
-        const name = this.visitMandatory<ast.IndeterminateNode>(ctx._name, 'struct name');
+        // const name = this.visitMandatory<ast.IndeterminateNode>(ctx._name, 'struct name');
+        const nameContex = ctx._name;
+        const rawName = nameContex?.getText();
+        const nameNode: ast.IndeterminateNode = {
+            kind: 'Indeterminate',
+            name: rawName ?? '',
+            loc: getLoc(nameContex)
+        }
+
         const members = ctx._members.map(m =>
             this.visitMandatory<ast.IndeterminateNode>(m, 'struct member')
         );
         return {
             kind: 'StructStatement',
-            name: name,
+            name: nameNode,
             members: members,
             loc: getLoc(ctx) 
         };
@@ -736,9 +744,10 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode> implem
 
     visitPDef(ctx: parser.PDefContext): ast.PreprocessorDefineNode {
         const nameToken = ctx._name;
+        const rawText = nameToken?.getText();
         const nameNode: ast.IndeterminateNode = {
             kind: 'Indeterminate',
-            name: nameToken?.text || '',
+            name: rawText ?? '',
             loc: getLoc(nameToken!)
         };
 
@@ -915,6 +924,20 @@ export class AsirASTBuilder extends AbstractParseTreeVisitor<ast.ASTNode> implem
             kind: 'QualifiedName',
             moduleName: moduleNameNode,
             functionName: functionName,
+            loc: getLoc(ctx)
+        };
+    }
+
+    visitDottedIdentifier(ctx: parser.DottedIdentifierContext): ast.DottedIdentifierNode {
+        const identifiers: ast.IndeterminateNode[] = [];
+        
+        for (const iCtx of ctx.indeterminate()) {
+            identifiers.push(this.visitMandatory<ast.IndeterminateNode>(iCtx, 'identifier part'));
+        }
+
+        return {
+            kind: 'DottedIdentifier',
+            identifiers: identifiers,
             loc: getLoc(ctx)
         };
     }

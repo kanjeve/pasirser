@@ -30,7 +30,7 @@ prechar
     ;
 
 preprocessor
-    : PDEFINE name=ID (LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN)? body=expr #PDef
+    : PDEFINE name=dottedAllowedId (LPAREN (params+=ID (COMMA params+=ID)*)? RPAREN)? body=expr #PDef
     | directive=(PIF | PIFDEF | PIFNDEF) condition=expr thenSymts+=statement* elifs+=elifClause* elseBlk=elseClause? PENDIF #PIf
     | PINCLUDE (path_sys=systemPath | path_loc=STRING) #PInc
     ;
@@ -45,7 +45,7 @@ functionDo         : DO block WHILE LPAREN exprlist? RPAREN SEMI #Do;
 functionReturn     : RETURN expr? terminator #Return;
 functionContinue   : CONTINUE terminator #Continue;
 functionBreak      : BREAK terminator #Break;
-functionStruct     : STRUCT name=indeterminate LBRANCE members+=indeterminate (COMMA members+=indeterminate)* RBRANCE terminator #Struct;
+functionStruct     : STRUCT name=dottedAllowedId LBRANCE members+=indeterminate (COMMA members+=indeterminate)* RBRANCE terminator #Struct;
 functionEnd        : END terminator #End;
 functionQuit       : QUIT terminator #Quit;
 functionDebug      : DEBUG terminator #Debug;
@@ -98,6 +98,8 @@ expr
 
 // 補助
 qualifiedName : (moduleName=ID DOT)? funcName=indeterminate;
+
+dottedAllowedId : indeterminate (DOT ID)*;
 
 dottedIdentifier : indeterminate (DOT indeterminate)+; 
 

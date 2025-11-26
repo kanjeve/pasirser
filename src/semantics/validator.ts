@@ -187,6 +187,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     public isProgramTerminated: boolean = false;
     private analysisStack: ast.DefinitionStatementNode[] = [];
     public isHeaderMode: boolean = false;
+    public unusedLocations: ast.SourceLocation[] = [];
 
     constructor(programNode: ast.ProgramNode, filePath: string | null = null, systemIncludePaths: string[] = [], loadPaths: string[] = []) {
         super();
@@ -206,11 +207,12 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
 
     // --- ヘルパー ---
 
-    private checkVariableNameConvention(IdentifierNode: ast.IndeterminateNode): void {
-        if (!IdentifierNode.name.match(/^(?:[A-Z]|_[A-Z])/)) {
+    private checkVariableNameConvention(node: ast.IndeterminateNode): void {
+        const nameToCheck = node.name.split('.')[0];
+        if (!nameToCheck.match(/^(?:[A-Z]|_[A-Z])/)) {
             this.addDiagnostic(
-                IdentifierNode,
-                `変数名 '${IdentifierNode.name}' は大文字で始まる必要があります。`,
+                node,
+                `変数名 '${node.name}' は大文字で始まる必要があります。`,
                 DiagnosticSeverity.Error
             );
         }
@@ -219,7 +221,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     private checkFunctionNameConvention(node: ast.IndeterminateNode): void {
         const name = node.name;
         if (name.match(/^(?:[A-Z]|_[A-Z])/)) {
-                if (!this.symbolTable.currentScope.lookup(name)){
+            if (!this.symbolTable.currentScope.lookup(name)){
                     this.addDiagnostic(
                     node,
                     `関数名または不定元 '${node.name}' は小文字で始まる必要があります。`,
@@ -294,25 +296,25 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                     return;
                 }
                 if (symbol.node.loc) {
-                    const range = {
-                        start: { 
-                            line: symbol.node.loc.start.line, 
-                            character: symbol.node.loc.start.column 
-                        },
-                        end: { 
-                            line: symbol.node.loc.end.line, 
-                            character: symbol.node.loc.end.column 
-                        }
-                    };
-
-                    this.diagnostics.push({
-                        range,
-                        message: `未使用のシンボル '${symbol.name}' が定義されています。`,
-                        severity: DiagnosticSeverity.Information,
-                        source: 'AsirValidator',
-                        filePath: this.currentFilePath ?? undefined,
-                        tags: [DiagnosticTag.Unnecessary]
-                    });
+                    // const range = {
+                    //     start: { 
+                    //         line: symbol.node.loc.start.line, 
+                    //         character: symbol.node.loc.start.column 
+                    //     },
+                    //     end: { 
+                    //         line: symbol.node.loc.end.line, 
+                    //         character: symbol.node.loc.end.column 
+                    //     }
+                    // };
+                    // this.diagnostics.push({
+                    //     range,
+                    //     message: `未使用のシンボル '${symbol.name}' が定義されています。`,
+                    //     severity: DiagnosticSeverity.Information,
+                    //     source: 'AsirValidator',
+                    //     filePath: this.currentFilePath ?? undefined,
+                    //     tags: [DiagnosticTag.Unnecessary]
+                    // });
+                    this.unusedLocations.push(symbol.node.loc);
                 }
             }
         });
@@ -621,6 +623,38 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
             }
         }
 
+        if (node.left.kind === 'DottedIdentifier') {
+            const dottedNode = node.left as ast.DottedIdentifierNode;
+            const varName = dottedNode.identifiers.map(id => id.name).join('.');
+
+            if (dottedNode.identifiers.length > 0) {
+                this.checkVariableNameConvention(dottedNode.identifiers[0]);
+            }
+
+            const symbol = this.symbolTable.currentScope.lookup(varName);
+            if (!symbol) {
+                //this.checkVariableNameConvention(node.left);
+                if (node.left.loc) {
+                    this.symbolTable.currentScope.define({
+                        name: varName,
+                        type: finalType,
+                        definedAt: node.left.loc,
+                        node: node.left,
+                        isUsed: false,
+                        declaredFilePath: this.currentFilePath ?? undefined,
+                        constantValue: isCompoundAssignment ? undefined : rightResult.constantValue
+                    });
+                }
+            } else {
+                if (symbol.node.kind === 'PreprocessorDefine') {
+                    this.addDiagnostic(
+                        node.left,
+                        `マクロ '${varName}' への代入は推奨されません。`,
+                        DiagnosticSeverity.Warning
+                    );
+                }
+            }
+        }
         
         if (node.left.kind === 'Indeterminate') {
             const varName = node.left.name;
@@ -647,6 +681,7 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                         definedAt: node.left.loc,
                         node: node.left,
                         isUsed: false,
+                        declaredFilePath: this.currentFilePath ?? undefined,
                         constantValue: isCompoundAssignment ? undefined : rightResult.constantValue
                     });
                 }
@@ -661,6 +696,15 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
                 //         );
                 //     }
                 // }
+                if (symbol.node.kind === 'PreprocessorDefine') {
+                    this.addDiagnostic(
+                        node.left,
+                        `マクロ '${varName}' への代入は推奨されません。`,
+                        DiagnosticSeverity.Warning
+                    );
+                }
+                
+                symbol.isUsed = true;
                 symbol.type = finalType;
                 symbol.constantValue = isCompoundAssignment ? undefined : rightResult.constantValue; 
             }
@@ -801,6 +845,13 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     }
 
     visitExpressionStatement(node: ast.ExpressionStatementNode): EvaluationResult {
+        if (node.expression.kind === 'Indeterminate') {
+            const name = (node.expression as ast.IndeterminateNode).name;
+            console.log(`[DEBUG] Visiting Expression: ${name}`);
+            console.log(`  - isReachable: ${this.isReachable}`);
+            console.log(`  - isHeaderMode: ${this.isHeaderMode}`);
+            console.log(`  - isProgramTerminated: ${this.isProgramTerminated}`);
+        }
         const exprType = this.visit(node.expression);
         if (exprType) {
             this.checkUsageAsValue(node.expression, exprType.type);
@@ -2218,6 +2269,14 @@ export class Validator extends AsirASTVisitor<EvaluationResult> {
     // エラー検知用
     visitDottedIdentifier(node: ast.DottedIdentifierNode): EvaluationResult {
         const fullName = node.identifiers.map(id => id.name).join('.');
+        const dotVarSymbol = this.symbolTable.currentScope.lookup(fullName);
+
+        if (dotVarSymbol) {
+            node.resolvedSymbol = dotVarSymbol;
+            dotVarSymbol.isUsed = true;
+            return { type: dotVarSymbol.type, constantValue: dotVarSymbol.constantValue };
+        }
+
         this.addDiagnostic(
             node,
             `識別子 '${fullName}' に '.' を含めることは推奨されません。 'module.func()' でモジュール内の関数を呼びだす時に使用してください。`,

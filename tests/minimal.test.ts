@@ -23,4 +23,19 @@ describe('Validator Features', () => {
         expect(hints.some(h => h.message.includes('未定義の変数 \'B\''))).toBe(true);
     });
 
+    it('should handle chdir() and load() correctly', () => {
+        const diagnostics = getDiagnostics('def.rr');
+
+        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
+        
+        expect(hints).toHaveLength(0);
+    });
+
+    it('should handle chdir() and load() correctly', () => {
+        const diagnostics = getDiagnostics('rr.rr');
+
+        const hints = diagnostics.filter(d => d.severity === DiagnosticSeverity.Error);
+        
+        expect(hints).toHaveLength(0);
+    });
 });

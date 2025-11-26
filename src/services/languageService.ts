@@ -29,7 +29,8 @@ export class LanguageService {
     private currentSymbolTable: SymbolTable | null = null;
     private currentDiagnostics: Diagnostic[] = [];
     private currentFilePath: string;
-    private semanticValidationEnabled = true; // 意味解析の有効/無効フラグ
+    private semanticValidationEnabled = true;
+    private currentUnusedLocations: ast.SourceLocation[] = [];
 
     constructor(filePath: string) {
         this.currentFilePath = filePath;
@@ -65,9 +66,11 @@ export class LanguageService {
             const semanticErrors = validator.analyze(ast);
             diagnostics.push(...semanticErrors);
             this.currentSymbolTable = validator.symbolTable;
+            this.currentUnusedLocations = validator.unusedLocations;
         } else {
             // 意味解析が無効な場合は、シンボルテーブルをクリア
             this.currentSymbolTable = null;
+            this.currentUnusedLocations = [];
         }
 
         this.currentAst = ast;
@@ -126,6 +129,10 @@ export class LanguageService {
         return originalGetDefinitionLocation(code, position, this.currentAst, this.currentSymbolTable, this.currentFilePath) ?? null;
     }
 
+    public getUnusedLocation(): ast.SourceLocation[] {
+        return this.currentUnusedLocations;
+    }
+
     /**
      * ドキュメント全体のシンボル（アウトライン）を取得する。
      */
@@ -161,7 +168,6 @@ export class LanguageService {
      */
     public formatDocument(): string | null {
         if (!this.currentAst) {
-            // TODO: 構文エラーがある場合でも部分的にフォーマットを試みるか検討
             return null;
         }
         const formatter = new AsirFormatter();

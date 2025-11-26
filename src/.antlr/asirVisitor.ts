@@ -75,6 +75,7 @@ import { AddSubExprContext } from "./asirParser.js";
 import { NumberLiteralContext } from "./asirParser.js";
 import { MulDivSurExprContext } from "./asirParser.js";
 import { QualifiedNameContext } from "./asirParser.js";
+import { DottedAllowedIdContext } from "./asirParser.js";
 import { DottedIdentifierContext } from "./asirParser.js";
 import { ExprlistContext } from "./asirParser.js";
 import { TerminatorContext } from "./asirParser.js";
@@ -613,6 +614,12 @@ export class asirVisitor<Result> extends AbstractParseTreeVisitor<Result> {
      * @return the visitor result
      */
     visitQualifiedName?: (ctx: QualifiedNameContext) => Result;
+    /**
+     * Visit a parse tree produced by `asirParser.dottedAllowedId`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitDottedAllowedId?: (ctx: DottedAllowedIdContext) => Result;
     /**
      * Visit a parse tree produced by `asirParser.dottedIdentifier`.
      * @param ctx the parse tree

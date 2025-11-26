@@ -34,7 +34,7 @@ export interface TypedExpressionNode extends ASTNode {
 }
 
 // 代入の左辺に来れるノード (L-Value)
-export type LValueNode = IndeterminateNode | IndexAccessNode | MemberAccessNode;
+export type LValueNode = IndeterminateNode | DottedIdentifierNode | IndexAccessNode | MemberAccessNode;
 
 // 2. 式を表すノードのユニオン型
 export type ExpressionNode =
@@ -123,6 +123,7 @@ export interface IndeterminateNode extends TypedExpressionNode {
 export interface DottedIdentifierNode extends TypedExpressionNode {
     kind: 'DottedIdentifier';
     identifiers: IndeterminateNode[];
+    resolvedSymbol?: Symbol;
 }
 
 // --- 演算子ノード ---

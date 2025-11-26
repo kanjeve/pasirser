@@ -75,6 +75,7 @@ import { AddSubExprContext } from "./asirParser.js";
 import { NumberLiteralContext } from "./asirParser.js";
 import { MulDivSurExprContext } from "./asirParser.js";
 import { QualifiedNameContext } from "./asirParser.js";
+import { DottedAllowedIdContext } from "./asirParser.js";
 import { DottedIdentifierContext } from "./asirParser.js";
 import { ExprlistContext } from "./asirParser.js";
 import { TerminatorContext } from "./asirParser.js";
@@ -968,6 +969,16 @@ export class asirListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitQualifiedName?: (ctx: QualifiedNameContext) => void;
+    /**
+     * Enter a parse tree produced by `asirParser.dottedAllowedId`.
+     * @param ctx the parse tree
+     */
+    enterDottedAllowedId?: (ctx: DottedAllowedIdContext) => void;
+    /**
+     * Exit a parse tree produced by `asirParser.dottedAllowedId`.
+     * @param ctx the parse tree
+     */
+    exitDottedAllowedId?: (ctx: DottedAllowedIdContext) => void;
     /**
      * Enter a parse tree produced by `asirParser.dottedIdentifier`.
      * @param ctx the parse tree

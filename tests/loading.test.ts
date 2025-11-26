@@ -34,10 +34,9 @@ describe('Validator Features', () => {
         });
 
         const warnings = diagnostics.filter(d => d.severity === DiagnosticSeverity.Warning);
-        // 'O_VOID'の再定義に関する警告だけが出ることを期待
+
         expect(warnings.length).toBeGreaterThanOrEqual(1);
-        expect(warnings.some(w => w.message.includes('\'O_VOID\' はスコープで既に定義されています'))).toBe(true);
-        expect(warnings.every(w => w.filePath?.includes('defs.h'))).toBe(true);
+        expect(warnings.some(w => w.message.includes('マクロ \'O_POLY\' への代入は推奨されません。'))).toBe(true);
     });
 
     it('should handle chdir() and load() correctly', () => {

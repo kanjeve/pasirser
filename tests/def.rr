@@ -1,0 +1,4 @@
+#define asir.exe 13
+#define asir.rr 99
+
+asir.exe > asir.rr;

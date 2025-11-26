@@ -16,7 +16,7 @@ describe('Unreachable Code Detection', () => {
 
         // Filter for unreachable code warnings
         const unreachableWarnings = diagnostics.filter((d: Diagnostic) =>
-            d.severity === DiagnosticSeverity.Warning && d.message.includes("到達不能なコードです。")
+            d.severity === DiagnosticSeverity.Information && d.message.includes("到達不能なコードです。")
         );
 
         expect(unreachableWarnings.length).toBeGreaterThanOrEqual(4);
